@@ -12,9 +12,15 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.11 1997/11/04 01:35:42 tom Exp $
+#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.13 1998/08/23 19:47:33 tom Exp $
 #
 # $Log: makefile.in,v $
+# Revision 3.13  1998/08/23 19:47:33  tom
+# remove trial/error build of hili (done in configure-script)
+#
+# Revision 3.12  1998/08/23 18:46:49  tom
+# mods to support configure --srcdir
+#
 # Revision 3.11  1997/11/04 01:35:42  tom
 # add EXTRA_CFLAGS
 #
@@ -65,46 +71,49 @@
 #
 # Makefile for ATAC components in tools directory.
 #
+SHELL		= /bin/sh
+
+srcdir          = @srcdir@
+VPATH           = @srcdir@
+
 CC		= @CC@
+CPP		= @CPP@
 LINK		= $(CC)
 INCLUDES	= ..
-CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@ @EXTRA_CFLAGS@
+CPPFLAGS	= @CPPFLAGS@ -I. -I$(INCLUDES) -I$(srcdir)/.. -I$(srcdir) -DHAVE_CONFIG_H
+CFLAGS		= @CFLAGS@ @EXTRA_CFLAGS@
 
 SRC=atac atacCC atacLD atacmin atac_rt.c hili.c min.c predefs.list Makefile
 
 system:		atac atacCC atacLD atacmin atac_rt.o hili minimize predefs.c
 
+.SUFFIXES : .i
+
+.c.o:
+@RULE_CC@
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $(srcdir)/$*.c
+
+.c.i:
+@RULE_CC@
+	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(srcdir)/$*.c >$@
+
 clean:
 		rm -f *.o hili minimize predefs.c
 
 atac_rt.o:	atac_rt.c $(INCLUDES)/portable.h
-		$(LINK) $(CFLAGS) -c atac_rt.c
 
-hili:		hili.c $(INCLUDES)/portable.h
-		@rm -f hili
-		@if							\
-		    echo building hili with termcap;		 	\
-		    echo $(LINK) $(CFLAGS) hili.c -DM_TERMCAP -ltermcap -o hili;\
-		    $(LINK) $(CFLAGS) hili.c -DM_TERMCAP -ltermcap -o hili;\
-		    ./hili /dev/null /dev/null 2>/dev/null;		\
-		then							\
-		    echo hili built successfully;			\
-		elif							\
-		    echo building hili with terminfo;		 	\
-		    echo $(LINK) $(CFLAGS) hili.c -DM_TERMINFO -lcurses -o hili;\
-		    $(LINK) $(CFLAGS) hili.c -DM_TERMINFO -lcurses -o hili;\
-		then							\
-		    echo hili built successfully;			\
-		else							\
-		    rm -f hili;						\
-		    false;						\
-		fi
+hili.o:		hili.c $(INCLUDES)/portable.h
 
-minimize:	min.c $(INCLUDES)/portable.h
-		$(LINK) $(CFLAGS) min.c -o minimize
+hili:		hili.o
+		@ECHO_LD@$(LINK) $(CFLAGS) hili.o @TERMLIBS@ -o $@
 
-predefs.c:	predefs.list
-		@for n in `grep -v '^#' predefs.list`;			\
+min.o:		$(INCLUDES)/portable.h
+
+minimize:	min.o
+		@ECHO_LD@$(LINK) $(CFLAGS) min.o -o $@
+
+predefs.c:	$(srcdir)/predefs.list
+		@for n in `grep -v '^#' $(srcdir)/predefs.list`;	\
 		do							\
 		    N=`echo $$n | tr '[a-z]' '[A-Z]'`;			\
 		    for name in $$n _$$n __$$n __$${n}__ $$N _$$N __$$N __$${N}__;\

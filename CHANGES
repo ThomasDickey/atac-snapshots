@@ -1,3 +1,19 @@
+1998-08-22  Thomas E. Dickey  <dickey@clark.net>
+
+	* configure.in: CF_CURSES_TERMCAP needs preset variables
+
+	* atacterm.h: RCS_BASE
+
+	* aclocal.m4: resync with my macros, including termcap/curses headers
+
+1998-07-25  Thomas E. Dickey  <dickey@clark.net>
+
+	* config.guess: 980823
+
+1998-02-24  Thomas E. Dickey  <dickey@clark.net>
+
+	* config.sub: 980823
+
 1997-12-10  Thomas E. Dickey  <dickey@clark.net>
 
 	* makefile.in:

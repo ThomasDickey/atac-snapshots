@@ -22,12 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char min_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/min.c,v 3.12 1997/11/01 16:10:51 tom Exp $";
+"$Header: /users/source/archives/atac.vcs/tools/RCS/min.c,v 3.13 1998/08/23 19:44:46 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: min.c,v $
+* Revision 3.13  1998/08/23 19:44:46  tom
+* fix most gcc warnings (except some cost stuff that will take study)
+*
 * Revision 3.12  1997/11/01 16:10:51  tom
 * gcc warnings (size_t/int/long/unsigned long)
 *
@@ -70,16 +73,15 @@ static const char bellcoreCopyRight[] =
 #include <stdlib.h>
 #endif
 
+#include <time.h>
 #include <stdio.h>
+
 #include "portable.h"
+
 #ifdef vms
 #include <types.h>
 #else /* not vms */
-#ifdef MVS
-#include <time.h>		/* for time_t */
-#else /* not MVS */
 #include <sys/types.h>		/* for time_t */
-#endif /* not MVS */
 #endif /* not vms */
 
 /*
@@ -129,28 +131,28 @@ static boolean		g_quiet = FALSE;
 static VOIDPTR ckMalloc P_((size_t n));
 static VOIDPTR ckRealloc P_((VOIDPTR q, size_t n));
 static float sl_normalizeCost P_((setList *list));
-static int sl_1stGBN P_((setList *list, setVector *select));
-static int sl_coveredByOthers P_((setVector *set, setList *list, setVector *select));
-static int sl_firstGreedy P_((setList *list, setVector *select));
-static int sl_mustKeep P_((setList *list, setVector *select, long costLimit, setList *keep));
-static int sv_card P_((setVector *set, setVector *select));
-static int sv_empty P_((setVector *set, setVector *select));
-static int sv_subset P_((setVector *setA, setVector *setB, setVector *select));
+static int sl_1stGBN P_((setList *list, setVector *selection));
+static int sl_coveredByOthers P_((setVector *set, setList *list, setVector *selection));
+static int sl_firstGreedy P_((setList *list, setVector *selection));
+static int sl_mustKeep P_((setList *list, setVector *selection, long costLimit, setList *keep));
+static int sv_card P_((setVector *set, setVector *selection));
+static int sv_empty P_((setVector *set, setVector *selection));
+static int sv_subset P_((setVector *setA, setVector *setB, setVector *selection));
 static struct setList *sl_Rminimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
 static struct setList *sl_copy P_((setList *list));
 static struct setList *sl_cost0 P_((setList *list));
 static struct setList *sl_create P_((size_t initAlloc));
 static struct setList *sl_get P_((FILE *f, int *pSetSize));
 static struct setList *sl_minimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
-static struct setList *sl_reduce P_((setList *list, setVector *select, long costLimit));
+static struct setList *sl_reduce P_((setList *list, setVector *selection, long costLimit));
 static struct setVector *sl_union P_((setList *list, char *name));
 static struct setVector *sv_copy P_((setVector *set));
 static struct setVector *sv_get P_((FILE *f, int *pSetSize));
 static void sl_append P_((setList *list, setVector *set));
 static void sl_combine P_((setList *listA, setList *listB));
-static void sl_compress P_((setList *list, setVector *select));
+static void sl_compress P_((setList *list, setVector *selection));
 static void sl_cumPrint P_((setList *list, int setSize, double normFactor, boolean header));
-static void sl_dontNeed P_((setList *list, setVector *select));
+static void sl_dontNeed P_((setList *list, setVector *selection));
 static void sl_dump P_((setList *list));
 static void sl_free P_((setList *list));
 static void sl_freeAll P_((setList *list));
@@ -158,7 +160,7 @@ static void sl_gBN P_((setList *listArg, setVector *selectArg, setList *keep));
 static void sl_greedy P_((setList *listArg, setVector *selectArg, setList *keep));
 static void sl_print P_((setList *list));
 static void sl_realloc P_((setList *list, size_t newAlloc));
-static void sv_compress P_((setVector *set, setVector *select));
+static void sv_compress P_((setVector *set, setVector *selection));
 static void sv_dump P_((setVector *set));
 static void sv_free P_((setVector *set));
 static void sv_subtract P_((setVector *setA, setVector *setB));
@@ -410,14 +412,14 @@ setVector *setB;
 }
 
 /*
-* sv_subset: Return TRUE if the intersection of setB and "select"
-* is equal to or a subset of the intersection of setA and "select".
+* sv_subset: Return TRUE if the intersection of setB and "selection"
+* is equal to or a subset of the intersection of setA and "selection".
 */
 static boolean
-sv_subset(setA, setB, select)
+sv_subset(setA, setB, selection)
 setVector *setA;
 setVector *setB;
-setVector *select;
+setVector *selection;
 {
 	unsigned long	a;
 	int		i;
@@ -426,8 +428,8 @@ setVector *select;
 	size = setB->sv_contentsSize;
 
 	for (i = 0; i < size; ++i) {
-		if (i < select->sv_contentsSize) {
-			a = ~select->sv_contents[i];
+		if (i < selection->sv_contentsSize) {
+			a = ~selection->sv_contents[i];
 			if (i < setA->sv_contentsSize)
 			    a |= setA->sv_contents[i];
 		}
@@ -459,12 +461,12 @@ setVector *set;
 }
 
 /*
-* sv_compress: Squeeze out bit positions in set that are 0 in "select".
+* sv_compress: Squeeze out bit positions in set that are 0 in "selection".
 */
 static void
-sv_compress(set, select)
+sv_compress(set, selection)
 setVector *set;
-setVector *select;
+setVector *selection;
 {
     int			i;
     int			nIndex;
@@ -475,12 +477,12 @@ setVector *select;
     nIndex = 0;
     nGuide = 1;
 
-    for (i = 0; i < select->sv_contentsSize; ++i) {
+    for (i = 0; i < selection->sv_contentsSize; ++i) {
 	if (i >= set->sv_contentsSize) break;
 	vector = set->sv_contents[i];
 	set->sv_contents[i] = 0;
 	for (guide = 1; guide != 0; guide <<= 1) {
-	    if (select->sv_contents[i] & guide) {
+	    if (selection->sv_contents[i] & guide) {
 		if (vector & guide) {
 		    set->sv_contents[nIndex] |= nGuide;
 		}
@@ -507,16 +509,16 @@ setVector *select;
 }
 
 /*
-* sv_card: Return the number of bits set in both set and select.
+* sv_card: Return the number of bits set in both set and selection.
 */
 static int
-sv_card(set, select)
+sv_card(set, selection)
 setVector *set;
-setVector *select;
+setVector *selection;
 {
-    int		i;
+    unsigned	i;
     long	card;
-    int		guide;
+    unsigned	guide;
     byte	*setContents;
     byte	*selectContents;
     byte	*end;
@@ -536,11 +538,11 @@ setVector *select;
     }
 
     setContents = (byte *)set->sv_contents;
-    selectContents = (byte *)select->sv_contents;
+    selectContents = (byte *)selection->sv_contents;
 
-    if (select->sv_contentsSize < set->sv_contentsSize)
-	end = (byte *)&select->sv_contents[select->sv_contentsSize];
-    else end = (byte *)&select->sv_contents[set->sv_contentsSize];
+    if (selection->sv_contentsSize < set->sv_contentsSize)
+	end = (byte *)&selection->sv_contents[selection->sv_contentsSize];
+    else end = (byte *)&selection->sv_contents[set->sv_contentsSize];
 
     card = 0;
 
@@ -553,15 +555,15 @@ setVector *select;
 }
 
 static boolean
-sv_empty(set, select)
+sv_empty(set, selection)
 setVector *set;
-setVector *select;
+setVector *selection;
 {
 	int		i;
 
 	for (i = 0; i < set->sv_contentsSize; ++i) {
-		if (i < select->sv_contentsSize) {
-			if (set->sv_contents[i] & select->sv_contents[i])
+		if (i < selection->sv_contentsSize) {
+			if (set->sv_contents[i] & selection->sv_contents[i])
 				return FALSE;
 		}
 		else if (set->sv_contents[i])
@@ -726,12 +728,12 @@ setVector *set;
 }
 
 /*
-* sl_compress: Remove from each set all elements that are not in "select".
+* sl_compress: Remove from each set all elements that are not in "selection".
 */
 static void
-sl_compress(list, select)
+sl_compress(list, selection)
 setList *list;
-setVector *select;
+setVector *selection;
 {
     register setVector	**sets;
     register setVector	**setsEnd;
@@ -739,7 +741,7 @@ setVector *select;
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
     while (sets < setsEnd) {
-	sv_compress(*sets, select);
+	sv_compress(*sets, selection);
 	++sets;
     }
 }
@@ -815,26 +817,26 @@ setList		*list;
 /*
 * sl_firstGreedy:  Return the index in list of the set that minimizes
 *	cost/cardinality.  If list is empty or contains only empty sets
-*	with respect to "select", return -1.
+*	with respect to "selection", return -1.
 */
 static int
-sl_firstGreedy(list, select)
+sl_firstGreedy(list, selection)
 setList		*list;
-setVector	*select;
+setVector	*selection;
 {
     setVector		*set;
     int			best;
     int			card;
     unsigned long	value;
     unsigned long	minValue;
-    int			i;
+    unsigned		i;
 
     minValue = (unsigned long)(~0L);
     best = -1;
 
     for (i = 0; i < list->sl_count; ++i) {
 	set = list->sl_sets[i];
-	card = sv_card(set, select);
+	card = sv_card(set, selection);
 	if (card != 0) {
 	    value = (set->sv_cost * (LOWORD(~0) + 1))/ card;
 	    if (value < minValue) {
@@ -858,7 +860,7 @@ setList		*listArg;
 setVector	*selectArg;
 setList		*keep;
 {
-    setVector	*select;
+    setVector	*selection;
     setVector	*bestSet;
     setList	*list;
     int		best;
@@ -866,19 +868,19 @@ setList		*keep;
     /*
      * Copy arguments so the originals are not modified.
      */
-    select = sv_copy(selectArg);
+    selection = sv_copy(selectArg);
     list = sl_copy(listArg);
 
-    while ((best = sl_firstGreedy(list, select)) != -1) {
+    while ((best = sl_firstGreedy(list, selection)) != -1) {
 	bestSet = list->sl_sets[best];
 	sl_append(keep, bestSet);
-	sv_subtract(select, bestSet);
+	sv_subtract(selection, bestSet);
 	list->sl_cost -= bestSet->sv_cost;
 	--list->sl_count;
 	list->sl_sets[best] = list->sl_sets[list->sl_count];
     }
 
-    sv_free(select);
+    sv_free(selection);
     sl_free(list);
 
     return;
@@ -889,20 +891,20 @@ setList		*keep;
 *	bottleneck presence / cost,  where bottleneck prsesence is the sum
 *	of 1/cols[k] for each k such that the k'th elemnt is in the set
 *	and cols[k] is the number of sets that contain the k'th elemnt.
-*	If list is empty or contains only empty sets with respect to "select",
+*	If list is empty or contains only empty sets with respect to "selection",
 *	return -1.
 */
 static int
-sl_1stGBN(list, select)
+sl_1stGBN(list, selection)
 setList		*list;
-setVector	*select;
+setVector	*selection;
 {
     setVector		*set;
     int			best;
     int			card;
     unsigned long	value;
     unsigned long	maxValue;
-    int			i;
+    unsigned		i;
     int			j;
     register int	k;
     unsigned long	vector;
@@ -918,7 +920,7 @@ setVector	*select;
 	return  -1;
     }
 	
-    card = sv_card(select, select);
+    card = sv_card(selection, selection);
 
     if (card > colsSize) {
 	colsSize = card;
@@ -926,17 +928,17 @@ setVector	*select;
     }
 
     /*
-     * Set cols[k] to number of sets containing the k'th element in "select".
+     * Set cols[k] to number of sets containing the k'th element in "selection".
      */
     for (k = 0; k < card; ++k)	/* ?unknown? should be card, not colSize */
 	cols[k] = 0;				/* Init to 0. */
     for (i = 0; i < list->sl_count; ++i) {
 	set = list->sl_sets[i];
 	k = 0;
-	for (j = 0; j < select->sv_contentsSize; ++j) {
+	for (j = 0; j < selection->sv_contentsSize; ++j) {
 	    if (j >= set->sv_contentsSize) break;
 	    vector = set->sv_contents[j];
-	    sVector = select->sv_contents[j];
+	    sVector = selection->sv_contents[j];
 	    for (guide = 1; guide != 0; guide <<= 1) {
 		if (sVector & guide) {
 		    if (vector & guide)
@@ -954,10 +956,10 @@ setVector	*select;
 	set = list->sl_sets[i];
 	k = 0;
 	value = 0;
-	for (j = 0; j < select->sv_contentsSize; ++j) {
+	for (j = 0; j < selection->sv_contentsSize; ++j) {
 	    if (j >= set->sv_contentsSize) break;
 	    vector = set->sv_contents[j];
-	    sVector = select->sv_contents[j];
+	    sVector = selection->sv_contents[j];
 	    for (guide = 1; guide != 0; guide <<= 1) {
 		if (sVector & guide) {
 		    if (vector & guide)
@@ -987,7 +989,7 @@ setList		*listArg;
 setVector	*selectArg;
 setList		*keep;
 {
-    setVector	*select;
+    setVector	*selection;
     setVector	*bestSet;
     setList	*list;
     int		best;
@@ -995,19 +997,19 @@ setList		*keep;
     /*
      * Copy arguments so the originals are not modified.
      */
-    select = sv_copy(selectArg);
+    selection = sv_copy(selectArg);
     list = sl_copy(listArg);
 
-    while ((best = sl_1stGBN(list, select)) != -1) {
+    while ((best = sl_1stGBN(list, selection)) != -1) {
 	bestSet = list->sl_sets[best];
 	sl_append(keep, bestSet);
-	sv_subtract(select, bestSet);
+	sv_subtract(selection, bestSet);
 	list->sl_cost -= bestSet->sv_cost;
 	--list->sl_count;
 	list->sl_sets[best] = list->sl_sets[list->sl_count];
     }
 
-    sv_free(select);
+    sv_free(selection);
     sl_free(list);
 
     return;
@@ -1016,13 +1018,13 @@ setList		*keep;
 /*
 * sl_coveredByOthers: Return TRUE if "set" is covered by all
 *	entries on list combined, excluding itself, considering only elements
-*	which are in "select".
+*	which are in "selection".
 */
 static boolean
-sl_coveredByOthers(set, list, select)
+sl_coveredByOthers(set, list, selection)
 setVector *set;
 setList *list;
-setVector *select;
+setVector *selection;
 {
     register setVector	**sets;
     setVector		**setsEnd;
@@ -1031,14 +1033,14 @@ setVector *select;
 
     /*
      * For each contents index, take the sv_contents[i] of "set" and remove
-     * elements that are not in "select" and elements that are in any
+     * elements that are not in "selection" and elements that are in any
      * list entry other than "set".  If anything is left, it is not covered. 
      * Otherwise it is covered.
      */
     for (i = 0; i < set->sv_contentsSize; ++i) {
-	if (i >= select->sv_contentsSize) break;
+	if (i >= selection->sv_contentsSize) break;
 	bunch = set->sv_contents[i];
-	bunch &= select->sv_contents[i];
+	bunch &= selection->sv_contents[i];
 
 	setsEnd = list->sl_sets + list->sl_count;
 	sets = list->sl_sets;
@@ -1058,15 +1060,15 @@ setVector *select;
 
 /*
 * sl_mustKeep:  Find all the sets on "list" that are not covered by all
-*	the others together, considering only elements that are in "select";
+*	the others together, considering only elements that are in "selection";
 *	remove them from "list" and add them to "keep" list.  Modify
-*	"select" by removing any element that is in a set added to the "keep"
+*	"selection" by removing any element that is in a set added to the "keep"
 *	list.  If cost reaches "costLimit" return FAIL.  Otherwise SUCCEED.
 */
 static int				/* FAIL or SUCCEED */
-sl_mustKeep(list, select, costLimit, keep)
+sl_mustKeep(list, selection, costLimit, keep)
 setList		*list;
-setVector	*select;
+setVector	*selection;
 long		costLimit;
 setList		*keep;
 {
@@ -1081,14 +1083,14 @@ setList		*keep;
     sets = list->sl_sets;
     newSets = sets;
     while (sets < setsEnd) {
-	if (!sl_coveredByOthers(*sets, list, select)) {
+	if (!sl_coveredByOthers(*sets, list, selection)) {
 	    sl_append(keep, *sets);
 	    if (keep->sl_cost >= costLimit + g_allMin) {
 		return FAIL;
 	    }
 	    ++keepCount;
 	    keepCost += (*sets)->sv_cost;	/* Adjust list->sl_cost later */
-	    sv_subtract(select, *sets);		/* ... to avoid messing up */
+	    sv_subtract(selection, *sets);		/* ... to avoid messing up */
 	    *sets = &empty;			/* ... sl_coveredByOthers. */
 	} else {
 	    if (newSets != sets) {
@@ -1108,12 +1110,12 @@ setList		*keep;
 
 /*
 * sl_dontNeed:  Remove from "list", any set that is covered by a set on list
-*	with lower cost, considering only elements that are in "select".
+*	with lower cost, considering only elements that are in "selection".
 */
 static void
-sl_dontNeed(list, select)
+sl_dontNeed(list, selection)
 setList *list;
-setVector *select;
+setVector *selection;
 {
     setVector		**sets;
     setVector		**newSets;
@@ -1129,7 +1131,7 @@ setVector *select;
 	for (; sets2 < setsEnd; ++sets2) {
 	    if (sets == sets2) continue;
 	    if ((*sets)->sv_cost < (*sets2)->sv_cost) continue;
-	    if (sv_subset(*sets2, *sets, select))
+	    if (sv_subset(*sets2, *sets, selection))
 		break;
 	}
 	if (sets2 < setsEnd) {
@@ -1147,7 +1149,7 @@ setVector *select;
     }
 
     if (list->sl_count == 1) {
-	if (sv_empty(list->sl_sets[0], select)) {
+	if (sv_empty(list->sl_sets[0], selection)) {
 	    --list->sl_count;
 	    list->sl_cost -= list->sl_sets[0]->sv_cost;
 	}
@@ -1156,21 +1158,21 @@ setVector *select;
 
 /*
 * sl_reduce:  Return a new list containing all sets on "list" that must
-*	be included to cover elements in "select".  Remove covered elements
-*	from "select".  Retain on "list" only sets that cover some element
-*	remaining in "select".	If cost of new list reaches "costLimit"
+*	be included to cover elements in "selection".  Remove covered elements
+*	from "selection".  Retain on "list" only sets that cover some element
+*	remaining in "selection".	If cost of new list reaches "costLimit"
 *	remove all sets from "list" and return NULL.
 *	For efficiency, create keep with enough allocation to hold final
 *	covering list.
 */
 static setList *
-sl_reduce(list, select, costLimit)
+sl_reduce(list, selection, costLimit)
 setList		*list;
-setVector	*select;
+setVector	*selection;
 long		costLimit;
 {
     setList	*keep;
-    int		prevCount;
+    unsigned	prevCount;
     boolean	doMustKeep;
     boolean	doDontNeed;
     int		status;
@@ -1195,7 +1197,7 @@ long		costLimit;
 	 */
 	if (doMustKeep) {
 	    prevCount = list->sl_count;
-	    status = sl_mustKeep(list, select, costLimit, keep);
+	    status = sl_mustKeep(list, selection, costLimit, keep);
 	    if (status == SUCCEED) {
 		if (list->sl_count == 0)
 		    return keep;
@@ -1210,12 +1212,12 @@ long		costLimit;
 	doMustKeep = FALSE;
 
 	/*
-	 * Remove sets from "list" that have no elements in "select".
+	 * Remove sets from "list" that have no elements in "selection".
 	 * I.e. no elements that are not in a set on "keep" list.
 	 */
 	if (doDontNeed) {
 	    prevCount = list->sl_count;
-	    sl_dontNeed(list, select);
+	    sl_dontNeed(list, selection);
 	    if (prevCount != list->sl_count)
 		doMustKeep = TRUE;
 	}
@@ -1405,7 +1407,7 @@ setVector	*selectArg;
 long		costLimit;
 long		costSoFar;
 {
-    setVector	*select;
+    setVector	*selection;
     setList	*list;
     setList	*keep;
     setList	*prevBest;
@@ -1436,19 +1438,19 @@ long		costSoFar;
     /*
      * Copy arguments so the originals are not modified.
      */
-    select = sv_copy(selectArg);
+    selection = sv_copy(selectArg);
     list = sl_copy(listArg);
 
     /*
      * Create "keep" list.
      */
-    keep = sl_reduce(list, select, costLimit);
+    keep = sl_reduce(list, selection, costLimit);
 
     /*
      * Failed?  (Cost of keep list already exceeds costLimit.)
      */
     if (keep == NULL) {
-	sv_free(select);
+	sv_free(selection);
 	sl_free(list);
 	--level;
 	return NULL;
@@ -1461,7 +1463,7 @@ long		costSoFar;
 	if (!g_quiet) fprintf(stderr,
 			      "solution of cost %ld at visit %ld level %d\n",
 			      costSoFar + keep->sl_cost, g_visited, level);
-	sv_free(select);
+	sv_free(selection);
 	sl_free(list);
 	--level;
 	return keep;
@@ -1470,8 +1472,8 @@ long		costSoFar;
     /*
      * At this point:
      * 	1. "list" must contain at least three sets.
-     *	2. At least one of the sets is needed to cover "select".
-     *	3. "list" minus any one set will still cover "select".
+     *	2. At least one of the sets is needed to cover "selection".
+     *	3. "list" minus any one set will still cover "selection".
      * (3 is true because otherwise mustKeep would have put on the keep
      * list the set that is needed to cover.  2 is true because otherwise
      * dontNeed would have removed all the sets.  1 is true because
@@ -1483,9 +1485,9 @@ long		costSoFar;
      * Remove a set from list.
      */
     if (g_greedyFlag)
-	dropIndex = sl_firstGreedy(list, select);
+	dropIndex = sl_firstGreedy(list, selection);
     else if (g_gBNFlag)
-	dropIndex = sl_1stGBN(list, select);
+	dropIndex = sl_1stGBN(list, selection);
     else dropIndex = 0;
     dropSet = list->sl_sets[dropIndex];
     --list->sl_count;
@@ -1502,7 +1504,7 @@ long		costSoFar;
 	    g_nodeId[level - 1] = '0';
 	    g_nodeId[level] = '\0';
 	}
-	prevBest = sl_minimize(list, select, costLimit - keep->sl_cost,
+	prevBest = sl_minimize(list, selection, costLimit - keep->sl_cost,
 			       costSoFar + keep->sl_cost);
 	g_nodeId[level - 1] = '1';
     }
@@ -1510,13 +1512,13 @@ long		costSoFar;
     /*
      * Find minimum after keeping one set.
      */
-    sv_subtract(select, dropSet);
+    sv_subtract(selection, dropSet);
     if (prevBest == NULL) {
-	best = sl_minimize(list, select,
+	best = sl_minimize(list, selection,
 			   costLimit - keep->sl_cost - dropSet->sv_cost,
 			   costSoFar + keep->sl_cost + dropSet->sv_cost);
 	if (best == NULL) {
-	    sv_free(select);
+	    sv_free(selection);
 	    sl_free(list);
 	    sl_free(keep);
 	    g_nodeId[level - 1] = '\0';
@@ -1526,7 +1528,7 @@ long		costSoFar;
 	    sl_append(keep, dropSet);
 	}
     } else {
-	best = sl_minimize(list, select, prevBest->sl_cost - dropSet->sv_cost,
+	best = sl_minimize(list, selection, prevBest->sl_cost - dropSet->sv_cost,
 			   costSoFar + keep->sl_cost + dropSet->sv_cost);
 	if (best == NULL) {
 	    best = prevBest;
@@ -1540,7 +1542,7 @@ long		costSoFar;
     /*
      * Clean up.
      */
-    sv_free(select);
+    sv_free(selection);
     sl_free(list);
 
     /*
@@ -1567,7 +1569,7 @@ setVector	*selectArg;
 long		costLimit;
 long		costSoFar;
 {
-    setVector	*select;
+    setVector	*selection;
     setList	*list;
     setList	*keep;
     setList	*prevBest;
@@ -1599,19 +1601,19 @@ long		costSoFar;
     /*
      * Copy arguments so the originals are not modified.
      */
-    select = sv_copy(selectArg);
+    selection = sv_copy(selectArg);
     list = sl_copy(listArg);
 
     /*
      * Create "keep" list.
      */
-    keep = sl_reduce(list, select, costLimit);
+    keep = sl_reduce(list, selection, costLimit);
 
     /*
      * Failed?  (Cost of keep list already exceeds costLimit.)
      */
     if (keep == NULL) {
-	sv_free(select);
+	sv_free(selection);
 	sl_free(list);
 	--level;
 	return NULL;
@@ -1624,7 +1626,7 @@ long		costSoFar;
 	if (!g_quiet) fprintf(stderr,
 			      "solution of cost %ld at visit %ld level %d\n",
 			      costSoFar + keep->sl_cost, g_visited, level);
-	sv_free(select);
+	sv_free(selection);
 	sl_free(list);
 	--level;
 	return keep;
@@ -1633,8 +1635,8 @@ long		costSoFar;
     /*
      * At this point:
      * 	1. "list" must contain at least three sets.
-     *	2. At least one of the sets is needed to cover "select".
-     *	3. "list" minus any one set will still cover "select".
+     *	2. At least one of the sets is needed to cover "selection".
+     *	3. "list" minus any one set will still cover "selection".
      * (3 is true because otherwise mustKeep would have put on the keep
      * list the set that is needed to cover.  2 is true because otherwise
      * dontNeed would have removed all the sets.  1 is true because
@@ -1646,9 +1648,9 @@ long		costSoFar;
      * Remove a set from list.
      */
     if (g_greedyFlag)
-	dropIndex = sl_firstGreedy(list, select);
+	dropIndex = sl_firstGreedy(list, selection);
     else if (g_gBNFlag)
-	dropIndex = sl_1stGBN(list, select);
+	dropIndex = sl_1stGBN(list, selection);
     else dropIndex = 0;
     dropSet = list->sl_sets[dropIndex];
     --list->sl_count;
@@ -1665,24 +1667,24 @@ long		costSoFar;
 	    g_nodeId[level - 1] = '0';
 	    g_nodeId[level] = '\0';
 	}
-	dropSelect = sv_copy(select);
-	sv_subtract(select, dropSet);
+	dropSelect = sv_copy(selection);
+	sv_subtract(selection, dropSet);
 	prevBest = sl_Rminimize(list,
-			select, costLimit - keep->sl_cost - dropSet->sv_cost,
+			selection, costLimit - keep->sl_cost - dropSet->sv_cost,
 			costSoFar + keep->sl_cost + dropSet->sv_cost);
-	sv_free(select);
+	sv_free(selection);
 	g_nodeId[level - 1] = '1';
     }
 
     /*
      * Find minimum after discarding one set.
      */
-    select = dropSelect;
+    selection = dropSelect;
     if (prevBest == NULL) {
-	best = sl_Rminimize(list, select, costLimit - keep->sl_cost,
+	best = sl_Rminimize(list, selection, costLimit - keep->sl_cost,
 			   costSoFar + keep->sl_cost);
 	if (best == NULL) {
-	    sv_free(select);
+	    sv_free(selection);
 	    sl_free(list);
 	    sl_free(keep);
 	    g_nodeId[level - 1] = '\0';
@@ -1690,7 +1692,7 @@ long		costSoFar;
 	    return NULL;
 	}
     } else {
-	best = sl_Rminimize(list, select, prevBest->sl_cost,
+	best = sl_Rminimize(list, selection, prevBest->sl_cost,
 			   costSoFar + keep->sl_cost);
 	if (best == NULL) {
 	    best = prevBest;
@@ -1704,7 +1706,7 @@ long		costSoFar;
     /*
      * Clean up.
      */
-    sv_free(select);
+    sv_free(selection);
     sl_free(list);
 
     /*
@@ -1757,7 +1759,7 @@ char	*argv[];
     boolean	compress = FALSE;
     boolean	keepFirst = FALSE;
     char	*restartNodeId = 0;
-    setVector	*select;
+    setVector	*selection;
     setList	*list;
     setList	*keep;
     setList	*greedy;
@@ -1907,9 +1909,9 @@ char	*argv[];
     /*
      * Compress for efficiency.
      */
-    select = sl_union(list, "select");
-    sl_compress(list, select);
-    sv_free(select);			/* Doesn't apply to compressed set. */
+    selection = sl_union(list, "selection");
+    sl_compress(list, selection);
+    sv_free(selection);			/* Doesn't apply to compressed set. */
 
     /*
      * Cost 0 sets are always selected.
@@ -1919,8 +1921,8 @@ char	*argv[];
     /*
      * Find sets that must be in the minimum.
      */
-    select = sl_union(list, "select");
-    reduceList = sl_reduce(list, select, list->sl_cost + 1);
+    selection = sl_union(list, "selection");
+    reduceList = sl_reduce(list, selection, list->sl_cost + 1);
     if (reduceList == NULL) {
 	fprintf(stderr, "internal errror\n");
 	exit(1);
@@ -1930,9 +1932,9 @@ char	*argv[];
      * Compress again for sets removed by sl_cost0() and sl_reduce();
      */
     if (compress) {
-	sl_compress(list, select);
-	sv_free(select);		/* Doesn't apply to reduced set. */
-	select = sl_union(list, "select");
+	sl_compress(list, selection);
+	sv_free(selection);		/* Doesn't apply to reduced set. */
+	selection = sl_union(list, "selection");
     }
 
     normFactor = sl_normalizeCost(list);
@@ -1941,7 +1943,7 @@ char	*argv[];
     * Try greedy.
     */
     greedy = sl_create(list->sl_count);
-    sl_greedy(list, select, greedy);
+    sl_greedy(list, selection, greedy);
     if (!g_quiet) fprintf(stderr, "greedy cost: %ld\n",
 			  greedy->sl_cost + reduceList->sl_cost);
     if (costLimit > greedy->sl_cost)
@@ -1951,7 +1953,7 @@ char	*argv[];
     * Try greedy on bottle necks (GBN).
     */
     gBN = sl_create(list->sl_count);
-    sl_gBN(list, select, gBN);
+    sl_gBN(list, selection, gBN);
     if (!g_quiet) fprintf(stderr, "GBN cost: %ld\n",
 			  gBN->sl_cost + reduceList->sl_cost);
     if (costLimit > gBN->sl_cost) {
@@ -1987,8 +1989,8 @@ char	*argv[];
      * Minimize the list of set vectors.
      */
     if (keepFirst) 
-	keep = sl_Rminimize(list, select, costLimit, reduceList->sl_cost);
-    else keep = sl_minimize(list, select, costLimit, reduceList->sl_cost);
+	keep = sl_Rminimize(list, selection, costLimit, reduceList->sl_cost);
+    else keep = sl_minimize(list, selection, costLimit, reduceList->sl_cost);
     endTime = (time_t)time((time_t *)NULL);
     if (g_visited == g_recursionLimit) {
 	if (g_recursionLimit != 0) {
@@ -1997,7 +1999,7 @@ char	*argv[];
     }
     free(g_nodeId);
 	
-    sv_free(select);
+    sv_free(selection);
     sl_free(list);
 
     if (keep == NULL && greedy->sl_cost < userCost) 
@@ -2012,9 +2014,9 @@ char	*argv[];
 	keep = cost0;
 	if (!compress) {
 	    greedy = sl_create(keep->sl_count);
-	    select = sl_union(keep, "select");
-	    sl_greedy(keep, select, greedy);
-	    sv_free(select);
+	    selection = sl_union(keep, "selection");
+	    sl_greedy(keep, selection, greedy);
+	    sv_free(selection);
 	    sl_free(keep);
 	    keep = greedy;
 	}
