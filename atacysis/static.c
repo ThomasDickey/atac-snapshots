@@ -34,9 +34,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "atacysis.h"
 
 static char const static_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/static.c,v 3.11 1995/12/29 21:24:41 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/static.c,v 3.12 1997/11/03 19:31:30 tom Exp $";
 /*
 * $Log: static.c,v $
+* Revision 3.12  1997/11/03 19:31:30  tom
+* quick hack to prototype the qsort compare-function
+*
 * Revision 3.11  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 * fix compiler warnings (casts).
@@ -112,7 +115,7 @@ static void getBinDotAtac P_((char *filename, T_MODULE *t_module, char *funcSele
 static void bufSize_error P_((char *filename, int bufSize));
 static void input_error P_((char *filename, int recno, char *s, char *arg1, char *arg2));
 
-#if __STDC__
+#if __STDC__ || defined(CC_HAS_PROTOS)
 #define QSORT_CMP (int (*)(const void *, const void *))
 #else
 #define QSORT_CMP /* nothing */

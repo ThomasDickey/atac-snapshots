@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.6 1997/05/12 00:34:13 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.7 1997/11/03 19:14:46 tom Exp $";
 /*
 * $Log: error.c,v $
+* Revision 3.7  1997/11/03 19:14:46  tom
+* change type of internal_error() to int, since it is used in expression.
+*
 * Revision 3.6  1997/05/12 00:34:13  tom
 * include tnode.h
 *
@@ -78,7 +81,7 @@ supress_warnings()
 	warn_flag = 0;
 }
 
-void
+int
 internal_error(SRCPOS *srcpos, char *msg, ...)
 {
 	fputs("internal error", stderr);
@@ -96,6 +99,7 @@ internal_error(SRCPOS *srcpos, char *msg, ...)
 	fputs("\n", stderr);
 
 	exit(INTERNAL_ERROR);
+	/*NOTREACHED*/
 }
 
 void

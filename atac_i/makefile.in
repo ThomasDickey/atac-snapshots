@@ -13,9 +13,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atac_i/RCS/makefile.in,v 1.6 1997/05/10 23:19:07 tom Exp $
+# $Header: /users/source/archives/atac.vcs/atac_i/RCS/makefile.in,v 1.7 1997/11/04 01:35:48 tom Exp $
 #
 # $Log: makefile.in,v $
+# Revision 1.7  1997/11/04 01:35:48  tom
+# add EXTRA_CFLAGS
+#
 # Revision 1.6  1997/05/10 23:19:07  tom
 # first cut of restructuring (must update dependencies)
 #
@@ -106,7 +109,7 @@
 CC		= @CC@
 DEFINES		= -DHAVE_CONFIG_H
 INCLUDES	= ..
-CFLAGS		= $(DEFINES) -I$(INCLUDES) @CFLAGS@
+CFLAGS		= $(DEFINES) -I$(INCLUDES) @CFLAGS@ @EXTRA_CFLAGS@
 
 OBJ=		atac_i.o	\
 		fg_module.o	\

@@ -21,9 +21,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char Pgram_y[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.10 1997/05/10 22:17:14 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.11 1997/11/03 19:06:56 tom Exp $";
 /*
 * $Log: Pgram.y,v $
+* Revision 3.11  1997/11/03 19:06:56  tom
+* move <stdio.h> down below the include for config.h so we have const
+* consistently
+*
 * Revision 3.10  1997/05/10 22:17:14  tom
 * absorb srcpos.h into error.h
 *
@@ -100,8 +104,8 @@ static char Pgram_y[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
 #include "portable.h"
+#include <stdio.h>
 #include "error.h"
 #include "scan.h"
 #include "tnode.h"
