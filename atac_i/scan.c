@@ -37,9 +37,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #define DEBUG 0
 
 static char const scan_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.13 1997/05/11 22:07:02 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.14 1997/11/01 19:12:24 tom Exp $";
 /*
 * $Log: scan.c,v $
+* Revision 3.14  1997/11/01 19:12:24  tom
+* add __inline, since gcc uses it...
+*
 * Revision 3.13  1997/05/11 22:07:02  tom
 * use ID_TYPE to fix mismatches
 *
@@ -235,6 +238,7 @@ static struct {
 	{ "__volatile__", VOLATILE },		/* GCC */
 	{ "__signed__", SIGNED },		/* GCC */
 	{ "__inline__", INLINE },		/* GCC: inline */
+	{ "__inline", INLINE },			/* GCC: inline */
 	{ "__asm__", ASM },			/* GCC: asm */
 	{ "__attribute__", ATTRIBUTE },		/* GCC */
 };

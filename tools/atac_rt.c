@@ -21,10 +21,16 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.12 1996/12/02 00:57:17 tom Exp $";
+static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.14 1997/11/01 16:05:34 tom Exp $";
 
 /*
 * $Log: atac_rt.c,v $
+* Revision 3.14  1997/11/01 16:05:34  tom
+* Linux's atexit() expects void function.
+*
+* Revision 3.13  1997/07/17 18:32:53  tom
+* fix missing return values
+*
 * Revision 3.12  1996/12/02 00:57:17  tom
 * gcc warnings (missing prototypes)
 *
@@ -237,7 +243,7 @@ static int atac_flush P_((FILE *fp, int final));
 static int atac_zero P_((void));
 static int redoFileNames P_((FILE *fp));
 static int setupSignal P_((void));
-static void aTaC_cleanup P_((void));
+static int aTaC_cleanup P_((void));
 static void prepareEnd P_((void));
 
 static int
@@ -352,9 +358,9 @@ atac_zero()
 
 #ifdef END_PROCESSING
 #ifndef CSAM
-static void
+static
 #endif /* CSAM */
-aTaC_cleanup()
+int aTaC_cleanup()
 {
     int		pid;
     int		wpid;
@@ -367,15 +373,15 @@ aTaC_cleanup()
     }
 
 #ifdef FORK_SUPPORT
-    if (getenv("ATAC_NOCOMPRESS") != NULL) return;
+    if (getenv("ATAC_NOCOMPRESS") != NULL) return 0;
 
     compress = getenv("ATAC_COMPRESS");
     if (compress != NULL) {
 	nthCompress = atoi(compress);
 	if (nthCompress <= 0)
-	    return;
+	    return 0;
 	if ((time(0) % nthCompress) != 0)
-	    return;
+	    return 0;
     }
 
     /*
@@ -389,7 +395,7 @@ aTaC_cleanup()
 	open("/dev/null", O_WRONLY, 0);		/* 1 (stdout) */
 	close(2);
 	open("/dev/null", O_WRONLY, 0);		/* 2 (stderr) */
-	(void)execlp("atactm", "atactm", traceName, 0);
+	return execlp("atactm", "atactm", traceName, 0);
     } else {
 	while ((wpid = wait(0)) != pid) {
 	    if (wpid == -1 && errno != EINTR) break;

@@ -47,12 +47,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "man.h"
 
 static char const atactm_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atactm.c,v 3.7 1995/12/29 21:25:35 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atactm.c,v 3.8 1997/07/17 18:32:53 tom Exp $";
 static char const bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: atactm.c,v $
+* Revision 3.8  1997/07/17 18:32:53  tom
+* ifdef'd "rename()" fallback for configure-script
+*
 * Revision 3.7  1995/12/29 21:25:35  tom
 * adjust headers, prototyped for autoconfig
 * correct gcc warnings (shadowed variables).
@@ -114,9 +117,9 @@ actm.c
 */
 
 /* forward declarations */
-#ifndef RENAME_SUPPORT
+#if !HAVE_RENAME
 static int rename();
-#endif /* RENAME_SUPPORT */
+#endif /* !HAVE_RENAME */
 static int exists P_((char *path));
 static char *prefixFileName P_((char *filename, char *prefix));
 static void usage P_((char *cmd));
@@ -613,7 +616,7 @@ char *path;
 }
 #endif /* MVS */
 
-#ifndef RENAME_SUPPORT
+#if !HAVE_RENAME
 static int
 rename(from, to)
 char	*from;

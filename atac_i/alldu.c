@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char alldu_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.6 1997/05/11 23:28:56 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.7 1997/07/17 18:32:53 tom Exp $";
 /*
 * $Log: alldu.c,v $
+* Revision 3.7  1997/07/17 18:32:53  tom
+* missed a NULL used as int
+*
 * Revision 3.6  1997/05/11 23:28:56  tom
 * remove redundant prototypes, fix compiler warnings for list.c interface
 *
@@ -133,7 +136,7 @@ BLOCK	*node;
 	*/
 	definfo.dug = dug;
 	definfo.d_node = node;
-	for (i = NULL; (du = du_use(dug, node, &i)) != 0;) {
+	for (i = 0; (du = du_use(dug, node, &i)) != 0;) {
 		if ((du->ref_type & VAR_DEF) == 0) continue;
 		if (node->branches == NULL) continue;
 		definfo.sym = (SYM *)(du->var_id + 1);

@@ -26,9 +26,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char table_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.6 1997/05/11 20:56:12 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.7 1997/07/17 18:32:53 tom Exp $";
 /*
 * $Log: table.c,v $
+* Revision 3.7  1997/07/17 18:32:53  tom
+* cast 'intcmp' function to 'CMP'
+*
 * Revision 3.6  1997/05/11 20:56:12  tom
 * rename DATA to TABLE_DATATYPE
 *
@@ -157,7 +160,7 @@ int	matchtype;	/* not implemented */
 			return NULL;		/* no next after node */
 		if (cmp == NULL)
 			c = (int)key - *n->data;
-		else if (cmp == intcmp)
+		else if (cmp == (CMP) intcmp)
 			c = (int)key - (int)n->data;
 		else c = (*cmp)(key, n->data);
 		if (c) return NULL;		/* no match */
@@ -229,7 +232,7 @@ int	duplicates;
 	for (n = table->tree; n != NULL; n = *next) {
 		if (cmp == NULL)
 		 	c = *data - *n->data;
-		else if (cmp == intcmp)
+		else if (cmp == (CMP) intcmp)
 			c = (int)data - (int)n->data;
 		else c = (*cmp)(data, n->data);
 		if (c < 0) next = &n->left;
