@@ -17,13 +17,19 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char print_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/print.c,v 3.4 1994/04/04 10:26:01 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const print_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/print.c,v 3.5 1995/12/27 20:13:58 tom Exp $";
 /*
-*-----------------------------------------------$Log: print.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:26:01  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: print.c,v $
+* Revision 3.5  1995/12/27 20:13:58  tom
+* adjust headers, prototyped for autoconfig
+* correct gcc warnings (long vs int).
+*
 * Revision 3.4  94/04/04  10:26:01  jrh
 * Add Release Copyright
 * 
@@ -62,12 +68,6 @@ static char print_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
-
-/* forward declarations */
-void print_mod();
 
 void
 print_mod(mod, covVector)
@@ -121,8 +121,8 @@ int		*covVector;
 		printf("\tPuse %d of %d\n", cov, tot);
 	}
 	for (i = 0; i < (int)mod->n_file; ++i)
-		printf("File %d <%s> <%d>\n", i, mod->file[i].filename,
-			mod->file[i].chgtime);
+		printf("File %d <%s> <%ld>\n", i, mod->file[i].filename,
+			(long)(mod->file[i].chgtime));
 	for (i = 0; i < (int)mod->n_func; ++i) {
 		printf("Func %d <%s>\n", i, mod->func[i].fname);
 		for(j = 0; j < (int)mod->func[i].n_blk; ++j)

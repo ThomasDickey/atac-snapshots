@@ -17,13 +17,28 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char mem_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/mem.c,v 3.3 1994/04/04 10:25:42 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "ramfile.h"
+#include "man.h"
+
+static char const mem_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/mem.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: mem.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:25:42  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: mem.c,v $
+* Revision 3.4  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.3  94/04/04  10:25:42  jrh
 *Add Release Copyright
 *
@@ -50,21 +65,6 @@ static char mem_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "ramfile.h"
-#include "man.h"
-
-/* forward declarations */
-void check_family();
-void check_header();
-void check_member();
-void check_file();
-void check_func();
-void check_puse();
-void check_cuse();
-void check_var();
-void check_block();
 
 /*
 * check_block:  Allocate space necessary to include iBlock in func->blocks.

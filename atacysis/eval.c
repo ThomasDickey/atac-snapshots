@@ -12,13 +12,28 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
-static char eval_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/eval.c,v 3.4 1994/04/04 10:25:14 jrh Exp $";
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include <ctype.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const eval_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/eval.c,v 3.5 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: eval.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:25:14  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: eval.c,v $
+* Revision 3.5  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.4  94/04/04  10:25:14  jrh
 *Add Release Copyright
 *
@@ -33,20 +48,6 @@ static char eval_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include <ctype.h>
-#include "portable.h"
-#include "atacysis.h"
-
-/* forward declarations */
-static int evalConj();
-static int evalDisj();
-static int evalTerm();
-static int evalNames();
-static void doConj();
-static void doDisj();
-static void doNot();
-static void readTrace();
 
 typedef int	*value;
 
@@ -60,6 +61,24 @@ struct tr {
     int		threshold;
     int		weaker;
 };
+
+/* forward declarations */
+static int evalConj
+	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
+static int evalDisj
+	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
+static int evalTerm
+	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
+static int evalNames
+	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
+static void doConj
+	P_((int *cov1, int *cov2, int covCount));
+static void doDisj
+	P_((int *cov1, int *cov2, int covCount));
+static void doNot
+	P_((int *cov, int covCount));
+static void readTrace
+	P_((struct tr *tr, char *names, value *covPtr));
 
 static void
 readTrace(tr, names, covPtr)

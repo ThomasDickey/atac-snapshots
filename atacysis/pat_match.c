@@ -17,13 +17,18 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char pat_match_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pat_match.c,v 3.2 1994/04/04 10:25:52 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const pat_match_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pat_match.c,v 3.3 1995/12/27 20:54:31 tom Exp $";
 /*
-*-----------------------------------------------$Log: pat_match.c,v $
-*-----------------------------------------------Revision 3.2  1994/04/04 10:25:52  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: pat_match.c,v $
+* Revision 3.3  1995/12/27 20:54:31  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.2  94/04/04  10:25:52  jrh
 *Add Release Copyright
 *
@@ -41,11 +46,6 @@ static char pat_match_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-
-/* forward declarations */
-int patMatch();
 
 /*
 * patMatch:  Return 1 if name matches any of the comma separated patterns

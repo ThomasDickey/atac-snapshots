@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char fg_stmt_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.3 1994/04/04 10:12:58 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.4 1995/12/27 23:24:56 tom Exp $";
 /*
-*-----------------------------------------------$Log: fg_stmt.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:12:58  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: fg_stmt.c,v $
+* Revision 3.4  1995/12/27 23:24:56  tom
+* don't use NULL for int value!
+*
 * Revision 3.3  94/04/04  10:12:58  jrh
 * Add Release Copyright
 * 
@@ -571,7 +571,7 @@ int	*dblk;
 		dug_branch(dug, Fend, end, COND_UNCONDITIONAL, 0, NULL);
 	} else {
 		e2.e = e2.s;
-		Tend = NULL;
+		Tend = 0;
 	}
 	if (expr3) {
 		e3.s = dug_newblk(dug);
@@ -582,7 +582,7 @@ int	*dblk;
 		if (expr2) dug_branch(dug, e2.e, s1.s, COND_BOOLEAN, 1, expr2);
 		else dug_branch(dug, e2.e, s1.s, COND_UNCONDITIONAL, 0, NULL);
 		dug_branch(dug, Tend, s1.s, COND_UNCONDITIONAL, 0, NULL);
-		Tend = NULL;
+		Tend = 0;
 		fg_stmt(stmt, dug, s1.s, end, cont, swblk, &s1.e, dblk);
 	} else s1.e = e2.e;
 	if (expr3) {

@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char dug_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.6 1994/04/04 17:12:54 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.7 1995/12/27 23:27:11 tom Exp $";
 /*
-*-----------------------------------------------$Log: dug.c,v $
-*-----------------------------------------------Revision 3.6  1994/04/04 17:12:54  tom
-*-----------------------------------------------Initial revision
-*-----------------------------------------------
+* $Log: dug.c,v $
+* Revision 3.7  1995/12/27 23:27:11  tom
+* don't use NULL for int value!
+*
 * Revision 3.6  94/04/04  10:12:25  jrh
 * Add Release Copyright
 * 
@@ -164,7 +164,7 @@ BLOCK	*b;
 {
 	if (b->branches) list_free(b->branches, free_branch);
 	list_free(b->du_list, free);
-	b->magic = NULL;
+	b->magic = 0;
 	free(b);
 }
 
@@ -174,7 +174,7 @@ DUG	*dug;
 {
 	list_free(dug->block_list, free_block);
 	if (dug->vartab) free(dug->vartab);
-	dug->magic = NULL;
+	dug->magic = 0;
 	free(dug);
 
 	return 1;
@@ -226,7 +226,7 @@ int	parse_start;
 		internal_error(NULL, "dug_startblk 2: memory corrupted\n");
 #endif
 
-	if (blk->parse_start == NULL || parse_start == NULL)
+	if (blk->parse_start == 0 || parse_start == 0)
 		blk->parse_start = parse_start;
 
 	return 1;
@@ -382,10 +382,10 @@ int	parse_pos;
 	du->ref_type = ref_type;
 	if (ref_type & VAR_DEF) {
 	    du->defPos = parse_pos;
-	} else du->defPos = NULL;
+	} else du->defPos = 0;
 	if (ref_type & (VAR_CUSE | VAR_PUSE)) {
 	    du->usePos = parse_pos;
-	} else du->usePos = NULL;
+	} else du->usePos = 0;
 	
 	return list_put(block->du_list, du);
 }
@@ -569,7 +569,7 @@ DUG	*dug;
 	var_id = (V_ID *)malloc(sizeof *var_id);
 	CHECK_MALLOC(var_id);
 	var_count = 0;
-	for (i = NULL; list_next(dug->block_list, &i, &node);) {
+	for (i = 0; list_next(dug->block_list, &i, &node);) {
 		for (j = 0; list_next(node->du_list, &j, &du);) {
 			if ((du->ref_type & (VAR_CUSE | VAR_PUSE)) == 0)
 				continue;
@@ -610,7 +610,7 @@ DUG	*dug;
 	/*
 	* At each du reference to variable, put var id.
 	*/
-	for (i = NULL; list_next(dug->block_list, &i, &node);) {
+	for (i = 0; list_next(dug->block_list, &i, &node);) {
 		for (j = 0; list_next(node->du_list, &j, &du);) {
 			if (du->ref_type & VAR_DREF)
 				var_id = table_find(dref_list, du->symbol, 0,0);
@@ -721,7 +721,7 @@ DUG	*dug;
 	count = 0;
 	for (t = NULL; list_next(dug->block_list, &t, &b);) {
 		if ((b->to_count == 0) &&
-			(b->parse_end == NULL || b->parse_start == NULL))
+			(b->parse_end == 0 || b->parse_start == 0))
 		{
 			if (b->branches)
 				for (i = NULL; list_next(b->branches, &i, &r);)
@@ -785,7 +785,7 @@ FILE	*f;
 	fprintf(f, "static struct %spath %sU%s[] = { /* DU */\n",
 		prefix, prefix, dug->fname);
 	du_count = 0;
-	for (i = NULL; list_next(dug->block_list, &i, &node);) {
+	for (i = 0; list_next(dug->block_list, &i, &node);) {
 		for (j = 0; list_next(node->du_list, &j, &du);) {
 			fprintf(f, "\t{%d, %d},",
 				du->var_id, du->ref_type & ~VAR_DREF);
@@ -814,7 +814,7 @@ FILE	*f;
 #endif
 
 	fprintf(f, "\t&%sU%s[0],\n", prefix, dug->fname);
-	for (i = NULL; list_next(dug->block_list, &i, &node);) {
+	for (i = 0; list_next(dug->block_list, &i, &node);) {
 		for (j = 0; list_next(node->du_list, &j, &du);)
 			++du_count;
 		fprintf(f, "\t&%sU%s[%d],", prefix, dug->fname, du_count);

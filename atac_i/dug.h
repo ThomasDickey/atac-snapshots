@@ -15,12 +15,12 @@
 #ifndef dug_H
 #define dug_H
 static char dug_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.1 1994/04/04 10:12:31 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.2 1995/12/27 23:23:54 tom Exp $";
 /*
-*-----------------------------------------------$Log: dug.h,v $
-*-----------------------------------------------Revision 3.1  1994/04/04 10:12:31  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: dug.h,v $
+* Revision 3.2  1995/12/27 23:23:54  tom
+* don't use NULL for int value!
+*
 * Revision 3.1  94/04/04  10:12:31  jrh
 * Add Release Copyright
 * 
@@ -108,6 +108,6 @@ typedef struct {
 #define VAR_PUSE	4	/* expression participates in branch decision*/
 #define VAR_DREF	8	/* expression is dereferenced as a pointer */
 
-#define NULL_BLK	NULL
+#define NULL_BLK	0
 #endif /* dug_H */
 

@@ -12,12 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/tools/RCS/predefs.list,v 3.7 1994/08/03 11:20:49 saul Exp $
+# $Header: /users/source/archives/atac.vcs/tools/RCS/predefs.list,v 3.8 1995/12/31 01:59:58 tom Exp $
 #
-#-----------------------------------------------$Log: predefs.list,v $
-#-----------------------------------------------Revision 3.7  1994/08/03 11:20:49  saul
-#-----------------------------------------------FROM_KEYS
-#-----------------------------------------------
+#$Log: predefs.list,v $
+#Revision 3.8  1995/12/31 01:59:58  tom
+#add gnuc_minor
+#
 #Revision 3.7  94/08/03  11:20:49  saul
 #linux and posix predef symbols added.
 #predef symbol pm_i386 corrected to m_i386
@@ -77,6 +77,7 @@ extended
 gcos
 gnu
 gnuc
+gnuc_minor
 hcx
 host_mips
 hp200

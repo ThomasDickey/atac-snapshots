@@ -17,13 +17,28 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char bdisp_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/bdisp.c,v 3.5 1994/04/04 10:24:52 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "disp.h"
+#include "rlist.h"
+
+static char const bdisp_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/bdisp.c,v 3.6 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: bdisp.c,v $
-*-----------------------------------------------Revision 3.5  1994/04/04 10:24:52  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: bdisp.c,v $
+* Revision 3.6  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for auto-config
+*
 * Revision 3.5  94/04/04  10:24:52  jrh
 * Add Release Copyright
 * 
@@ -74,18 +89,12 @@ static char bdisp_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
-#include "disp.h"
 
 #define SRC_CONTEXT_LINES	7
 
 #define MAX_HEADER		(MAX_SRCFILE_NAME + 50)
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
-
-typedef int	RLIST;
 
 typedef struct {
 	RLIST	**rlist;
@@ -94,9 +103,12 @@ typedef struct {
 } COV_LIST;
 
 /* forward declarations */
-static void display();
-static void print_header();
-void bdisp();
+static void display
+	P_((T_FILE *file, char *atacfile, char *funcname, int nDisp, int tot,
+	RLIST **rlist, SE_POSITION *func, int displayMode));
+static void print_header
+	P_((char *srcfile, char *func, int nDisp, int tot, int displayMode, int
+	startLine, int endLine));
 
 void
 bdisp(modules, n_mod, covVector, displayMode)

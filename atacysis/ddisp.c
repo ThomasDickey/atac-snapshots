@@ -17,13 +17,19 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char ddisp_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ddisp.c,v 3.5 1994/04/04 10:25:01 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "disp.h"
+
+static char const ddisp_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ddisp.c,v 3.6 1995/12/27 20:25:39 tom Exp $";
 /*
-*-----------------------------------------------$Log: ddisp.c,v $
-*-----------------------------------------------Revision 3.5  1994/04/04 10:25:01  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: ddisp.c,v $
+* Revision 3.6  1995/12/27 20:25:39  tom
+* adjust headers, prototyped for autoconfig
+*
 * Revision 3.5  94/04/04  10:25:01  jrh
 * Add Release Copyright
 * 
@@ -68,10 +74,6 @@ static char ddisp_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
-#include "disp.h"
 
 #define SRC_CONTEXT_LINES	4
 
@@ -88,10 +90,14 @@ typedef struct {
 } COV_LIST;
 
 /* forward declarations */
-static void dispDecis();
-static void display();
-static void print_header();
-void ddisp();
+static void dispDecis
+	P_((char *srcfile, int start_line, int end_line, SE_POSITION *to,
+	char *t_str));
+static void display
+	P_((T_FILE *file, char *atacfile, char *funcname, SE_POSITION *to,
+	SE_POSITION *func, char *value, int displayMode));
+static void print_header
+	P_((char *srcfile, char *func, int line, int displayMode));
 
 void
 ddisp(modules, n_mod, covVector, displayMode)

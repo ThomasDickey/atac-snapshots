@@ -17,13 +17,19 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char fdisp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/fdisp.c,v 3.4 1994/04/04 10:25:17 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "disp.h"
+
+static char const fdisp_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/fdisp.c,v 3.5 1995/12/27 20:24:53 tom Exp $";
 /*
-*-----------------------------------------------$Log: fdisp.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:25:17  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: fdisp.c,v $
+* Revision 3.5  1995/12/27 20:24:53  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.4  94/04/04  10:25:17  jrh
 *Add Release Copyright
 *
@@ -50,14 +56,9 @@ static char fdisp_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
-#include "disp.h"
 
 /* forward declarations */
-void fdisp();
-static void print_header();
+static void print_header P_((char *srcfile, int cov, int tot, int displayMode));
 
 #define MAX_HEADER		(MAX_SRCFILE_NAME + 50)
 

@@ -1,3 +1,6 @@
 ATAC release 3.3.13 Sep 26, 1994.
 Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
 Send comments or questions to atac@bellcore.com.
+
+-- This version modified Dec 1995 to run on Linux with gcc 2.7.0
+T.Dickey (dickey@clark.net)

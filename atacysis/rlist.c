@@ -17,13 +17,26 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char rlist_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/rlist.c,v 3.3 1994/04/04 13:51:02 saul Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "rlist.h"
+
+static char const rlist_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/rlist.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: rlist.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 13:51:02  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: rlist.c,v $
+* Revision 3.4  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 * Revision 3.3  94/04/04  13:51:02  saul
 * Fix binary copyright.
 * 
@@ -53,24 +66,10 @@ static char rlist_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
 
-typedef struct rlist {
-	struct rlist	*next;
-	int		sLine;
-	int		sCol;
-	int		eLine;
-	int		eCol;
-} RLIST;
-
-/* forward declarations */
-int rlist_get();
-void rlist_print();
-void rlist_reverse();
-void rlist_put();
-void rlist_free();
-RLIST **rlist_create();
+#if defined(TEST) || defined(TEST2)
+static void rlist_print P_((RLIST **head));
+#endif
 
 RLIST **
 rlist_create()
@@ -220,7 +219,8 @@ RLIST	**head;
 	*head = prev;
 }
 
-void
+#if defined(TEST) || defined(TEST2)
+static void
 rlist_print(head)
 RLIST	**head;
 {
@@ -231,6 +231,7 @@ RLIST	**head;
 	for (p = *head; p; p = p->next)
 		printf("[%d, %d] --> [%d, %d]\n", p->sLine, p->sCol, p->eLine, p->eCol);
 }
+#endif
 
 int
 rlist_get(head, sLine, sCol, eLine, eCol)

@@ -12,12 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atac_cpp/RCS/Makefile,v 3.2 1994/04/04 10:22:52 jrh Exp $
+# $Header: /users/source/archives/atac.vcs/atac_cpp/RCS/Makefile,v 3.3 1995/12/29 21:21:03 tom Exp $
 #
-#-----------------------------------------------$Log: Makefile,v $
-#-----------------------------------------------Revision 3.2  1994/04/04 10:22:52  jrh
-#-----------------------------------------------FROM_KEYS
-#-----------------------------------------------
+# $Log: Makefile,v $
+# Revision 3.3  1995/12/29 21:21:03  tom
+# mods for autoconfig
+#
 # Revision 3.2  94/04/04  10:22:52  jrh
 # Add Release Copyright
 # 
@@ -65,8 +65,9 @@
 # Aug 1990 baseline
 #-----------------------------------------------end of log
 #
+DEFINES=-DHAVE_CONFIG_H
 INCLUDES=..
-CFLAGS =-I$(INCLUDES) -g
+CFLAGS =-I$(INCLUDES) $(DEFINES) -g
 
 OBSTACK=obstack.o
 
@@ -84,7 +85,7 @@ cexp.c:		cexp.y
 		$(YACC) cexp.y
 		mv y.tab.c cexp.c
 
-cexp.o:		cexp.c config.h $(INCLUDES)/portable.h
+cexp.o:		cexp.c $(INCLUDES)/config.h $(INCLUDES)/portable.h
 
-cccp.o: cccp.c alloca.c tm.h config.h $(INCLUDES)/portable.h
+cccp.o: cccp.c alloca.c $(INCLUDES)/config.h $(INCLUDES)/portable.h
 		$(CC) -c $(CFLAGS) -DATAC_MODS cccp.c

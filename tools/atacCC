@@ -14,12 +14,12 @@
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
 #
-# $Header: /users/source/archives/atac.vcs/tools/RCS/atacCC,v 3.13 1994/08/08 11:54:33 saul Exp $
+# $Header: /users/source/archives/atac.vcs/tools/RCS/atacCC,v 3.14 1995/12/31 01:40:59 tom Exp $
 #
-#-----------------------------------------------$Log: atacCC,v $
-#-----------------------------------------------Revision 3.13  1994/08/08 11:54:33  saul
-#-----------------------------------------------FROM_KEYS
-#-----------------------------------------------
+#$Log: atacCC,v $
+#Revision 3.14  1995/12/31 01:40:59  tom
+#mods to support Linux aout vs ELF
+#
 # Revision 3.13  94/08/08  11:54:33  saul
 # define __const, etc. for GNU include files (linux).
 # 
@@ -123,6 +123,20 @@ if [ "$CC" = "" -o "$CC" = "$0" ]
 then
 	CC='cc'
 fi
+###############################################################################
+# GCC 2.7.0 on Linux can build ELF or a.out binaries, based on the use of the
+# '-b' option.  Depending on which is set, we'll append a different set of
+# include-options and definitions to CPPARG.
+if ( eval "$CC -v" 2>&1 |fgrep gcc >/dev/null )
+then
+  GCC_BASE=i486-linux
+  GCC_VERS=`eval "$CC --version"`
+else
+  GCC_BASE=""
+  GCC_VERS=""
+fi
+BASE_ARG=""
+###############################################################################
 CCARG=''
 SOURCE=''
 LINK='yes'
@@ -199,6 +213,32 @@ do
 		shift
 		set shiftdummy -o "$arg" "$@"
 		;;
+	-b)
+		if [ "$GCC_VERS" != ""  ]
+		then
+			if [ $# -eq 1 ]
+			then
+				echo -n $PGM:
+				$CC $ALL
+				exit 1
+			fi
+			GCC_BASE="$2"
+			BASE_ARG="-b $2"
+			shift
+		else
+			CCARG="$CCARG $1"
+		fi
+		;;
+	-b*)
+		if [ "$GCC_VERS" != ""  ]
+		then
+			arg=`expr "$1" : '-b\(.*\)'`
+			shift
+			set shiftdummy -b "$arg" "$@"
+		else
+			CCARG="$CCARG $1"
+		fi
+		;;
 	*.c)	SOURCE="$SOURCE $1"
 		CCARG="$CCARG ${TMP}/`basename $1`"
 		;;
@@ -207,6 +247,28 @@ do
 	esac
 	shift
 done
+####
+#### begin: Mods to support Linux aout vs ELF
+####
+if [ "$GCC_VERS" != "" ]
+then
+	if [ -d /usr/$GCC_BASE/include ]
+	then
+		CPPARG="$CPPARG -I/usr/local/include -I/usr/$GCC_BASE/include -I/usr/lib/gcc-lib/$GCC_BASE/$GCC_VERS/include"
+	fi
+	if ( echo $GCC_BASE | fgrep aout >/dev/null )
+	then
+		if [ "$ATAC_RT" = "" ]
+		then
+			ATAC_RT="/usr/$GCC_BASE/lib/atac_rt.o"
+		fi
+	else
+		CPPARG="$CPPARG -D__ELF__"
+	fi
+fi
+####
+#### end: Mods to support Linux aout vs ELF
+####
 CPPARG="$CPPARG $CPP_PROTECT"
 if
 	mkdir $TMP
@@ -260,11 +322,11 @@ then
 		ATAC_RT="$LIB/atac_rt.o"
 	fi
 	echo 'char *aTaC_trace = "'$AOUT'.trace";' >$TMP/aTaC_trace.c
-	(cd $TMP; $CC -c aTaC_trace.c) >/dev/null 2>/dev/null
+	(cd $TMP; $CC $BASE_ARG -c aTaC_trace.c) >/dev/null 2>/dev/null
 	if [ ! -s $TMP/aTaC_trace.o ]
 	then
 		echo 'char *aTaC_trace = "a.out.trace";' >$TMP/aTaC_trace.c
-		(cd $TMP; $CC -c aTaC_trace.c) >/dev/null 2>/dev/null
+		(cd $TMP; $CC $BASE_ARG -c aTaC_trace.c) >/dev/null 2>/dev/null
 	fi
 	CCARG="$CCARG $ATAC_RT $TMP/aTaC_trace.o"
 fi
@@ -280,6 +342,6 @@ do
 		exit 1
 	fi
 done
-$CC $CCARG
+$CC $BASE_ARG $CCARG
 RC=$?
 exit $?

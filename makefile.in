@@ -12,16 +12,16 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/RCS/Makefile,v 3.21 1994/04/05 09:22:08 saul Exp $
+# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.1 1995/12/30 00:42:02 tom Exp $
 # 
 # Makefile for ATAC.  See README.
 #
 
 #
-#-----------------------------------------------$Log: Makefile,v $
-#-----------------------------------------------Revision 3.21  1994/04/05 09:22:08  saul
-#-----------------------------------------------FROM_KEYS
-#-----------------------------------------------
+# $Log: makefile.in,v $
+# Revision 3.1  1995/12/30 00:42:02  tom
+# RCS_BASE
+#
 # Revision 3.21  94/04/05  09:22:08  saul
 # Don't append contact info to README
 # 
@@ -106,9 +106,17 @@
 # 
 #-----------------------------------------------end of log
 
-CFLAGS=-I.. -O
-MAKE=make
-INSTALLDIR=.
+SHELL=/bin/sh
+@SET_MAKE@
+prefix=@prefix@
+INSTALLDIR	= @exec_prefix@
+
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_DATA	= @INSTALL_DATA@
+
+CFLAGS		= -I.. -DHAVE_CONFIG_H @CFLAGS@
+
 BINDIR=$(INSTALLDIR)/bin
 LIBDIR=$(INSTALLDIR)/lib
 SRCDIR=$(LIBDIR)/atac/src
@@ -123,7 +131,11 @@ clean:
 	cd atac_cpp; $(MAKE) clean
 	cd tools; $(MAKE) clean
 
-install:system DIRS LIB BIN MAN TUTORIAL SOURCE
+distclean: clean
+	rm -f config.* makefile install
+
+install: system LIB BIN MAN TUTORIAL
+install.source: SOURCE
 
 uninstall:
 	-@$(LIBDIR)/atac/loguse $(LIBDIR)/atac install uninstall $(BINDIR) \
@@ -158,45 +170,19 @@ TOOLS:
 #
 # create install directories as needed
 #
-DIRS:
-	@if expr \( x$(BINDIR) != x \) \& \( x$(LIBDIR) != x \) \&	\
-		 \( x$(MANDIR) != x \)  >/dev/null;			\
-	then								\
-		true;							\
-	else								\
-		echo "*****************************************" >&2;	\
-		echo "*** use: make INSTALLDIR=/... install ***" >&2;	\
-		echo "*** INSTALLDIR must be specified.     ***" >&2;	\
-		echo "*** See README.                       ***" >&2;	\
-		echo "*****************************************" >&2;	\
-		false;							\
-	fi
-	@if expr "x$(LIBDIR)" : x/ >/dev/null;				\
-	then								\
-		true;							\
-	else								\
-		echo "*****************************************" >&2;	\
-		echo "*** use: make INSTALLDIR=/... install ***" >&2;	\
-		echo "*** INSTALLDIR and LIBDIR must use    ***" >&2;	\
-		echo "*** absolute paths.  See README.      ***" >&2;	\
-		echo "*****************************************" >&2;	\
-		false;							\
-	fi
-	-@test -d $(BINDIR) || mkdir $(BINDIR)
-	-@test -d $(LIBDIR) || mkdir $(LIBDIR)
-	-@test -d $(LIBDIR)/atac || mkdir $(LIBDIR)/atac
-	-@test -d $(SRCDIR) || mkdir $(SRCDIR)
-	-@test -d $(TUTORIALDIR) || mkdir $(TUTORIALDIR)
-	-@test -d $(MANDIR) || mkdir $(MANDIR)
-	-@test -d $(MANDIR)/man1 || mkdir $(MANDIR)/man1
-	-@test -d $(MANDIR)/cat1 || mkdir $(MANDIR)/cat1
+$(BINDIR) \
+$(LIBDIR)/atac \
+$(MANDIR)/cat1 \
+$(MANDIR)/man1 \
+$(SRCDIR) \
+$(TUTORIALDIR) :
+	sh mkdirs.sh $@
 
 #
 # install lib
 #  
-LIB:
-	@cp tools/loguse $(LIBDIR)/atac
-	@chmod 755 $(LIBDIR)/atac/loguse
+LIB:	$(BINDIR) $(LIBDIR)/atac
+	@ $(INSTALL_PROGRAM) tools/loguse $(LIBDIR)/atac
 	-@$(LIBDIR)/atac/loguse $(LIBDIR)/atac install old $(BINDIR) \
 		>/dev/null 2>/dev/null
 	-@rm -f $(LIBDIR)/atac/*
@@ -208,7 +194,7 @@ LIB:
 	@:
 	@: Version
 	@:
-	cp Version $(LIBDIR)/atac/Version
+	 $(INSTALL_DATA) Version $(LIBDIR)/atac/Version
 	@:
 	@: ansi_cpp
 	@:
@@ -228,34 +214,24 @@ LIB:
 	@:
 	@: lib
 	@:
-	cp atac_i/atac_i $(LIBDIR)/atac
-	cp atac_cpp/atac_cpp $(LIBDIR)/atac
-	cp atacysis/atacysis $(LIBDIR)/atac
-	cp atacysis/atac_to_bin $(LIBDIR)/atac
-	cp tools/minimize $(LIBDIR)/atac
-	cp tools/hili $(LIBDIR)/atac
-	cp tools/predefs.c $(LIBDIR)/atac
-	cp tools/atac_rt.o $(LIBDIR)/atac
-	cp tools/loguse $(LIBDIR)/atac
+	$(INSTALL_PROGRAM) atac_i/atac_i        $(LIBDIR)/atac
+	$(INSTALL_PROGRAM) atac_cpp/atac_cpp    $(LIBDIR)/atac
+	$(INSTALL_PROGRAM) atacysis/atacysis    $(LIBDIR)/atac
+	$(INSTALL_PROGRAM) atacysis/atac_to_bin $(LIBDIR)/atac
+	$(INSTALL_PROGRAM) tools/minimize       $(LIBDIR)/atac
+	$(INSTALL_PROGRAM) tools/hili           $(LIBDIR)/atac
+	$(INSTALL_DATA)    tools/predefs.c      $(LIBDIR)/atac
+	$(INSTALL_DATA)    tools/atac_rt.o      $(LIBDIR)/atac
+	$(INSTALL_PROGRAM) tools/loguse         $(LIBDIR)/atac
 	@touch $(LIBDIR)/atac/log
 	$(CC) -E tools/predefs.c | sed -n 's/^XxX//p' >$(LIBDIR)/atac/predefs
-	@chmod 644 $(LIBDIR)/atac/*
 	@chmod 666 $(LIBDIR)/atac/log
-	@chmod 755 $(SRCDIR)
-	@chmod 755 $(TUTORIALDIR)
-	@chmod 755 $(LIBDIR)/atac/atac_i
-	@chmod 755 $(LIBDIR)/atac/atac_cpp
-	@chmod 755 $(LIBDIR)/atac/atacysis
-	@chmod 755 $(LIBDIR)/atac/atac_to_bin
-	@chmod 755 $(LIBDIR)/atac/minimize
-	@chmod 755 $(LIBDIR)/atac/hili
-	@chmod 755 $(LIBDIR)/atac/loguse
 	-@$(LIBDIR)/atac/loguse $(LIBDIR)/atac install new $(BINDIR)	\
 		>/dev/null 2>/dev/null
 #
 # install bin
 #  
-BIN:
+BIN:	$(BINDIR)
 	@rm -f $(BINDIR)/atac
 	@rm -f $(BINDIR)/atacCC
 	@rm -f $(BINDIR)/atacLD
@@ -281,72 +257,52 @@ BIN:
 	fi
 	@sed '1,/^MORE/d' tools/atac >>$(BINDIR)/atac
 	@echo "#$(BINDIR)/atac created" >&2
+	chmod 755 $(BINDIR)/atac
 	@:
 	@: ataclib
 	@:	
 	@echo "#!/bin/sh" >$(BINDIR)/ataclib
 	@chmod u+w $(BINDIR)/ataclib
 	echo "echo $(LIBDIR)/atac" >>$(BINDIR)/ataclib
+	chmod 755 $(BINDIR)/ataclib
 	@:
 	@: bin
 	@:	
-	cp tools/atacCC $(BINDIR)
-	cp tools/atacLD $(BINDIR)
-	cp tools/atacmin $(BINDIR)
-	cp atacysis/atactm $(BINDIR)
-	@chmod 755 $(BINDIR)/atac
-	@chmod 755 $(BINDIR)/atacCC
-	@chmod 755 $(BINDIR)/atacLD
-	@chmod 755 $(BINDIR)/ataclib
-	@chmod 755 $(BINDIR)/atacmin
-	@chmod 755 $(BINDIR)/atactm
+	$(INSTALL_PROGRAM) tools/atacCC    $(BINDIR)
+	$(INSTALL_PROGRAM) tools/atacLD    $(BINDIR)
+	$(INSTALL_PROGRAM) tools/atacmin   $(BINDIR)
+	$(INSTALL_PROGRAM) atacysis/atactm $(BINDIR)
 
 #
 # install man
 #  
-MAN:
+MAN:	$(MANDIR)/man1 $(MANDIR)/cat1
 	-@chmod 755 $(MANDIR)/man1 2>/dev/null
 	-@chmod 755 $(MANDIR)/cat1 2>/dev/null
-	rm -f $(MANDIR)/man1/atac.1
-	rm -f $(MANDIR)/man1/atacCC.1
-	rm -f $(MANDIR)/man1/atacLD.1
-	rm -f $(MANDIR)/man1/ataclib.1
-	rm -f $(MANDIR)/man1/atacmin.1
-	rm -f $(MANDIR)/man1/atactm.1
-	cp atac*.1 $(MANDIR)/man1
-	@chmod 644 $(MANDIR)/man1/atac.1
-	@chmod 644 $(MANDIR)/man1/atacCC.1
-	@chmod 644 $(MANDIR)/man1/atacLD.1
-	@chmod 644 $(MANDIR)/man1/ataclib.1
-	@chmod 644 $(MANDIR)/man1/atacmin.1
-	@chmod 644 $(MANDIR)/man1/atactm.1
-	rm -f $(MANDIR)/cat1/atac*
+	sh -c 'for i in atac*.1;do rm -f $(MANDIR)/man1/$$i $(MANDIR)/cat1/$$i;done'
+	$(INSTALL_DATA) atac*.1 $(MANDIR)/man1
 
 #
 # install tutorial
 #  
-TUTORIAL:
+TUTORIAL: $(TUTORIALDIR)
 	@chmod 755 $(TUTORIALDIR)
 	rm -f $(TUTORIALDIR)/*
-	cp tutorial/Makefile $(TUTORIALDIR)
-	cp tutorial/input1 $(TUTORIALDIR)
-	cp tutorial/input2 $(TUTORIALDIR)
-	cp tutorial/input3 $(TUTORIALDIR)
-	cp tutorial/main.c $(TUTORIALDIR)
-	cp tutorial/wc.c $(TUTORIALDIR)
-	@chmod 644 $(TUTORIALDIR)/*
+	$(INSTALL_DATA) tutorial/Makefile   $(TUTORIALDIR)
+	$(INSTALL_DATA) tutorial/input1     $(TUTORIALDIR)
+	$(INSTALL_DATA) tutorial/input2     $(TUTORIALDIR)
+	$(INSTALL_DATA) tutorial/input3     $(TUTORIALDIR)
+	$(INSTALL_DATA) tutorial/main.c     $(TUTORIALDIR)
+	$(INSTALL_DATA) tutorial/wc.c       $(TUTORIALDIR)
 
 #
 # install source
 #  
-SOURCE:
+SOURCE:	$(SRCDIR)
 	@chmod 755 $(SRCDIR)
 	rm -f $(SRCDIR)/*
-	@cp atac_cpp/cccp.c $(SRCDIR)
-	@cp atac_cpp/cexp.y $(SRCDIR)
-	@cp atac_cpp/config.h $(SRCDIR)
-	@cp atac_cpp/obstack.c $(SRCDIR)
-	@cp atac_cpp/obstack.h $(SRCDIR)
-	@cp atac_cpp/tm.h $(SRCDIR)
-	@cp atac_cpp/version.c $(SRCDIR)
-	@chmod 644 $(SRCDIR)/*
+	@ $(INSTALL_DATA) atac_cpp/cccp.c    $(SRCDIR)
+	@ $(INSTALL_DATA) atac_cpp/cexp.y    $(SRCDIR)
+	@ $(INSTALL_DATA) atac_cpp/obstack.c $(SRCDIR)
+	@ $(INSTALL_DATA) atac_cpp/obstack.h $(SRCDIR)
+	@ $(INSTALL_DATA) atac_cpp/version.c $(SRCDIR)

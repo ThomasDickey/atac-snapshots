@@ -14,12 +14,13 @@
 ****************************************************************/
 #ifndef atacysis_H
 #define atacysis_H
-static char atacysis_h[] = "$Header: /users/source/archives/atac.vcs/atacysis/RCS/atacysis.h,v 3.7 1994/04/04 10:24:48 jrh Exp $";
+static char const atacysis_h[] =
+"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atacysis.h,v 3.8 1995/12/27 20:51:25 tom Exp $";
 /*
-*-----------------------------------------------$Log: atacysis.h,v $
-*-----------------------------------------------Revision 3.7  1994/04/04 10:24:48  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: atacysis.h,v $
+* Revision 3.8  1995/12/27 20:51:25  tom
+* adjust headers, prototyped for autoconfig
+*
 * Revision 3.7  94/04/04  10:24:48  jrh
 * Add Release Copyright
 * 
@@ -218,5 +219,109 @@ typedef struct {
 #define TD_FALSE	2	/* false decision branch uncovered */
 #define TD_BOTH		3	/* both decision branches uncovered */ 
 #define TD_CHECKED     -5       /* mark a =decis= p-use as checked */
+
+extern void covWeaker P_((T_MODULE *modules, int n_mod, int *covVector, int options));
+extern void covThreshold P_((int *cov, int covCount, int threshold));
+
+/* interface of 'bdisp.c' */
+extern void bdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+
+/* interface of 'cdisp.c' */
+extern void cdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+
+/* interface of 'columns.c' */
+extern void columnsEnd P_((void));
+extern void columns P_((char *p));
+
+/* interface of 'ddisp.c' */
+extern void ddisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+
+/* interface of 'eval.c' */
+extern int evalExpr P_(( char *s, char **traces, int n_traces, T_MODULE *mod,
+	int n_static, int covCount, int options, T_TESTLIST **selectListPtr, int
+	*nSelectPtr, int threshold, int weaker));
+
+/* interface of 'error.c' */
+extern void internal_error P_((char *s, char *arg1, char *arg2));
+extern void trace_error P_((char *filename, int recno));
+
+/* interface of 'fdisp.c' */
+void fdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+
+/* interface of 'gmatch.c' */
+extern int gmatch P_((char *p, char *s));
+
+/* interface of 'greedy.c' */
+void greedyOrder
+	P_((int nCov, T_TESTLIST *covList, int covCount));
+
+/* interface of 'highest.c' */
+void highest
+	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
+	covCount, int byFunc, int byFile, int options));
+
+/* interface of 'lib.c' */
+typedef int rwMode;
+#define R_MODE ((rwMode)0)
+#define W_MODE ((rwMode)1)
+
+struct cfile {
+    FILE	*fp;
+    char	*fileName;
+    rwMode	mode;		/* read/write */
+    int		lineNo;
+    int		pendingCount;
+    long	pendingValue;
+    int		atFirstChar;
+};
+
+extern char *cf_fileName P_((struct cfile *cf));
+extern int cf_atFirstChar P_((struct cfile *cf));
+extern int cf_getFirstChar P_((struct cfile *cf));
+extern int cf_lineNo P_((struct cfile *cf));
+extern long int cf_getLong P_((struct cfile *cf));
+extern struct cfile *cf_openIn P_((char *path));
+extern struct cfile *cf_openOut P_((char *path));
+extern void cf_close P_((struct cfile *cf));
+extern void cf_getString P_((struct cfile *cf, char *pString, int len));
+extern void cf_putFirstChar P_((struct cfile *cf, int c));
+extern void cf_putLong P_((struct cfile *cf, long n));
+extern void cf_putNewline P_((struct cfile *cf));
+extern void cf_putString P_((struct cfile *cf, char *s));
+
+/* interface of 'pat_match.c' */
+extern int patMatch P_((char *pat, char *name, int deselect));
+
+/* interface of 'pdisp.c' */
+extern void pdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+
+/* interface of 'print.c' */
+extern void print_mod P_((T_MODULE *mod, int *covVector));
+
+/* interface of 'risk.c' */
+void risk P_((T_MODULE *modules, int n_mod, int *covVector, int options));
+
+/* interface of 'static.c' */
+extern T_MODULE *static_data P_((int nfiles, char *files[], char *funcSelect, int options, int *covCount));
+extern void freeStatic P_((T_MODULE *mod, int n_mod));
+
+/* interface of 'summary.c' */
+void summary P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int covCount, int byFunc, int byFile, int options));
+
+/* interface of 'tab_disp.c' */
+void tab_disp P_((int td_flag, int global_cov, T_MODULE *modules, int n_mod, int *covVector));
+
+/* interface of 'tmerror.c' */
+extern void memoryError P_((char *pMessage));
+extern void traceError P_((char *tracefile, int lineNo, char *testName));
+
+/* interface of 'trace.c' */
+void trace_data
+	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
+	int nCov, int options, char *selectPattern, T_TESTLIST **selectListPtr,
+	int *nSelectPtr));
+
+/* interface of 'vector.c' */
+void vectorPut P_((T_MODULE *modules, int n_mod, int *covVector, int options));
 
 #endif /* atacysis_H */

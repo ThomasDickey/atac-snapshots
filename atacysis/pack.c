@@ -17,13 +17,26 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char pack_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pack.c,v 3.4 1994/04/04 10:25:49 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "pack.h"
+
+static char const pack_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pack.c,v 3.5 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: pack.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:25:49  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: pack.c,v $
+* Revision 3.5  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.4  94/04/04  10:25:49  jrh
 *Add Release Copyright
 *
@@ -81,8 +94,6 @@ static char pack_c[] =
 *        ---------------------------------------------------------
 *
 */
-#include <stdio.h>
-#include "portable.h"
 
 #define BIT5	(1 << 5)
 #define BIT7	(1 << 7)
@@ -95,30 +106,8 @@ static char pack_c[] =
 #define ADD_BUF_SIZE	16
 #endif
 
-typedef struct pkLink {
-    struct pkLink	*lk_next;
-    int			lk_bufsize;
-    byte		lk_buf[1];
-} pkLink;
-
-typedef struct {
-    pkLink		*pk_first;
-    pkLink		*pk_last;
-    byte		*pk_bufNext;
-    int			pk_lCount;
-    unsigned long	pk_lValue;
-    byte		*pk_bufFirst;
-    int			pk_fCount;
-    unsigned long	pk_fValue;
-} pkPack;
-
 /* forward declarations */
-void pk_free();
-unsigned long int pk_take();
-int pk_empty();
-void pk_append();
-pkPack *pk_create();
-static char *extend();
+static char *extend P_((pkPack *pk));
 
 /*
 * extend: Add a pkLink at the end of pk and return pointer to it's lk_buf.

@@ -17,13 +17,36 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char disp_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/disp.c,v 3.4 1994/04/04 13:50:55 saul Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include <stdio.h>
+#include <string.h>
+#ifndef MVS
+#include <sys/ioctl.h>		/* for TIOCGWINSZ */
+#endif /* MVS */
+
+#include "portable.h"
+#include "disp.h"
+
+static char const disp_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/disp.c,v 3.5 1995/12/29 21:27:22 tom Exp $";
 /*
-*-----------------------------------------------$Log: disp.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 13:50:55  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: disp.c,v $
+* Revision 3.5  1995/12/29 21:27:22  tom
+* adjust headers, prototyped for autoconfig
+* correct sign-extension bug (computing centered title that may be wider than
+* the maximum width).
+*
 * Revision 3.4  94/04/04  13:50:55  saul
 * Fix binary copyright.
 * 
@@ -70,19 +93,6 @@ static char disp_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#ifndef MVS
-#include <sys/ioctl.h>		/* for TIOCGWINSZ */
-#endif /* MVS */
-#include "portable.h"
-#include "disp.h"
-
-/* forward declarations */
-int disp_windowSize();
-void disp_elipsis();
-void disp_end();
-void disp_file();
-void disp_str();
 
 static char cur_file[MAX_SRCFILE_NAME] = "";
 static int cur_line;
@@ -176,7 +186,7 @@ int	nSkipped;
     if (windowSize == 0) {
 	windowSize = disp_windowSize();
 	if (windowSize < 2) windowSize = 2;
-	buf = (char *)malloc(windowSize + 1);
+	buf = (char *)malloc((size_t)windowSize + 1);
     }
 
     disp_str("", DISP_NEWLINE);
@@ -217,7 +227,7 @@ int	endLine;
 
     dash = '-';
     sprintf(buf, title, startLine, endLine);
-    dashes = (windowSize - 2 - strlen(buf) - 4) / 2;
+    dashes = (windowSize - 2 - (int)strlen(buf) - 4) / 2;
     p = buf2;
     for (i = 0; i < dashes; ++i) *p++ = dash;
     sprintf(p, "> %s <", buf);

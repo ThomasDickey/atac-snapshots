@@ -1,0 +1,5 @@
+This version of atac has been modified from the original distribution of atac
+3.3.13, to make it work on Linux with gcc 2.7.0.  See the patches directory for
+details.
+
+Thomas E. Dickey (dickey@clark.net)

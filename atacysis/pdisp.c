@@ -17,13 +17,18 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char pdisp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pdisp.c,v 3.6 1994/04/04 10:25:55 jrh Exp $";
+#include <stdio.h>
+#include "portable.h"
+#include "atacysis.h"
+#include "disp.h"
+
+static char const pdisp_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pdisp.c,v 3.7 1995/12/27 20:26:33 tom Exp $";
 /*
-*-----------------------------------------------$Log: pdisp.c,v $
-*-----------------------------------------------Revision 3.6  1994/04/04 10:25:55  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: pdisp.c,v $
+* Revision 3.7  1995/12/27 20:26:33  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.6  94/04/04  10:25:55  jrh
 *Add Release Copyright
 *
@@ -60,18 +65,22 @@ static char pdisp_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
-#include "disp.h"
 
 /* forward declarations */
-static void same();
-static void fr_to();
-static void from_to();
-static void display();
-static void print_header();
-void pdisp();
+static void same
+	P_((char *srcfile, int start_line, int end_line, SE_POSITION *blk,
+	char *str));
+static void fr_to
+	P_((char *srcfile, int start_line, int end_line, SE_POSITION *from,
+	SE_POSITION *to, char *str));
+static void from_to
+	P_((char *srcfile, int start_line, int end_line, SE_POSITION *from,
+	SE_POSITION *to, char *f_str, char *t_str));
+static void display
+	P_((T_FILE *file, char *atacfile, char *funcname, SE_POSITION *from,
+	SE_POSITION *to, SE_POSITION *func, char *value, char *var));
+static void print_header
+	P_((char *srcfile, char *func, int line, int dline, char *var));
 
 #define SRC_CONTEXT_LINES	4
 

@@ -17,13 +17,41 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char columns_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/columns.c,v 3.6 1994/08/03 12:15:25 saul Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+#ifndef vms
+#ifndef MVS
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif	/* MVS */
+#endif  /* vms */
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const columns_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/columns.c,v 3.7 1995/12/29 21:25:35 tom Exp $";
 /*
-*-----------------------------------------------$Log: columns.c,v $
-*-----------------------------------------------Revision 3.6  1994/08/03 12:15:25  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: columns.c,v $
+* Revision 3.7  1995/12/29 21:25:35  tom
+* adjust headers, prototyped for autoconfig
+* correct gcc warnings (shadowed variables: columns, lines)
+*
 *Revision 3.6  94/08/03  12:15:25  saul
 *Improve portability (linux) by using spaces instead of tabs.
 *
@@ -63,27 +91,12 @@ lumns.c
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#ifndef vms
-#ifndef MVS
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif	/* MVS */
-#endif  /* vms */
-#include "portable.h"
 
 /* forward declarations */
-static void formatf();
-static void ttystuff();
-void columnsEnd();
-void columns();
+static void formatf P_((char **fp0, char **fplast, int twidth, int Cflg));
+static void ttystuff P_((int *twidth, int *Cflg));
 
 #define LINE_POOL_SIZE	50
-
-char	*ctime();
-char	*malloc(), *calloc(), *realloc();
-char	*strcpy(), *strcat();
 
 static int		nLines = 0;
 static char		**lines;
@@ -153,13 +166,13 @@ formatf(fp0, fplast, twidth, Cflg)
 	register char **fp;
 	register int i, j, w;
 	int width = 0, nentry = fplast - fp0;
-	int columns, lines;
+	int cols, rows;
 	char *cp;
 
 	if (fp0 == fplast)
 		return;
 	if (Cflg == 0)
-		columns = 1;
+		cols = 1;
 	else {
 		for (fp = fp0; fp < fplast; fp++) {
 			int len = strlen(*fp);
@@ -167,17 +180,17 @@ formatf(fp0, fplast, twidth, Cflg)
 				width = len;
 		}
 		width += 2;
-		columns = twidth / width;
-		if (columns == 0)
-			columns = 1;
+		cols = twidth / width;
+		if (cols == 0)
+			cols = 1;
 	}
-	lines = (nentry + columns - 1) / columns;
-	for (i = 0; i < lines; i++) {
-		for (j = 0; j < columns; j++) {
-			fp = fp0 + j * lines + i;
+	rows = (nentry + cols - 1) / cols;
+	for (i = 0; i < rows; i++) {
+		for (j = 0; j < cols; j++) {
+			fp = fp0 + j * rows + i;
 			cp = *fp;
 			fputs(cp, stdout);
-			if (fp + lines >= fplast) {
+			if (fp + rows >= fplast) {
 				putchar('\n');
 				break;
 			}

@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char srcpos_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.3 1994/04/04 10:14:15 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.4 1995/12/27 23:32:19 tom Exp $";
 /*
-*-----------------------------------------------$Log: srcpos.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:14:15  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: srcpos.c,v $
+* Revision 3.4  1995/12/27 23:32:19  tom
+* don't use NULL for int value!
+*
 * Revision 3.3  94/04/04  10:14:15  jrh
 * Add Release Copyright
 * 
@@ -177,7 +177,7 @@ int
 srcfstamp(findex)
 int	findex;
 {
-	if (findex < 0 || findex >= n_filenames) return NULL;
+	if (findex < 0 || findex >= n_filenames) return 0;
 	return stamps[findex];
 }
 

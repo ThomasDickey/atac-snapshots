@@ -17,13 +17,28 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char srcfile_name_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/srcfile_name.c,v 3.4 1994/04/04 10:26:17 jrh Exp $";
+#include <stdio.h>
+#ifdef vms
+#include <types.h>
+#else /* not vms */
+#ifdef MVS
+#include <time.h>		/* for time_t */
+#else /* not MVS */
+#include <sys/types.h>		/* for time_t */
+#endif /* not MVS */
+#endif /* not vms */
+
+#include "version.h"
+#include "portable.h"
+#include "disp.h"
+
+static char const srcfile_name_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/srcfile_name.c,v 3.5 1995/12/27 20:07:20 tom Exp $";
 /*
-*-----------------------------------------------$Log: srcfile_name.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:26:17  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: srcfile_name.c,v $
+* Revision 3.5  1995/12/27 20:07:20  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.4  94/04/04  10:26:17  jrh
 *Add Release Copyright
 *
@@ -50,22 +65,6 @@ static char srcfile_name_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#ifdef vms
-#include <types.h>
-#else /* not vms */
-#ifdef MVS
-#include <time.h>		/* for time_t */
-#else /* not MVS */
-#include <sys/types.h>		/* for time_t */
-#endif /* not MVS */
-#endif /* not vms */
-#include "version.h"
-#include "portable.h"
-#include "disp.h"
-
-/* forward declarations */
-char *srcfile_name();
 
 char *
 srcfile_name(srcfile, chgtime, atacfile)

@@ -14,14 +14,23 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
 #ifndef portable_H
 #define portable_H
-static char portable_h[] = 
-	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.12 1994/08/08 13:12:09 saul Exp $";
+
+#if __STDC__
+#define P_(p) p
+extern	int main(int, char **);
+#else	/* assume K&R */
+#define P_(p) ()
+#define const
+#endif
+
+static const char portable_h[] = 
+	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.13 1995/12/27 19:48:27 tom Exp $";
 /*
 * Copyright @ 1992 Bell Communications Research, Inc. All Rights Reserved.
-*-----------------------------------------------$Log: portable.h,v $
-*-----------------------------------------------Revision 3.12  1994/08/08 13:12:09  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+*$Log: portable.h,v $
+*Revision 3.13  1995/12/27 19:48:27  tom
+*define P_ macro
+*
 *Revision 3.12  94/08/08  13:12:09  saul
 *Add linux section.
 *
@@ -353,7 +362,6 @@ typedef char		path_t[TMP_MAXPATHLEN];
 
 typedef char		filename_t[TMP_MAXNAMLEN + 1];
 #undef TMP_MAXNAMLEN
-
 
 /* portable.h ends here */
 #endif /* portable_H */

@@ -17,13 +17,20 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char init_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/init.c,v 3.2 1994/04/04 10:25:29 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "ramfile.h"
+#include "man.h"
+
+static char const init_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/init.c,v 3.3 1995/12/27 20:48:04 tom Exp $";
 /*
-*-----------------------------------------------$Log: init.c,v $
-*-----------------------------------------------Revision 3.2  1994/04/04 10:25:29  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: init.c,v $
+* Revision 3.3  1995/12/27 20:48:04  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.2  94/04/04  10:25:29  jrh
 *Add Release Copyright
 *
@@ -44,13 +51,6 @@ static char init_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "ramfile.h"
-#include "man.h"
-
-/* forward declarations */
-void init();
 
 void
 init(tables)

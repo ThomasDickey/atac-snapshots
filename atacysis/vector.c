@@ -17,13 +17,18 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char vector_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/vector.c,v 3.5 1994/04/04 10:26:34 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const vector_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/vector.c,v 3.6 1995/12/27 20:19:18 tom Exp $";
 /*
-*-----------------------------------------------$Log: vector.c,v $
-*-----------------------------------------------Revision 3.5  1994/04/04 10:26:34  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: vector.c,v $
+* Revision 3.6  1995/12/27 20:19:18  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.5  94/04/04  10:26:34  jrh
 *Add Release Copyright
 *
@@ -59,20 +64,18 @@ static char vector_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
 
 /* forward declarations */
-void vectorPut();
-static void decisCov();
-static void pUseCov();
-static void cUseCov();
-static void blkCov();
-static void fEntryCov();
-static void putBitEnd();
+static void decisCov P_((T_FUNC *func, int *covVector));
+static void pUseCov P_((T_FUNC *func, int *covVector));
+static void cUseCov P_((T_FUNC *func, int *covVector));
+static void blkCov P_((T_FUNC *func, int *covVector));
+static void fEntryCov P_((T_FUNC *func, int *covVector));
+static void putBitEnd P_((void));
 
-#define putBit(b) ((b)?putchar('x'):putchar(' '))
+#define putBit_0  putchar(' ')
+#define putBit_1  putchar('x')
+#define putBit(b) ((b)?putBit_1:putBit_0)
 
 static void
 putBitEnd()
@@ -119,10 +122,10 @@ int	*covVector;
 
     if (covVector[func->blkCovStart] == 1) {
 	for (j = 0; j < c; ++j)
-	    putBit(1);
+	    putBit_1;
     } else {
 	for (j = 0; j < c; ++j)
-	    putBit(0);
+	    putBit_0;
     }
 
     covPtr = covVector + func->cUseCovStart;
@@ -149,10 +152,10 @@ int	*covVector;
 
     if (covVector[func->blkCovStart]) {
 	for (j = 0; j < c; ++j)
-	    putBit(1);
+	    putBit_1;
     } else {
 	for (j = 0; j < c; ++j)
-	    putBit(0);
+	    putBit_0;
     }
 
     covPtr = covVector + func->pUseCovStart;
@@ -168,7 +171,6 @@ decisCov(func, covVector)
 T_FUNC	*func;
 int	*covVector;
 {
-    int	c;
     int	j;
     int	*covPtr;
     int	decis_var;

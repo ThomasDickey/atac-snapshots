@@ -1,3 +1,29 @@
+1995-12-29  Thomas E. Dickey  <dickey@clark.net>
+
+	* atac.lsm, makefile.in, configure.in: RCS_BASE
+
+	* Version: document _this_ version
+
+	* config_h.in: RCS_BASE
+
+1995-12-28  Thomas E. Dickey  <dickey@clark.net>
+
+	* README-TOO: RCS_BASE
+
+	* version.h: make 'version_h' const to avoid unused-variable warnings
+
+	* atacmin.1: corrected (missing comment-marker) for log-comments
+
+	* atacLD.1: corrected (missing comment-marker) for log comments
+
+1995-12-27  Thomas E. Dickey  <dickey@clark.net>
+
+	* portable.h: define P_ macro
+
+1994-09-26  Thomas E. Dickey  <dickey@clark.net>
+
+	* Version: RCS_BASE
+
 1994-09-13  Thomas E. Dickey  <dickey@clark.net>
 
 	* install.sh: RCS_BASE

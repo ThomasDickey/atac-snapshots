@@ -1,0 +1,223 @@
+atac-951230 - summary of changes made 1995/12/30.
+	Thomas Dickey (dickey@clark.net)
+--------------------------------------------------------------------------------
+
+The histogram below shows the raw difference between the base version of ATAC
+and the one that I've ported to Linux with GCC 2.7.0.  Fortunately, most of the
+difference is from copying/generating new files into the distribution.  The
+patch is much smaller, and assumes that these files have been copied.
+
+Details below...
+
+|-------------------------------------------------------------------------------
+| README-TOO              |    5
+| Version                 |    3
+| atac.lsm                |   21
+| atacLD.1                |   30
+| atac_cpp/Makefile       |    7
+| atac_cpp/alloca.c       |  559 ++-
+| atac_cpp/cccp.c         | 8277 +++++++++++++++++++++++++++++++++++-----------
+| atac_cpp/cexp.y         |  667 ++-
+| atac_cpp/obstack.c      |  273 +
+| atac_cpp/obstack.h      |  290 +
+| atac_cpp/pcp.h          |  101
+| atac_i/Pgram.y          |   11
+| atac_i/alldu.c          |    4
+| atac_i/allpaths.c       |    2
+| atac_i/deparse.h        |    1
+| atac_i/dug.c            |   20
+| atac_i/dug.h            |    2
+| atac_i/fg_expr.c        |    8
+| atac_i/fg_module.c      |    1
+| atac_i/fg_stmt.c        |    4
+| atac_i/paths.c          |    4
+| atac_i/print_sym.c      |    2
+| atac_i/scan.c           |   60
+| atac_i/srcpos.c         |    2
+| atac_i/sym.c            |   28
+| atac_i/sym.h            |    3
+| atac_i/tree.h           |    3
+| atacmin.1               |   36
+| atacysis/Makefile       |    2
+| atacysis/atac_to_bin.c  |   41
+| atacysis/atactm.c       |   81
+| atacysis/atacysis.h     |  107
+| atacysis/bdisp.c        |   32
+| atacysis/cdisp.c        |   31
+| atacysis/columns.c      |   68
+| atacysis/ddisp.c        |   24
+| atacysis/disp.c         |   40
+| atacysis/disp.h         |   17
+| atacysis/dump.c         |   62
+| atacysis/error.c        |   13
+| atacysis/eval.c         |   49
+| atacysis/fdisp.c        |   15
+| atacysis/gmatch.c       |   14
+| atacysis/greedy.c       |   27
+| atacysis/highest.c      |   71
+| atacysis/init.c         |   16
+| atacysis/lib.c          |   51
+| atacysis/main.c         |   34
+| atacysis/makefile       |  191 +
+| atacysis/man.h          |    2
+| atacysis/mem.c          |   32
+| atacysis/pack.c         |   41
+| atacysis/pack.h         |   27
+| atacysis/pat_match.c    |   12
+| atacysis/pdisp.c        |   31
+| atacysis/prev.c         |   91
+| atacysis/print.c        |   17
+| atacysis/pro.c          |   87
+| atacysis/ramfile.h      |   40
+| atacysis/risk.c         |   30
+| atacysis/rlist.c        |   39
+| atacysis/rlist.h        |   22
+| atacysis/srcfile_name.c |   33
+| atacysis/static.c       |  104
+| atacysis/summary.c      |   54
+| atacysis/tab_disp.c     |   77
+| atacysis/tmerror.c      |   18
+| atacysis/trace.c        |   66
+| atacysis/vector.c       |   38
+| config_h.in             |    8
+| configure               | 1502 ++++++++
+| configure.in            |  140
+| install.sh              |  238 +
+| makefile.in             |  305 +
+| mkdirs.sh               |   32
+| portable.h              |   12
+| tools/atac              |    7
+| tools/atacCC            |   43
+| tools/atac_rt.c         |    4
+| tools/hili.c            |    3
+| tools/predefs.list      |    2
+| version.h               |    2
+| 82 files changed, 11451 insertions, 3118 deletions
+|-------------------------------------------------------------------------------
+
+I started the port by trying a simple curses application, 'add'.  I found that
+atacCC did not work properly because of the extensions in the GCC system header
+files.  So I modified the logic in atac_i to accommodate this.  Thinking that
+the program worked pretty well, I tried a larger program 'cproto'.  The atac
+utility broke, so I fixed that (and more).  Finally, I tried a large program,
+'vile' and found that the GCC system headers had more, subtle problems that
+broke atac_cpp.  So I fixed this (for the time being ;-) by reimporting sources
+from the GCC distribution.
+
+I copied these from the GCC 2.7.0 distribution:
+
+	atac_cpp/alloca.c
+	atac_cpp/cccp.c
+	atac_cpp/cexp.y
+	atac_cpp/obstack.c
+	atac_cpp/obstack.h
+	atac_cpp/pcp.h
+
+There's still a large difference in cccp.c, but it's due to the ATAC changes.
+(I derived these mechanically, and resolved them manually; this was time
+consuming -- once).
+
+I also renamed the top-level 'Makefile' to 'makefile.in', and (before making
+the patch) copied 'configure' to the base -- it's automatically generated with
+autoconf 2.7, and of little interest in this context.
+
+--------------------------------------------------------------------------------
+
+Here's a detailed description of what I did, roughly in order:
+
+	+ added to the grammar of atacCC the GCC extensions '__asm__',
+	  'inline', '__attribute__', '__signed__' and '__volatile__'.
+
+	  => I did __asm__ and __attribute__ with a kludge in atac_i/scan.c
+	     that basically skips over these constructs.
+
+	  => so asm is "recognized", but not legal, since I've no idea how to
+	     make atacCC work on _that_!  Unfortunately, this breaks the
+	     /usr/include/asm/byteorder.h file on Linux.
+
+	  => there may be more extension keywords; these are the ones that
+	     I "found" by trying to compile.  The GCC developers have been
+	     rather sloppy in this regard (they should at least document
+	     the extensions).
+
+	+ corrected a sign-extension problem in atacysis/disp.c: given that
+	  the SysV compilers complain about this, it's inexcusable that ATAC
+	  would contain code that intermixes 'size_t' and 'int'.  I noticed
+	  this because atac broke when I tried analyzing a file with a long
+	  pathname (longer than 75 characters).
+
+	+ I made some "unnecessary" changes because when I compiled with GCC
+	  warnings, there were originally 3900 lines of listing.  It's down to
+	  1500 now, more than half (1500) by prototyping atacysis/.  The other
+	  900 were fixed by the upgrade of cccp.c (below).
+
+	  => Prototyping it didn't find any new bugs, but I found a few more
+	     places that needed an '(int)' cast to fix potential sign-extension
+	     problems.  Gcc is too tolerant of this problem; other compilers
+	     do a better job.
+
+	  => There are a number of inconsistent declarations of functions in
+	     the source code that would prevent the atac distribution from
+	     compiling on SunOS with the native compiler.  I may flush these
+	     out in a subsequent patch.
+
+	+ corrected blatant misuse of 'NULL' as an integer value in several
+	  places within atac_i/.  If you've gotta use NULL, use it only for
+	  pointers (more compiler warnings fixed).
+
+	+ moved includes in the modified files before the rcs identifiers,
+	  so that I'd have config.h available for properly defining 'const',
+	  which I could then use in stifling compiler warnings about unused
+	  (rcs) strings.
+
+	+ modified the atacCC script to add the include-paths that GCC 2.7.0
+	  uses.
+
+	+ modified the atac script to recognize a new environment variable,
+	  ATAC_PAGER.  I use a script 'vile-pager' which works a lot better
+	  than 'more'.  There's a copy in the tools directory -- if you've
+	  got 'vile', you'll want to install it also.
+
+	+ diff'd cccp.c against GCC's version and derived a simplified patch
+	  that I'll be able to use in subsequent versions (this is almost
+	  half the patch, and took a lot more than half the time).
+
+	+ corrected (changed to nroff-comments) the change-log in the atac*.1
+	  (man-page) files.
+
+	+ wrote an autoconf script (I intend using atac on other systems,
+	  including some with genuinely ANSI-compliant compilers).
+
+Known limitations:
+-----------------
+
+	There's several listed with the ATAC documentation:
+
+	+ AtacCC may not accept anachronistic C syntax.
+
+	+ Scoped typedef names will not compile in some cases.
+
+	+ Signal  handlers  compiled  with  atacCC may not work correctly.
+
+	Also:
+
+	+ If you must produce aout format files, you'll have to specially
+	  compile the atac_rt.o module and manually install it in the aout lib
+	  directory (e.g., /usr/i486-linuxaout/lib).  Right now, the only
+	  reason I use aout format is because I've not installed the ELF
+	  libraries for X11.
+
+	+ the construct used for 'setjmp()' doesn't compile; there's several
+	  extensions implicit in the GCC definition for this function:
+
+		#define	setjmp(env)		sigsetjmp ((env), 1)
+		#define	sigsetjmp(env, savemask) \
+		  ({ __typeof ((*((sigjmp_buf *) 0))[0]) *__e = (env);	\
+		     __sigjmp_save (__e, (savemask));			\
+		     __setjmp (__e[0].__jmpbuf); })
+
+	  To wit, '__e' is not declared anywhere, and the '({...})' is intended
+	  to be a type of inline function -- which is certainly not ANSI C!
+
+	  I considered modifying the grammar to support the latter, but the
+	  undeclared (but builtin) variable is a worse problem.

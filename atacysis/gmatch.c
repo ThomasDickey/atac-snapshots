@@ -17,13 +17,16 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char gmatch_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/gmatch.c,v 3.3 1994/05/02 10:11:36 saul Exp $";
+#include "portable.h"
+#include "atacysis.h"
+
+static char const gmatch_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/gmatch.c,v 3.4 1995/12/27 20:54:20 tom Exp $";
 /*
-*-----------------------------------------------$Log: gmatch.c,v $
-*-----------------------------------------------Revision 3.3  1994/05/02 10:11:36  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: gmatch.c,v $
+* Revision 3.4  1995/12/27 20:54:20  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.3  94/05/02  10:11:36  saul
 *fix comments
 *
@@ -51,11 +54,6 @@ static char gmatch_c[] =
  * The eighth bit is used to 'quote' a character
  */
 
-#include "portable.h"
-
-/* forward declarations */
-int gmatch();
-
 #define STRIP	0177
 
 int
@@ -64,7 +62,7 @@ register char *p;
 char *s;
 {
  register int 	scc,c;
- while(scc = *s++)
+ while ((scc = *s++) != '\0')
 	{
 	 if(scc)
 		{
@@ -83,7 +81,7 @@ char *s;
 				 notflag=1;
 				 p++;
 				}
-			 while(c = *p++)
+			 while ((c = *p++) != '\0')
 				{
 				 if(c==']' && lc>=0)
 					 return(ok?gmatch(s,p):0);

@@ -17,13 +17,20 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char tmerror_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tmerror.c,v 3.2 1994/04/04 10:26:29 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "ramfile.h"
+#include "man.h"
+
+static char const tmerror_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tmerror.c,v 3.3 1995/12/27 20:04:34 tom Exp $";
 /*
-*-----------------------------------------------$Log: tmerror.c,v $
-*-----------------------------------------------Revision 3.2  1994/04/04 10:26:29  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: tmerror.c,v $
+* Revision 3.3  1995/12/27 20:04:34  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.2  94/04/04  10:26:29  jrh
 *Add Release Copyright
 *
@@ -44,15 +51,6 @@ static char tmerror_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-
-#include "ramfile.h"
-#include "man.h"
-
-/* forward declarations */
-void traceError();
-void memoryError();
 
 void
 memoryError(pMessage)

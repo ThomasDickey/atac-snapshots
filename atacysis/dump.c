@@ -17,13 +17,23 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char dump_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/dump.c,v 3.6 1994/08/08 13:50:41 saul Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "pack.h"
+#include "ramfile.h"
+#include "man.h"
+#include "version.h"
+
+static char const dump_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/dump.c,v 3.7 1995/12/27 20:46:29 tom Exp $";
 /*
-*-----------------------------------------------$Log: dump.c,v $
-*-----------------------------------------------Revision 3.6  1994/08/08 13:50:41  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: dump.c,v $
+* Revision 3.7  1995/12/27 20:46:29  tom
+* adjust headers, prototyped for autoconfig
+* correct gcc warnings (casts)
+*
 *Revision 3.6  94/08/08  13:50:41  saul
 *atactm -d and -e bug (problem with fix in revision 3.5)
 *
@@ -62,23 +72,32 @@ static char dump_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "ramfile.h"
-#include "man.h"
-#include "version.h"
 
 /* forward declarations */
-void dump();
-static void dump_blocks();
-static void dump_members();
-static void dump_cuses();
-static void dump_puses();
-static void dump_headers();
-static void dump_sources();
-static void dump_version();
-static void dump_coverage();
-static void dump_stamps();
+static void dump_blocks
+	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
+	*members));
+static void dump_members
+	P_((struct cfile *cf, membertype *mems));
+static void dump_cuses
+	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
+	*members));
+static void dump_puses
+	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
+	*members));
+static void dump_headers
+	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
+	*members));
+static void dump_sources
+	P_((struct cfile *cf, RAMFILE *rf));
+static void dump_version
+	P_((struct cfile *cf));
+static void dump_coverage
+	P_((struct cfile *cf, coveragetype *pCov, int iCovNext, int iCount, int
+	iTestCases, memberstype *members));
+static void dump_stamps
+	P_((struct cfile *cf, stampstype *pStamps, time_t lStampNext, int
+	iCount, int iTestCases, memberstype *members));
 
 static void
 dump_stamps(cf, pStamps, lStampNext, iCount, iTestCases, members)
@@ -98,7 +117,7 @@ memberstype	*members;
 	    iTestCount = iTestCases;
 	}
 	for (i = 0; i < iTestCount; ++i) {
-	    n = (time_t)pk_take(pStamps);
+	    n = (time_t)pk_take((pkPack *)pStamps);
 	    if (members[i].iDelete) continue;
 	    cf_putLong(cf, n);
 	}
@@ -132,7 +151,7 @@ memberstype	*members;
 	    iTestCount = iTestCases;
 	}
 	for (i = 0; i < iTestCount; ++i) {
-	    n = pk_take(pCov);
+	    n = pk_take((pkPack *)pCov);
 	    if (members[i].iDelete) continue;
 	    cf_putLong(cf, n);
 	}
@@ -204,7 +223,7 @@ memberstype	*members;
 			    iTestCases, members);
 		if (rf->files[i].hdr.headers[j].stampVector != NULL) {
 		    /* clean up */
-		    pk_free(rf->files[i].hdr.headers[j].stampVector);
+		    pk_free((pkPack *)(rf->files[i].hdr.headers[j].stampVector));
 		    rf->files[i].hdr.headers[j].stampVector = NULL;
 		}
 	    }
@@ -255,7 +274,7 @@ memberstype	*members;
 				      members);
 			if (var->puses[m].coverage != NULL) {
 			    /* clean up */
-			    pk_free(var->puses[m].coverage);
+			    pk_free((pkPack *)(var->puses[m].coverage));
 			    var->puses[m].coverage = NULL;
 			}
 		    }
@@ -307,7 +326,7 @@ memberstype	*members;
 				      members);
 			if (var->cuses[m].coverage != NULL) {
 			    /* clean up */
-			    pk_free(var->cuses[m].coverage);
+			    pk_free((pkPack *)(var->cuses[m].coverage));
 			    var->cuses[m].coverage = NULL;
 			}
 		    }
@@ -390,7 +409,7 @@ memberstype	*members;
 				  iTestCases, members);
 		    if (rf->files[i].funcs[j].blocks[k].coverage != NULL) {
 			/* clean up*/
-			pk_free(rf->files[i].funcs[j].blocks[k].coverage);
+			pk_free((pkPack *)(rf->files[i].funcs[j].blocks[k].coverage));
 			rf->files[i].funcs[j].blocks[k].coverage = NULL;
 		    }
 		}

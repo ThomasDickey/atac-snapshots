@@ -17,13 +17,27 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char trace_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/trace.c,v 3.11 1994/08/03 12:34:27 saul Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include "portable.h"
+#include "atacysis.h"
+
+static char const trace_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/trace.c,v 3.12 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: trace.c,v $
-*-----------------------------------------------Revision 3.11  1994/08/03 12:34:27  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: trace.c,v $
+* Revision 3.12  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 * Revision 3.11  94/08/03  12:34:27  saul
 * Error introduced in revision 3.9 gives coverage too high.
 * 
@@ -114,24 +128,38 @@ static char trace_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include <ctype.h>
-#include "portable.h"
-#include "atacysis.h"
-
 /* forward declarations */
-void trace_data();
-static int testNo();
-static void getCompressed();
-static void getPuseCov();
-static void getCuseCov();
-static void getBlkCov();
-static void getSkip();
-static void checkSrcStamp();
-static void getMIndex();
-static void getIndex();
-static int skipFlatTest();
-static int getFlatTest();
+static int testNo
+	P_((T_TEST *tests, int nTests, char *testName));
+static void getCompressed
+	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
+	int nCov, int options, char *selectPattern, T_TESTLIST **selectListPtr,
+	int *nSelectPtr, T_TEST **testsPtr, int *nTestsPtr));
+static void getPuseCov
+	P_((struct cfile *cf, char *filename, int nPuse, T_MODULE *modIndex[],
+	int nModIndex, int **testCov, int nTests));
+static void getCuseCov
+	P_((struct cfile *cf, char *filename, int nCuse, T_MODULE *modIndex[],
+	int nModIndex, int **testCov, int nTests));
+static void getBlkCov
+	P_((struct cfile *cf, char *filename, int nBlk, T_MODULE *modIndex[],
+	int nModIndex, int **testCov, int nTests));
+static void getSkip
+	P_((struct cfile *cf, char *filename, int nSkip, int type));
+static void checkSrcStamp
+	P_((struct cfile *cf, char *filename, T_TEST *tests, int nTests,
+	T_MODULE *modIndex[], int nModIndex, int nSource, char *selectPattern,
+	int deselect));
+static void getMIndex
+	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
+	T_MODULE *modIndex[], int nModIndex));
+static void getIndex
+	P_((struct cfile *cf, char *filename, T_TEST *tests, int nTests));
+static int skipFlatTest
+	P_((struct cfile *cf, char *filename));
+static int getFlatTest
+	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
+	char *testName, int *cov, int options, int *freq));
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
@@ -999,7 +1027,7 @@ int		nTests;
 char		*testName;
 {
     int		i;
-    int		len;
+    size_t	len;
     int		max;
     char	*pName;
     int		n;

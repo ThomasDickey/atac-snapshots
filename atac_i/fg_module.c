@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char fg_module_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.4 1994/04/04 10:12:50 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.5 1995/12/13 01:01:32 tom Exp $";
 /*
-*-----------------------------------------------$Log: fg_module.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:12:50  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: fg_module.c,v $
+* Revision 3.5  1995/12/13 01:01:32  tom
+* handle CLASSTYPE_INLINE
+*
 * Revision 3.4  94/04/04  10:12:50  jrh
 * Add Release Copyright
 * 
@@ -443,6 +443,7 @@ int	init;
 			}
 			for (p = CHILD0(p); p != NULL; p = TNEXT(p)) {
 				if ((p->species == CLASSTYPE_STATIC) ||
+					(p->species == CLASSTYPE_INLINE) ||
 					(p->species == CLASSTYPE_EXTERN))
 				{
 					init = 1;

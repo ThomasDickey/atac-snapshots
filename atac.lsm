@@ -1,0 +1,21 @@
+Begin3
+Title:          atac
+Version:        30DEC95
+Entered-date:   30DEC95
+Description:    ATAC measures how thoroughly a program is tested by a set of
+		tests using data flow coverage techniques, identifies areas
+		that are not well tested, identifies overlap among tests, and
+		finds minimal covering test sets.  Atac displays C source code,
+		highlighting code fragments not covered by test executions.
+Keywords:       test coverage analysis
+Author:         saul@bellcore.com (Saul London)
+		jrh@bellcore.com (Bob Horgan)
+Maintained-by:  dickey@clark.net (Thomas E. Dickey)
+Primary-site:   sunsite.unc.edu /pub/Linux/devel/lang/c
+		450kb atac_951230.tgz
+Alternate-site: ftp.clark.net /pub/dickey/atac
+		450kb atac_951230.tgz
+Original-site:  flash.bellcore.com /atac/atac3.3.13.tar.Z
+Platforms:      *NIX, C
+Copying-policy: BSD
+End

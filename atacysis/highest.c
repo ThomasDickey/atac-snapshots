@@ -17,13 +17,26 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char highest_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/highest.c,v 3.4 1994/04/04 10:25:26 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const highest_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/highest.c,v 3.5 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: highest.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:25:26  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: highest.c,v $
+* Revision 3.5  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.4  94/04/04  10:25:26  jrh
 *Add Release Copyright
 *
@@ -68,27 +81,45 @@ static char highest_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
 
 /* forward declarations */
-void highest();
-static void perFilePerTest();
-static void perFuncPerTest();
-static void perTest();
-static void perFile();
-static void perFunc();
-static void grandTotal();
-static void doLine();
-static void format();
-static int *totVector();
-static void decisCov();
-static void pUseCov();
-static void cUseCov();
-static void blkCov();
-static void fEntryCov();
-static void heading();
+static void perFilePerTest
+	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
+	covCount, int options));
+static void perFuncPerTest
+	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
+	covCount, int options));
+static void perTest
+	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
+	covCount, int options));
+static void perFile
+	P_((T_MODULE *modules, int n_mod, int *covVector, int covCount, int
+	options));
+static void perFunc
+	P_((T_MODULE *modules, int n_mod, int *covVector, int covCount, int
+	options, int byFile));
+static void grandTotal
+	P_((T_MODULE *modules, int n_mod, int *covVector, int covCount, int
+	options));
+static void doLine
+	P_((T_MODULE *modules, int n_mod, int *covVector, int options, int
+	iMod, int iFunc));
+static void format
+	P_((int cov));
+static int *totVector
+	P_((int nCov, T_TESTLIST *covList, int covCount));
+static void decisCov
+	P_((T_FUNC *func, int *covVector, int *cov));
+static void pUseCov
+	P_((T_FUNC *func, int *covVector, int *cov));
+static void cUseCov
+	P_((T_FUNC *func, int *covVector, int *cov));
+static void blkCov
+	P_((T_FUNC *func, int *covVector, int *cov));
+static void fEntryCov
+	P_((T_FUNC *func, int *covVector, int *cov));
+static void heading
+	P_((int options, char *label));
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 

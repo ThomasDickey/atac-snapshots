@@ -17,13 +17,26 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char gree_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/greedy.c,v 3.3 1994/04/04 10:25:23 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const gree_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/greedy.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: greedy.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:25:23  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: greedy.c,v $
+* Revision 3.4  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.3  94/04/04  10:25:23  jrh
 *Add Release Copyright
 *
@@ -35,14 +48,12 @@ static char gree_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
 
 /* forward declarations */
-void greedyOrder();
-static void unionCov();
-static int countCov();
+static void unionCov
+	P_((int *covSoFar, int *covVector, int covCount));
+static int countCov
+	P_((int *covVector, int *covSoFar, int covCount));
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
@@ -145,7 +156,7 @@ int		covCount;
     float	bestCostPer;
     float	costPer;
     float	count;
-    int		best;
+    int		best = 0;
     int		*order;
     T_TESTLIST	swapper;
 

@@ -17,13 +17,31 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char prev_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/prev.c,v 3.3 1994/04/04 10:25:58 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include <ctype.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "pack.h"
+#include "ramfile.h"
+#include "man.h"
+
+static char const prev_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/prev.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: prev.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:25:58  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: prev.c,v $
+* Revision 3.4  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+* fix compiler warnings (casts).
+*
 *Revision 3.3  94/04/04  10:25:58  jrh
 *Add Release Copyright
 *
@@ -65,44 +83,36 @@ static char prev_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include <ctype.h>
-#include "portable.h"
-#include "ramfile.h"
-#include "man.h"
 
 /* forward declarations */
-void load_prev();
-static void skipCompressed();
-static void getCompressed();
-static void getPCompressed();
-static void getCCompressed();
-static void getBCompressed();
-static void getSCompressed();
-static void getMCompressed();
-static void getICompressed();
-static void prev_block();
-int prev_member();
-static void prev_puse();
-static void prev_cuse();
-static struct pkPack *load_stampVector();
-static struct pkPack *load_coverage();
-void prev_header();
-void prev_source();
-
-extern struct pkPack	*pk_create();
-extern void		pk_append();
-extern unsigned long	pk_take();
-
-extern void check_block();
-extern void check_var();
-extern void check_cuse();
-extern void check_puse();
-extern void check_func();
-extern void check_file();
-extern void check_member();
-extern void check_header();
-extern void check_family();
+static void skipCompressed
+	P_((struct cfile *cf, char *tracefile, tablestype *tables));
+static void getCompressed
+	P_((struct cfile *cf, char *tracefile, tablestype *tables));
+static void getPCompressed
+	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
+static void getCCompressed
+	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
+static void getBCompressed
+	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
+static void getSCompressed
+	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
+static void getMCompressed
+	P_((struct cfile *cf, char *tracefile, RAMFILE *rf));
+static void getICompressed
+	P_((struct cfile *cf, char *tracefile, membertype *mems));
+static void prev_block
+	P_((int iBlock, int iTestCount, coveragetype *pCov, functype *func));
+static void prev_puse
+	P_((int iDef, int iUse, int iTo, int iTestCount, coveragetype *pCov,
+	vartype *var));
+static void prev_cuse
+	P_((int iDef, int iUse, int iTestCount, coveragetype *pCov, vartype
+	*var));
+static struct pkPack *load_stampVector
+	P_((struct cfile *cf, int iCount));
+static struct pkPack *load_coverage
+	P_((struct cfile *cf, int iCount));
 
 void
 prev_source(pName,rf)
@@ -150,11 +160,11 @@ int		iCount;
         coveragetype *pCov;
 	int	i;
 
-	pCov = pk_create();
+	pCov = (coveragetype *)pk_create();
 
 	for (i = 0; i < iCount; ++i) {
 	    /* cf_getLong() returns 0 if no more */
-	    pk_append(pCov, cf_getLong(cf));
+	    pk_append((pkPack *)pCov, (unsigned long)cf_getLong(cf));
 	}
 
 	return pCov;
@@ -168,11 +178,11 @@ int		iCount;
         stampstype  *pStamp;
 	int	i;
 
-	pStamp = pk_create();
+	pStamp = (stampstype *)pk_create();
 
 	for (i = 0; i < iCount; ++i) {
 	    /* cf_getLong() returns 0 if no more */
-	    pk_append(pStamp, cf_getLong(cf));
+	    pk_append((pkPack *)pStamp, (unsigned long)cf_getLong(cf));
 	}
 
 	return pStamp;
