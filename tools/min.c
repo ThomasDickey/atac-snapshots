@@ -12,53 +12,61 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char min_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/min.c,v 3.10 1994/04/04 15:06:20 saul Exp $";
-static char bellcoreCopyRight[] =
+static const char min_c[] =
+"$Header: /users/source/archives/atac.vcs/tools/RCS/min.c,v 3.11 1996/12/02 01:48:28 tom Exp $";
+static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*-----------------------------------------------$Log: min.c,v $
-*-----------------------------------------------Revision 3.10  1994/04/04 15:06:20  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-*Revision 3.10  94/04/04  15:06:20  saul
-*Fix binary copyright.
+* $Log: min.c,v $
+* Revision 3.11  1996/12/02 01:48:28  tom
+* gcc warnings (missing prototypes)
 *
-*Revision 3.9  94/04/04  10:52:50  jrh
-*Add Release Copyright
+* Revision 3.10  94/04/04  15:06:20  saul
+* Fix binary copyright.
 *
-*Revision 3.8  93/08/11  10:01:54  saul
-*missing #endif
+* Revision 3.9  94/04/04  10:52:50  jrh
+* Add Release Copyright
 *
-*Revision 3.7  93/08/10  15:41:53  ewk
-*Fixed definition of time_t for vms, MVS, and unix.
+* Revision 3.8  93/08/11  10:01:54  saul
+* missing #endif
 *
-*Revision 3.6  93/08/09  12:37:19  saul
-*recover revision 3.4 changes
+* Revision 3.7  93/08/10  15:41:53  ewk
+* Fixed definition of time_t for vms, MVS, and unix.
 *
-*Revision 3.5  1993/08/04  15:50:36  ewk
-*Added MVS and solaris support.  Squelched some ANSI warnings.
+* Revision 3.6  93/08/09  12:37:19  saul
+* recover revision 3.4 changes
 *
-*Revision 3.4  93/06/30  15:07:31  saul
-*Fix atacmin -K (minimize -s) rounding algorithm to match atac -s
+* Revision 3.5  1993/08/04  15:50:36  ewk
+* Added MVS and solaris support.  Squelched some ANSI warnings.
 *
-*Revision 3.3  93/04/21  08:23:50  saul
-*Core dump when each initial test has at least one unique attribute.
+* Revision 3.4  93/06/30  15:07:31  saul
+* Fix atacmin -K (minimize -s) rounding algorithm to match atac -s
 *
-*Revision 3.2  93/03/31  11:44:49  saul
-*#include <sys/types.h> for portablility.
+* Revision 3.3  93/04/21  08:23:50  saul
+* Core dump when each initial test has at least one unique attribute.
 *
-*Revision 3.1  92/12/30  09:13:06  saul
-*Rewrite.  Errors fixed.  More efficient.  Ordered output.  -s option.
+* Revision 3.2  93/03/31  11:44:49  saul
+* #include <sys/types.h> for portablility.
+*
+* Revision 3.1  92/12/30  09:13:06  saul
+* Rewrite.  Errors fixed.  More efficient.  Ordered output.  -s option.
 *
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include <stdio.h>
 #include "portable.h"
 #ifdef vms
@@ -82,44 +90,6 @@ static char bellcoreCopyRight[] =
 *	the output list may not be minimal.
 */
 
-/* forward declarations */
-static struct setList *sl_cost0();
-static struct setList *sl_Rminimize();
-static struct setList *sl_minimize();
-static void sl_dump();
-static void sl_cumPrint();
-static struct setVector *sl_union();
-static void sl_print();
-static struct setList *sl_reduce();
-static void sl_dontNeed();
-static int sl_mustKeep();
-static int sl_coveredByOthers();
-static void sl_gBN();
-static int sl_1stGBN();
-static void sl_greedy();
-static int sl_firstGreedy();
-static float sl_normalizeCost();
-static struct setList *sl_get();
-static void sl_compress();
-static void sl_append();
-static void sl_combine();
-static struct setList *sl_copy();
-static void sl_freeAll();
-static void sl_free();
-static void sl_realloc();
-static struct setList *sl_create();
-static int sv_empty();
-static int sv_card();
-static void sv_compress();
-static void sv_dump();
-static int sv_subset();
-static void sv_subtract();
-static struct setVector *sv_copy();
-static void sv_free();
-static struct setVector *sv_get();
-static char *ckRealloc();
-static char *ckMalloc();
-static void usage();
 
 #define ALLOC_SIZE 512			/* number of longs per allocation */
 
@@ -150,6 +120,47 @@ static boolean		g_greedyFlag = FALSE;
 static boolean		g_gBNFlag = FALSE;
 static boolean		g_quiet = FALSE;
 
+#define VOIDPTR void*	/* FIXME */
+
+/* forward declarations */
+static VOIDPTR ckMalloc P_((size_t n));
+static VOIDPTR ckRealloc P_((VOIDPTR q, size_t n));
+static float sl_normalizeCost P_((setList *list));
+static int sl_1stGBN P_((setList *list, setVector *select));
+static int sl_coveredByOthers P_((setVector *set, setList *list, setVector *select));
+static int sl_firstGreedy P_((setList *list, setVector *select));
+static int sl_mustKeep P_((setList *list, setVector *select, long costLimit, setList *keep));
+static int sv_card P_((setVector *set, setVector *select));
+static int sv_empty P_((setVector *set, setVector *select));
+static int sv_subset P_((setVector *setA, setVector *setB, setVector *select));
+static struct setList *sl_Rminimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
+static struct setList *sl_copy P_((setList *list));
+static struct setList *sl_cost0 P_((setList *list));
+static struct setList *sl_create P_((int initAlloc));
+static struct setList *sl_get P_((FILE *f, int *pSetSize));
+static struct setList *sl_minimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
+static struct setList *sl_reduce P_((setList *list, setVector *select, long costLimit));
+static struct setVector *sl_union P_((setList *list, char *name));
+static struct setVector *sv_copy P_((setVector *set));
+static struct setVector *sv_get P_((FILE *f, int *pSetSize));
+static void sl_append P_((setList *list, setVector *set));
+static void sl_combine P_((setList *listA, setList *listB));
+static void sl_compress P_((setList *list, setVector *select));
+static void sl_cumPrint P_((setList *list, int setSize, double normFactor, boolean header));
+static void sl_dontNeed P_((setList *list, setVector *select));
+static void sl_dump P_((setList *list));
+static void sl_free P_((setList *list));
+static void sl_freeAll P_((setList *list));
+static void sl_gBN P_((setList *listArg, setVector *selectArg, setList *keep));
+static void sl_greedy P_((setList *listArg, setVector *selectArg, setList *keep));
+static void sl_print P_((setList *list));
+static void sl_realloc P_((setList *list, int newAlloc));
+static void sv_compress P_((setVector *set, setVector *select));
+static void sv_dump P_((setVector *set));
+static void sv_free P_((setVector *set));
+static void sv_subtract P_((setVector *setA, setVector *setB));
+static void usage P_((char *cmd));
+
 static void
 usage(cmd)
 char	*cmd;
@@ -170,13 +181,13 @@ char	*cmd;
     fprintf(stderr, "\t -s Print cumulative coverage and cost.\n");
 }
 
-static char *
+static VOIDPTR
 ckMalloc(n)
-int	n;
+size_t	n;
 {
-    register char	*p;
+    register VOIDPTR p;
 
-    p = (char *)malloc(n);
+    p = (VOIDPTR)malloc(n);
     if (p == NULL) {
 	fprintf(stderr, "can't malloc\n");
 	exit(1);
@@ -185,21 +196,21 @@ int	n;
     return p;
 }
 
-static char *
+static VOIDPTR 
 ckRealloc(q, n)
-char	*q;
-int	n;
+VOIDPTR q;
+size_t	n;
 {
-    register char	*p;
+    register VOIDPTR p;
 
     if (q == NULL) {
-	p = (char *)malloc(n);
+	p = (VOIDPTR) malloc(n);
 	if (p == NULL) {
 	    fprintf(stderr, "can't malloc\n");
 	    exit(1);
 	}
     } else {
-	p = (char *)realloc(q, n);
+	p = (VOIDPTR)realloc(q, n);
 	if (p == NULL) {
 	    fprintf(stderr, "can't realloc\n");
 	    exit(1);
@@ -335,7 +346,7 @@ int	*pSetSize;
 	 * Allocate set and copy contents into it.
 	 */
 	set = NULL;
-	set = (setVector *)ckMalloc((int)&set->sv_contents[index]);
+	set = (setVector *)ckMalloc(&set->sv_contents[index]);
 	set->sv_name = (char *)ckMalloc(strlen(name) + 1);
 	strcpy(set->sv_name, name);
 	set->sv_cost = cost;
@@ -432,7 +443,7 @@ setVector *set;
     unsigned long	guide;
     unsigned long	vector;
 
-    fprintf(stdout, "%s:%d:", set->sv_name, set->sv_cost); 
+    fprintf(stdout, "%s:%ld:", set->sv_name, set->sv_cost); 
     for (i = 0; i < set->sv_contentsSize; ++i) {
 	vector = set->sv_contents[i];
 	for (guide = 1; guide != 0; guide <<= 1) {
@@ -743,7 +754,7 @@ int	*pSetSize;
 
 	list = sl_create(allocSize);
 
-	while (set = sv_get(f, &setSize)) {
+	while ((set = sv_get(f, &setSize)) != 0) {
 	    if (setSize > maxSetSize)
 		maxSetSize = setSize;
 	    if (list->sl_count >= allocSize) {
@@ -1059,7 +1070,7 @@ setList		*keep;
     register setVector	**sets;
     register setVector	**setsEnd;
     setVector		**newSets;
-    static setVector	empty = { "", 0, 0, 0 };
+    static setVector	empty = { "", 0, 0, {0} };
     int			keepCount = 0;
     long		keepCost = 0;
 
@@ -1105,7 +1116,7 @@ setVector *select;
     setVector		**newSets;
     register setVector	**sets2;
     register setVector	**setsEnd;
-    static setVector	empty = { "", 0, 0, 0 };
+    static setVector	empty = { "", 0, 0, {0} };
 
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
@@ -1282,7 +1293,7 @@ static void
 sl_cumPrint(list, setSize, normFactor, header)
 setList	*list;
 int	setSize;
-float	normFactor;
+double	normFactor;
 boolean	header;
 {
     long		cov;
@@ -1316,9 +1327,9 @@ boolean	header;
 	    if (z == 100 && cov != setSize)	/* 99% < x < 100% round down. */
 		z = 99;
 	}
-	if (z < 100) printf("%2d(%d/%d)", z, cov, setSize);
+	if (z < 100) printf("%2d(%ld/%d)", z, cov, setSize);
 	else printf("100(%d)", setSize);
-	printf("\t%d\t%s\n", cost, (*sets)->sv_name);
+	printf("\t%ld\t%s\n", cost, (*sets)->sv_name);
 	++sets;
     }
 }
@@ -1416,7 +1427,7 @@ long		costSoFar;
     }
     ++g_visited;
     if ((g_visited & g_printFreq) == 0) {
-	fprintf(stderr, "At node <%s> visit %d\n", g_nodeId, g_visited);
+	fprintf(stderr, "At node <%s> visit %ld\n", g_nodeId, g_visited);
     }
 
     /*
@@ -1445,7 +1456,7 @@ long		costSoFar;
      */
     if (list->sl_count == 0) {
 	if (!g_quiet) fprintf(stderr,
-			      "solution of cost %d at visit %d level %d\n",
+			      "solution of cost %ld at visit %ld level %d\n",
 			      costSoFar + keep->sl_cost, g_visited, level);
 	sv_free(select);
 	sl_free(list);
@@ -1579,7 +1590,7 @@ long		costSoFar;
     }
     ++g_visited;
    if ((g_visited & g_printFreq) == 0) {
-       fprintf(stderr, "At node <%s> visit %d\n", g_nodeId, g_visited);
+       fprintf(stderr, "At node <%s> visit %ld\n", g_nodeId, g_visited);
    }
 
     /*
@@ -1608,7 +1619,7 @@ long		costSoFar;
      */
     if (list->sl_count == 0) {
 	if (!g_quiet) fprintf(stderr,
-			      "solution of cost %d at visit %d level %d\n",
+			      "solution of cost %ld at visit %ld level %d\n",
 			      costSoFar + keep->sl_cost, g_visited, level);
 	sv_free(select);
 	sl_free(list);
@@ -1727,6 +1738,7 @@ setList	*list;
     return keep;
 }
 
+int
 main(argc, argv)
 int	argc;
 char	*argv[];
@@ -1927,7 +1939,7 @@ char	*argv[];
     */
     greedy = sl_create(list->sl_count);
     sl_greedy(list, select, greedy);
-    if (!g_quiet) fprintf(stderr, "greedy cost: %d\n",
+    if (!g_quiet) fprintf(stderr, "greedy cost: %ld\n",
 			  greedy->sl_cost + reduceList->sl_cost);
     if (costLimit > greedy->sl_cost)
 	costLimit = greedy->sl_cost;
@@ -1937,7 +1949,7 @@ char	*argv[];
     */
     gBN = sl_create(list->sl_count);
     sl_gBN(list, select, gBN);
-    if (!g_quiet) fprintf(stderr, "GBN cost: %d\n",
+    if (!g_quiet) fprintf(stderr, "GBN cost: %ld\n",
 			  gBN->sl_cost + reduceList->sl_cost);
     if (costLimit > gBN->sl_cost) {
 	costLimit = gBN->sl_cost;
@@ -1977,7 +1989,7 @@ char	*argv[];
     endTime = (time_t)time((time_t *)NULL);
     if (g_visited == g_recursionLimit) {
 	if (g_recursionLimit != 0) {
-	    fprintf(stderr, "recursion limit %d exceeded\n", g_recursionLimit);
+	    fprintf(stderr, "recursion limit %ld exceeded\n", g_recursionLimit);
 	}
     }
     free(g_nodeId);
@@ -1990,7 +2002,7 @@ char	*argv[];
     else sl_free(greedy);
 
     if (keep) {
-    if (!g_quiet) fprintf(stderr, "cost: %d\n",
+    if (!g_quiet) fprintf(stderr, "cost: %ld\n",
 			  keep->sl_cost + reduceList->sl_cost);
 	sl_combine(cost0, reduceList);
 	sl_combine(cost0, keep);
@@ -2013,7 +2025,7 @@ char	*argv[];
 	}
 	sl_free(keep);
     } else {
-	fprintf(stderr, "no cover less than %d\n", costLimit);
+	fprintf(stderr, "no cover less than %ld\n", costLimit);
 	sl_free(cost0);
 	sl_free(reduceList);
     }
@@ -2034,4 +2046,5 @@ char	*argv[];
     sl_freeAll(freeList);
 
     exit(0);
+    /*NOTREACHED*/
 }

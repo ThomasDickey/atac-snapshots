@@ -12,63 +12,70 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
-static char hili_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.6 1995/12/27 23:34:47 tom Exp $";
-static char bellcoreCopyRight[] =
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+static const char hili_c[] =
+"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.7 1996/12/02 01:55:52 tom Exp $";
+static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*$Log: hili.c,v $
-*Revision 3.6  1995/12/27 23:34:47  tom
-*fix gcc warnings (missing prototypes)
+* $Log: hili.c,v $
+* Revision 3.7  1996/12/02 01:55:52  tom
+* gcc warnings (missing prototypes)
+*
+* Revision 3.6  1995/12/27 23:34:47  tom
+* fix gcc warnings (missing prototypes)
 *
 * Revision 3.5  94/07/11  14:26:05  saul
 * Enlarge header buffer.  (Overflow causes display of raw hili input.)
-* 
+*
 * Revision 3.4  94/04/04  15:06:27  saul
 * *** empty log message ***
-* 
+*
 * Revision 3.3  94/04/04  10:52:46  jrh
 * Add Release Copyright
-* 
+*
 * Revision 3.2  93/08/04  15:50:21  ewk
 * Added MVS and solaris support.  Squelched some ANSI warnings.
-* 
+*
 * Revision 3.1  93/03/31  11:44:04  saul
 * Change isgraph to isprint && != ' ' for portablility.
-* 
+*
 * Revision 3.0  92/11/06  07:46:30  saul
 * propagate to version 3.0
-* 
+*
 * Revision 2.8  92/10/30  09:42:29  saul
 * include portable.h
-* 
+*
 * Revision 2.7  92/06/11  14:19:42  saul
 * output not turned back on when file opened
-* 
+*
 * Revision 2.6  92/05/11  09:25:16  saul
 * Outputs extra blank line in some circumstances.
-* 
+*
 * Revision 2.5  92/05/01  13:27:26  saul
 * Avoid hilighting leading blanks by changing isprint to isgraph.
-* 
+*
 * Revision 2.4  92/04/29  10:48:56  saul
 * fixed -u option to work for headings
-* 
+*
 * Revision 2.3  92/04/29  08:29:00  saul
 * Expect | in script to allow filename begining with digit.
-* 
+*
 * Revision 2.2  92/03/17  15:34:50  saul
 * copyright
-* 
+*
 * Revision 2.1  91/06/19  13:56:27  saul
 * Propagte to version 2.0
-* 
+*
 * Revision 1.1  91/06/12  16:39:08  saul
 * Aug 1990 baseline
-* 
+*
 *-----------------------------------------------end of log
-*/ 
+*/
 #include <stdio.h>
 #include <ctype.h>
 
@@ -79,10 +86,13 @@ static char bellcoreCopyRight[] =
 #include "portable.h"
 
 /* forward declarations */
-static int getscript();
-int main();
-static void mputs();
-static void uputs();
+extern int main P_((int argc, char *argv[]));
+extern void initcap P_((void));
+static int getscript P_((FILE *f, unsigned *line, unsigned *col, int *cmd, char *sarg));
+static void mode_normal P_((void));
+static void mode_reverse P_((void));
+static void mputs P_((char *s));
+static void uputs P_((char *s));
 
 #define USAGE(S)	"usage: %s [-u] [-r] {script-file | -} [text-file | -]\n", S
 
@@ -90,11 +100,10 @@ static void uputs();
 
 char	*pgmname = "";
 
+#ifdef M_TERMCAP
 static char *reverse_code;
 static char *normal_code;
-
-static mode_normal P_((void));
-static mode_reverse P_((void));
+#endif
 
 static void
 uputs(s)
@@ -119,6 +128,7 @@ char *s;
 		putchar(*p);
 }
 
+int
 main(argc, argv)
 int argc;
 char *argv[];
@@ -208,7 +218,7 @@ char *argv[];
 	morescript = 1;
 	if (!getscript(script, &line, &col, &cmd, sarg))
 		morescript = 0;
-	
+
 	tabcol = 1;
 	cur_line = 1;
 	cur_col = 1;
@@ -343,6 +353,7 @@ char *argv[];
 }
 
 #ifdef M_TERMCAP
+void
 initcap()
 {
 	char *termtype;
@@ -382,13 +393,13 @@ char c;
 	putchar(c&0177);
 }
 
-static
+static void
 mode_normal()
 {
 	tputs(normal_code, 1, outchar);
 }
 
-static
+static void
 mode_reverse()
 {
 	tputs(reverse_code, 1, outchar);
@@ -408,20 +419,20 @@ initcap()
 	setupterm(termtype, 1, &err);
 }
 
-static
+static void
 mode_normal()
 {
 	vidattr(0);
 }
 
-static
+static void
 mode_reverse()
 {
 	vidattr(A_STANDOUT);
 }
 #endif
 
-static
+static int
 getscript(f, line, col, cmd, sarg)
 FILE		*f;
 unsigned	*line;

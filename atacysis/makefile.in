@@ -12,9 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atacysis/RCS/makefile.in,v 3.1 1996/11/11 23:28:56 tom Exp $
+# $Header: /users/source/archives/atac.vcs/atacysis/RCS/makefile.in,v 3.2 1997/04/25 13:42:31 tom Exp $
 #
 # $Log: makefile.in,v $
+# Revision 3.2  1997/04/25 13:42:31  tom
+# CC-substitution
+#
 # Revision 3.1  1996/11/11 23:28:56  tom
 # RCS_BASE
 #
@@ -91,6 +94,7 @@
 # Aug 1990 baseline
 # 
 #-----------------------------------------------end of log
+CC		= @CC@
 INCLUDES	= ..
 CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@
 

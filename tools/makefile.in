@@ -12,60 +12,64 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.8 1996/01/11 17:47:36 tom Exp $
+#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.10 1997/04/25 13:42:31 tom Exp $
 #
 # $Log: makefile.in,v $
-# Revision 3.8  1996/01/11 17:47:36  tom
-# FROM_KEYS
+# Revision 3.10  1997/04/25 13:42:31  tom
+# CC-substitution
+#
+# Revision 3.9  1996/12/02 00:29:06  tom
+# mods for autoconf
 #
 # Revision 3.8  1996/01/11 17:47:36  tom
 # separate LINK from CC, to run Purify
-# 
+#
 # Revision 3.7  94/04/04  16:12:40  jrh
 # Release Copyright added
-# 
+#
 # Revision 3.6  93/08/27  14:28:10  ewk
 # Remove hili before makeing it, in case a working version already exists.
-# 
+#
 # Revision 3.5  93/08/27  14:19:16  ewk
 # Check if hili built with TERMCAP works, otherwise use TERMINFO (for AIX).
-# 
+#
 # Revision 3.4  93/08/11  10:02:34  saul
 # new predefs format
-# 
+#
 # Revision 3.3  93/07/13  11:08:48  ewk
 # Add atacLD information.
-# 
+#
 # Revision 3.2  93/05/05  11:10:00  ewk
 # Removed the "print" target.
-# 
+#
 # Revision 3.1  93/04/29  17:19:39  ewk
 # Changed to reflect the name changes from atacLib
 # to ataclib and atacMin to atacmin.
-# 
+#
 # Revision 3.0  92/11/06  07:46:20  saul
 # propagate to version 3.0
-# 
+#
 # Revision 2.3  92/11/03  08:31:58  saul
 # add dependencies on portable.h
-# 
+#
 # Revision 2.2  92/10/30  09:46:35  saul
 # add CFLAGS=-I..
-# 
+#
 # Revision 2.1  92/10/28  14:02:04  saul
 # new installation procedures
-# 
+#
 #-----------------------------------------------end of log
-# 
+#
 # Makefile for ATAC components in tools directory.
 #
+CC		= @CC@
 LINK		= $(CC)
 INCLUDES	= ..
-CFLAGS		= -I$(INCLUDES) @CFLAGS@
+CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@
 
 SRC=atac atacCC atacLD atacmin atac_rt.c hili.c min.c predefs.list Makefile
 
-system:		atac atacCC atacLD atacmin atac_rt.o hili minimize predefs.c 
+system:		atac atacCC atacLD atacmin atac_rt.o hili minimize predefs.c
 
 clean:
 		rm -f *.o hili minimize predefs.c
