@@ -26,11 +26,11 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char table_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.7 1997/07/17 18:32:53 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.8 1997/11/03 00:03:23 tom Exp $";
 /*
 * $Log: table.c,v $
-* Revision 3.7  1997/07/17 18:32:53  tom
-* cast 'intcmp' function to 'CMP'
+* Revision 3.8  1997/11/03 00:03:23  tom
+* correct some places in the last changes where we need a pointer to int.
 *
 * Revision 3.6  1997/05/11 20:56:12  tom
 * rename DATA to TABLE_DATATYPE
@@ -159,10 +159,10 @@ int	matchtype;	/* not implemented */
 		if (table_next(table, &n) == NULL)
 			return NULL;		/* no next after node */
 		if (cmp == NULL)
-			c = (int)key - *n->data;
+			c = (int)key - *(int *)(n->data);
 		else if (cmp == (CMP) intcmp)
-			c = (int)key - (int)n->data;
-		else c = (*cmp)(key, n->data);
+			c = (int)key - (int)(n->data);
+		else c = (*cmp)(key, (n->data));
 		if (c) return NULL;		/* no match */
 		*node = n;
 		return n->data;			/* match */
@@ -171,7 +171,7 @@ int	matchtype;	/* not implemented */
 	for (n = table->tree; n != NULL; n = next) {
 		if (cmp)
 			c = (*cmp)(key, n->data);
-		else c = (int)key - *n->data;
+		else c = (int)key - *(int *)(n->data);
 		if (c < 0) next = n->left;
 		else
 		if (c > 0) next = n->right;
@@ -180,7 +180,7 @@ int	matchtype;	/* not implemented */
 			return n->data;
 		}
 	}
-	return NULL;				/* not found */
+	return 0;				/* not found */
 }
 
 TABLE_DATATYPE *			/* return pointer to data found */
@@ -207,8 +207,9 @@ NODE	**node;
 	}
 
 	*node = n;
-	if (n) return n->data;
-	else return NULL;
+	if (n != 0)
+		return n->data;
+	return 0;
 }
 
 TABLE_DATATYPE *
@@ -230,10 +231,10 @@ int	duplicates;
 	prev = NULL;
 	next = &table->tree;
 	for (n = table->tree; n != NULL; n = *next) {
-		if (cmp == NULL)
-		 	c = *data - *n->data;
+		if (cmp == 0)
+		 	c = *(int *)(data) - *(int *)(n->data);
 		else if (cmp == (CMP) intcmp)
-			c = (int)data - (int)n->data;
+			c = (int)data - (int)(n->data);
 		else c = (*cmp)(data, n->data);
 		if (c < 0) next = &n->left;
 		else
