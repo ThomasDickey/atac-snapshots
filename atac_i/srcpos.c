@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char srcpos_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.7 1997/05/12 00:34:05 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.8 1998/09/19 15:31:56 tom Exp $";
 /*
 * $Log: srcpos.c,v $
+* Revision 3.8  1998/09/19 15:31:56  tom
+* spell out line and col words for clarity in the source-position
+*
 * Revision 3.7  1997/05/12 00:34:05  tom
 * remove redundant prototypes
 *
@@ -98,13 +101,15 @@ FILE	*f;
 		return;
 	}
 
-	if (srcpos->file < 0)
+	if (srcpos->file < 0) {
 		fname = "\"\"";
-	else if (srcpos->file >= n_filenames)
+	} else if (srcpos->file >= n_filenames) {
 		fname = "\"?\"";
-	else fname = filenames[srcpos->file];
+	} else {
+		fname = filenames[srcpos->file];
+	}
 
-	fprintf(f, "%s%d,%d", fname, srcpos->line, srcpos->col);
+	fprintf(f, "%s, line %d, col %d", fname, srcpos->line, srcpos->col);
 }
 
 void

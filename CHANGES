@@ -1,3 +1,38 @@
+1998-08-23  Thomas E. Dickey  <dickey@clark.net>
+
+	* configure: 980823
+
+	* aclocal.m4: don't need CF_FUNC_TGETENT anyway
+
+	* configure.in: don't need CF_FUNC_TGETENT here
+
+	* aclocal.m4:
+	modified the tgetent test to eliminate one instance of duplicate library
+
+	* configure.in:
+	moved the tgetent test up so we can turn off those libraries for the general
+	case of $LIBS
+
+	* configure.in: omit redundant output of config_h
+
+	* aclocal.m4: use CF_TERMCAP_LIBS to find the termcap libraries
+
+	* configure.in:
+	mods to get rid of trial/error linking of hili against termcap or terminfo
+
+	* makefile.in:
+	don't pass CFLAGS to lower-levels, since autoconf does that properly.
+
+	* configure.in: add --disable-echo
+
+	* aclocal.m4: add logic to support --disable-echo
+
+	* README-TOO: I moved patches to changes subdirectory
+
+	* configure.in: add --with-ncurses option
+
+	* aclocal.m4: updated with ncurses macros
+
 1998-08-22  Thomas E. Dickey  <dickey@clark.net>
 
 	* configure.in: CF_CURSES_TERMCAP needs preset variables

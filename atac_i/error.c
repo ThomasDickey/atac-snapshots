@@ -22,9 +22,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.8 1997/12/10 01:51:44 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.9 1998/09/19 15:27:18 tom Exp $";
 /*
 * $Log: error.c,v $
+* Revision 3.9  1998/09/19 15:27:18  tom
+* change error-message format to put filename, line, col before the message
+* to make it simpler to parse with vile's error-finder
+*
 * Revision 3.8  1997/12/10 01:51:44  tom
 * ifdef'd to build with K&R compiler.
 *
@@ -95,10 +99,24 @@ static const char error_c[] =
 
 static warn_flag = 1;
 
+static void any_error P_((SRCPOS *srcpos, char *label));
+
 void
 supress_warnings()
 {
 	warn_flag = 0;
+}
+
+static void
+any_error (srcpos, label)
+	SRCPOS *srcpos;
+	char *label;
+{
+	if (srcpos) {
+		print_srcpos(srcpos, stderr);
+		fputs(", ", stderr);
+	}
+	fprintf(stderr, "ATAC %s", label);
 }
 
 #if CC_HAS_PROTOS
@@ -110,17 +128,13 @@ supress_warnings()
 int
 MY_FUNC(internal_error)
 {
-	fputs("internal error", stderr);
+	any_error(srcpos, "internal error");
 	if (msg) {
 		va_list ap;
 		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
-	}
-	if (srcpos) {
-		fputs(" at ", stderr);
-		print_srcpos(srcpos, stderr);
 	}
 	fputs("\n", stderr);
 
@@ -133,17 +147,13 @@ MY_FUNC(semantic_error)
 {
 	if (warn_flag == 0) return;
 
-	fputs("semantic error", stderr);
+	any_error(srcpos, "semantic error");
 	if (msg) {
 		va_list ap;
 		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
-	}
-	if (srcpos) {
-		fputs(" at line ", stderr);
-		print_srcpos(srcpos, stderr);
 	}
 	fputs("\n", stderr);
 
@@ -155,17 +165,13 @@ MY_FUNC(lexical_error)
 {
 	if (warn_flag == 0) return;
 
-	fputs("lexical error", stderr);
+	any_error(srcpos, "lexical error");
 	if (msg) {
 		va_list ap;
 		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
-	}
-	if (srcpos) {
-		fputs(" at line ", stderr);
-		print_srcpos(srcpos, stderr);
 	}
 	fputs("\n", stderr);
 
@@ -175,17 +181,13 @@ MY_FUNC(lexical_error)
 void
 MY_FUNC(parse_error)
 {
-	fputs("parse error", stderr);
+	any_error(srcpos, "parse error");
 	if (msg) {
 		va_list ap;
 		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
-	}
-	if (srcpos) {
-		fputs(" at line ", stderr);
-		print_srcpos(srcpos, stderr);
 	}
 	fputs("\n", stderr);
 

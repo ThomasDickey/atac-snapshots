@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char deparse_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.9 1997/12/08 23:23:43 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.10 1998/09/19 15:01:02 tom Exp $";
 /*
 * $Log: deparse.c,v $
+* Revision 3.10  1998/09/19 15:01:02  tom
+* add a cast for 2nd param of aTaC function
+*
 * Revision 3.9  1997/12/08 23:23:43  tom
 * int/size_t fix.
 * correct char* cast of n->sym.hook.type
@@ -120,7 +123,7 @@ static SCRIPT hook_scripts[] = {
 	{GEN_HOOK,	HOOK_STMT_L,	"@H(@P,@B);\n@N"},
 	{GEN_HOOK,	HOOK_STMT_R_B,	"{@+\n@N\n@H(@P,@B);@-\n}"},
 	{GEN_HOOK,	HOOK_STMT_L_B,	"{@+\n@H(@P,@B);\n@N@-\n}"},
-	{GEN_HOOK,	HOOK_START,	"{@+\nint @P=@H(0,&@PT@C);\n@N@-\n}"},
+	{GEN_HOOK,	HOOK_START,	"{@+\nint @P=@H(0,(long)&@PT@C);\n@N@-\n}"},
 	{GEN_HOOK,	HOOK_EXPR_R,	"(@P@I= @N,@H(@P,@B),@P@I)"},
 	{GEN_HOOK,	HOOK_EXPR_L,	"(@H(@P,@B),@N)"},
 	{GEN_HOOK,	HOOK_EXPR_CAST,	"(@F)(@H(@P,@B),@N)"},

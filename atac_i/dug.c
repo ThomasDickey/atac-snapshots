@@ -22,9 +22,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char dug_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.13 1997/12/11 01:27:38 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.14 1998/09/19 14:53:43 tom Exp $";
 /*
 * $Log: dug.c,v $
+* Revision 3.14  1998/09/19 14:53:43  tom
+* fix some gcc warnings (make the ZIDENT const, prototype aTaC, and bracket
+* empty-Zpath data)
+*
 * Revision 3.13  1997/12/11 01:27:38  tom
 * corrected pointer types to compile cleanly.
 *
@@ -778,10 +782,24 @@ FILE	*f;
 		int i2;
 	        filename = srcfname(0);
 		if (filename == 0) filename = "-";
-	        fprintf(f, "static char %sIDENT[] = \"$Log: @(#)", prefix);
+
+		/* gcc complains about unused ZINDENT unless we make it const */
+		fprintf(f, "#undef ATAC_CONST\n");
+		fprintf(f, "#ifdef __GNUC__\n");
+		fprintf(f, "#define ATAC_CONST const\n");
+		fprintf(f, "#else\n");
+		fprintf(f, "#define ATAC_CONST /*nothing*/\n");
+		fprintf(f, "#endif /* __GNUC__ */\n");
+
+	        fprintf(f, "static ATAC_CONST char %sIDENT[] = \"$Log: @(#)", prefix);
 		fprintf(f, "%.*s", (int) strlen(filename) - 2, filename + 1);
 		fprintf(f, " instrumented by ATAC release %s$\";\n",
 			RT_VERSION);
+
+		/* quiet gcc warnings about implicit declaration of function */
+		fprintf(f, "#if __STDC__\n");
+		fprintf(f, "extern aTaC(int level, long block);\n");
+		fprintf(f, "#endif\n");
 
 		print_structs(prefix, f);
 
@@ -818,7 +836,8 @@ FILE	*f;
 			++du_count;
 		}
 	}
-	if (du_count == 0) fprintf(f, "0\n");	/* Can't init to nothing. */
+	if (du_count == 0)	/* Can't init to nothing. */
+		fprintf(f, "\t{0, 0} /*nothing*/\n");
 	fprintf(f, "};\n");
 
 	/*
