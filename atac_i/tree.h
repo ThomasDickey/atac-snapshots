@@ -14,10 +14,13 @@
 ****************************************************************/
 #ifndef tree_H
 #define tree_H
-static char tree_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.h,v 3.5 1995/12/27 23:04:00 tom Exp $";
+static const char tree_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.h,v 3.6 1996/11/12 11:05:42 tom Exp $";
 /*
 * $Log: tree.h,v $
+* Revision 3.6  1996/11/12 11:05:42  tom
+* change ident to 'const' to quiet gcc
+*
 * Revision 3.5  1995/12/27 23:04:00  tom
 * declare CLASSTYPE_INLINE
 *

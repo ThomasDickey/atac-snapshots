@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char fg_stmt_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.4 1995/12/27 23:24:56 tom Exp $";
+static const char fg_stmt_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.5 1996/11/12 23:54:02 tom Exp $";
 /*
 * $Log: fg_stmt.c,v $
+* Revision 3.5  1996/11/12 23:54:02  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.4  1995/12/27 23:24:56  tom
 * don't use NULL for int value!
 *
@@ -57,6 +65,9 @@ static char fg_stmt_c[] =
  * 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include "portable.h"
 #include "srcpos.h"
@@ -64,12 +75,6 @@ static char fg_stmt_c[] =
 #include "tree.h"
 #include "sym.h"
 #include "dug.h"
-
-/* forward declarations */
-static void fg_for();
-static void fg_stmt_goto();
-static void fg_stmt_label();
-void fg_stmt();
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
@@ -84,6 +89,12 @@ typedef struct gotolist {
 } GOTOLIST;
 
 extern SYM decis_sym;	/* from fg_module.c */
+
+/* forward declarations */
+static void fg_for P_(( DUG *dug, TNODE *expr1, TNODE *expr2, TNODE *expr3, TNODE *stmt, int sblk, int swblk, int *endblk, int *dblk ));
+static void fg_stmt_goto P_(( DUG *dug, GOTOLIST **gotolist, int sblk ));
+static void fg_stmt_label P_(( DUG *dug, GOTOLIST **gotolist, int sblk ));
+extern void fg_stmt P_(( TNODE *arg_n, DUG *dug, int arg_sblk, int bblk, int cblk, int swblk, int *endblk, int *dblk ));
 
 void
 fg_stmt(arg_n, dug, arg_sblk, bblk, cblk, swblk, endblk, dblk)

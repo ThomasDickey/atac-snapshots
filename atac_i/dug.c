@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char dug_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.7 1995/12/27 23:27:11 tom Exp $";
+static const char dug_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.8 1996/11/13 00:07:22 tom Exp $";
 /*
 * $Log: dug.c,v $
+* Revision 3.8  1996/11/13 00:07:22  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.7  1995/12/27 23:27:11  tom
 * don't use NULL for int value!
 *
@@ -87,36 +95,44 @@ static char dug_c[] =
 * 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include "portable.h"
 #include "sym.h"
+#include "srcpos.h"
+#include "tnode.h"
 #include "dug.h"
 #include "version.h"
 
 /* forward declarations */
-void dug_var_table();
-DU *du_use_type();
-DU *du_use();
-int dug_blocks();
-static void print_structs();
-void dug_tables();
-void dug_clean();
-static void var_clean();
-void dug_du_combine();
-void dug_dump();
-static void block_dump();
-static void du_dump();
-static void branch_print();
-int dug_du();
-int dug_branch();
-int dug_endblk();
-int dug_fname();
-int dug_startblk();
-BLOCK *dug_newblk();
-int dug_free();
-static void free_block();
-static void free_branch();
-DUG *dug_create();
+static void block_dump P_(( BLOCK *b ));
+static void branch_print P_(( BRANCH *r ));
+static void du_dump P_(( DU *du ));
+static void free_block P_(( BLOCK *b ));
+static void free_branch P_(( BRANCH *r ));
+static void print_structs P_(( char *prefix, FILE *f ));
+static void var_clean P_(( DUG *dug ));
+
+/* FIXME: move to dug.h (but there's a lot of int's where BLOCK* should be! */
+extern BLOCK *dug_newblk P_(( DUG *dug ));
+extern DU *du_use P_(( DUG *dug, BLOCK *node, LIST *n ));
+extern DU *du_use_type P_(( DUG *dug, BLOCK *node, int symbol, int mode ));
+extern DUG *dug_create P_(( void ));
+extern int dug_blocks P_(( DUG *dug, FILE *f ));
+extern int dug_branch P_(( DUG *dug, BLOCK *from, BLOCK *bTo, COND_TYPE condType, long value, void *node ));
+extern int dug_cyclomatic P_(( DUG *dug ));
+extern int dug_du P_(( DUG *dug, SYM *symbol, BLOCK *block, int ref_type, int parse_pos ));
+extern int dug_endblk P_(( DUG *dug, BLOCK *blk, int parse_end ));
+extern int dug_fname P_(( DUG *dug, char *fname ));
+extern int dug_free P_(( DUG *dug ));
+extern int dug_startblk P_(( DUG *dug, BLOCK *blk, int parse_start ));
+extern void dug_clean P_(( DUG *dug ));
+extern void dug_du_combine P_(( DUG *dug, BLOCK *first, BLOCK *second ));
+extern void dug_dump P_(( DUG *dug ));
+extern void dug_tables P_(( DUG *dug, int funcno, char *prefix, FILE *f ));
+extern void dug_var_table P_(( DUG *dug, FILE *f ));
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
@@ -445,7 +461,7 @@ BRANCH	*r;
 	    break;
 	}
 
-	fprintf(stderr, "-%d ", r->value);
+	fprintf(stderr, "-%ld ", r->value);
 
 	if (r->node) {
 	    node_srcpos(r->node, 1, stderr);
@@ -557,8 +573,8 @@ DUG	*dug;
 	int	list;
 	V_ID	*var_id;
 	VARSYM	*vartab;
-	V_ID	*table_next();
-	V_ID	*table_find();
+	extern	V_ID	*table_next();
+	extern	V_ID	*table_find();
 
 	var_list = table_create(NULL);
 	dref_list = table_create(NULL);
@@ -593,12 +609,12 @@ DUG	*dug;
 		vartab = (VARSYM *)malloc(var_count * sizeof(VARSYM));
 		CHECK_MALLOC(vartab);
 		var_count = 0;
-		for (i = 0; var_id = table_next(var_list, &i);) {
+		for (i = 0; (var_id = table_next(var_list, &i)) != 0;) {
 			vartab[var_count].symbol = var_id->symbol;
 			vartab[var_count].ref_type = VAR_VOID;
 			var_id->id = var_count++;
 		}
-		for (i = 0; var_id = table_next(dref_list, &i);) {
+		for (i = 0; (var_id = table_next(dref_list, &i)) != 0;) {
 			vartab[var_count].symbol = var_id->symbol;
 			vartab[var_count].ref_type = VAR_DREF;
 			var_id->id = var_count++;
@@ -674,15 +690,15 @@ DUG	*dug;
 #endif
 		    if (r->to->parse_start && r->to->parse_end) continue;
 		    if (list_next(r->to->du_list, NULL, NULL)) {
-			int	i;
+			int	i2;
 			DU	*du;
 			extern SYM decis_sym;
 			
-			for (i = 0; list_next(r->to->du_list, &i, &du);) {
+			for (i2 = 0; list_next(r->to->du_list, &i2, &du);) {
 			    if (du->symbol != &decis_sym)
 			        internal_error(NULL, "dug: unexpec du_list");
 			    list_put(block->du_list, du);
-			    list_delete(r->to->du_list, &i);
+			    list_delete(r->to->du_list, &i2);
 			}
 		    }
 
@@ -751,7 +767,7 @@ FILE	*f;
 	int	du_count;
 	int	blk_count;
 	char	*filename;
-	char	*srcfname();
+	extern char * srcfname P_(( int findex ));
 #ifndef NOCOMMENT
 	int	n;
 #endif
@@ -760,7 +776,7 @@ FILE	*f;
 	        filename = srcfname(0);
 		if (filename == NULL) filename = "-";
 	        fprintf(f, "static char %sIDENT[] = \"$Log: @(#)", prefix);
-		fprintf(f, "%.*s", strlen(filename) - 2, filename + 1);
+		fprintf(f, "%.*s", (int) strlen(filename) - 2, filename + 1);
 		fprintf(f, " instrumented by ATAC release %s$\";\n",
 			RT_VERSION);
 

@@ -14,13 +14,14 @@
 ****************************************************************/
 #ifndef tnode_H
 #define tnode_H
-static char tnode_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.h,v 3.1 1994/04/04 10:15:02 jrh Exp $";
+static const char tnode_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.h,v 3.2 1996/11/13 00:26:35 tom Exp $";
 /*
-*-----------------------------------------------$Log: tnode.h,v $
-*-----------------------------------------------Revision 3.1  1994/04/04 10:15:02  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: tnode.h,v $
+* Revision 3.2  1996/11/13 00:26:35  tom
+* change ident to 'const' to quiet gcc
+* prototyped functions for tree.c, tnode.c
+*
 * Revision 3.1  94/04/04  10:15:02  jrh
 * Add Release Copyright
 * 
@@ -36,9 +37,9 @@ static char tnode_h[] =
 * Revision 2.1  91/06/13  12:39:27  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:54  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:54  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 #define LEFT_SRCPOS	0
@@ -63,16 +64,28 @@ typedef struct tnode {
 	} sym;
 } TNODE;
 
-TNODE *tlist_add();
-TNODE *tmknode();
-TNODE *tmkleaf();
+/* srcpos.c */
+#if 0
+extern char *srcfname P_(( int findex));
+extern int srcfstamp P_(( int findex));
+extern int store_filename P_(( char *s));
+extern void node_isrcpos P_(( TNODE *node, int left, FILE *f));
+extern void node_srcpos P_(( TNODE *node, int left, FILE *f));
+extern void print_srcpos P_(( SRCPOS *srcpos, FILE *f));
+#endif
 
-TNODE *child0();
-TNODE *child1();
-TNODE *child2();
-TNODE *child3();
-TNODE *child4();
-TNODE *tnext();
+/* tree.c */
+TNODE *tlist_add P_(( TNODE *list, TNODE *next ));
+TNODE *tmknode P_(( int genus, int species, TNODE *child0, TNODE *child1 ));
+TNODE *tmkleaf P_(( int genus, int species, SRCPOS *srcpos, char *text ));
+
+/* tnode.c */
+TNODE *child0 P_(( TNODE *n ));
+TNODE *child1 P_(( TNODE *n ));
+TNODE *child2 P_(( TNODE *n ));
+TNODE *child3 P_(( TNODE *n ));
+TNODE *child4 P_(( TNODE *n ));
+TNODE *tnext P_(( TNODE *n ));
 
 /*
 * Tree navigation macros.  WARNING: n should be a simple expr., no side effects.

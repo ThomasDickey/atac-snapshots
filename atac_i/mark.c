@@ -12,6 +12,10 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
  #pragma csect (CODE, "mark$")
 #include <mvapts.h>
@@ -20,13 +24,14 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <stdlib.h>
 #endif /* MVS */
 
-static char mark_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.5 1994/04/04 10:13:25 jrh Exp $";
+static const char mark_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.6 1996/11/13 00:42:22 tom Exp $";
 /*
-*-----------------------------------------------$Log: mark.c,v $
-*-----------------------------------------------Revision 3.5  1994/04/04 10:13:25  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: mark.c,v $
+* Revision 3.6  1996/11/13 00:42:22  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.5  94/04/04  10:13:25  jrh
 * Add Release Copyright
 * 
@@ -57,11 +62,14 @@ static char mark_c[] =
 * Revision 2.1  91/06/13  12:39:10  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:46  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:46  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include "portable.h"
 #include "srcpos.h"
@@ -72,11 +80,12 @@ static char mark_c[] =
 #include "hook.h"
 
 /* forward declarations */
-static void marker();
-static int tempvar();
-static void expr_marker();
-static VALTYPE *cast_type();
-static void stmt_marker();
+extern void dug_mark P_(( DUG *dug ));
+static void marker P_(( TNODE *node, int mtype, int blkno, VALTYPE *type, int tempno ));
+static int tempvar P_(( TNODE *local_pos, int stmt_no, TNODE *n ));
+static void expr_marker P_(( DUG *dug, BLOCK *b, TNODE *end, TNODE *local_pos, int *stmt_no ));
+static VALTYPE *cast_type P_(( TNODE *n ));
+static void stmt_marker P_(( TNODE *n, int blk, int mark_after ));
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory"))
 

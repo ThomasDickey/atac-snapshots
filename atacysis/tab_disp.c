@@ -27,9 +27,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "atacysis.h"           /* ATAC post run-time stuff     */
 
 static char const tab_disp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tab_disp.c,v 3.6 1995/12/28 15:23:06 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tab_disp.c,v 3.7 1996/11/13 01:35:57 tom Exp $";
 /*
 * $Log: tab_disp.c,v $
+* Revision 3.7  1996/11/13 01:35:57  tom
+* ifdef'd unused code
+*
 * Revision 3.6  1995/12/28 15:23:06  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -70,6 +73,9 @@ static char const tab_disp_c[] =
  * 17 Feb 1992  -- MSM -- creation  
  * 
  * $Log: tab_disp.c,v $
+ * Revision 3.7  1996/11/13 01:35:57  tom
+ * ifdef'd unused code
+ *
  * Revision 3.6  1995/12/28 15:23:06  tom
  * adjust headers, prototyped for autoconfig
  *
@@ -193,10 +199,12 @@ static void disp_block       /* display uncovered blocks             */
 	P_((int first, char *file, char *func, T_BLK *b1));
 static void disp_decis       /* display uncovered decisions          */
 	P_((int first, char *file, char *func, T_BLK *use, int cov));
+#ifdef UNDEFINED_USES /* { */
 static void disp_ucuse       /* display undefined local c-uses       */
 	P_((int first, char *file, char *func, char *var, T_BLK *use));
 static void disp_upuse       /* display undefined local p-uses       */
 	P_((int first, char *file, char *func, char *var, T_BLK *use, T_BLK *to));
+#endif /* UNDEFINED_USES } */
 static void get_context      /* get a source file context            */
 	P_((char *filename, T_BLK *block, char *str, int length));
 static void right_pad        /* right-pad a string with spaces       */
@@ -620,6 +628,7 @@ int    cov;
  * The tabular display routine for undefined c-uses.
  */
 
+#ifdef UNDEFINED_USES /* { */
 static void
 disp_ucuse(first, file, func, var, use)
 int    first;
@@ -697,6 +706,7 @@ T_BLK *to;
   else
    printf("?\n");
 }
+#endif /* UNDEFINED_USES } */
 
 /* FUNCTION: void get_context(filename, block, str, length)
  * char  *filename -- filename of the text source file 

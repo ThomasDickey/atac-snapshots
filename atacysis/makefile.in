@@ -12,9 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atacysis/RCS/Makefile,v 3.11 1995/12/29 21:37:59 tom Exp $
+# $Header: /users/source/archives/atac.vcs/atacysis/RCS/makefile.in,v 3.1 1996/11/11 23:28:56 tom Exp $
 #
-# $Log: Makefile,v $
+# $Log: makefile.in,v $
+# Revision 3.1  1996/11/11 23:28:56  tom
+# RCS_BASE
+#
 # Revision 3.11  1995/12/29 21:37:59  tom
 # mods for autoconfig
 #
@@ -88,8 +91,9 @@
 # Aug 1990 baseline
 # 
 #-----------------------------------------------end of log
-INCLUDES=..
-CFLAGS=-I$(INCLUDES) -DHAVE_CONFIG_H -g
+INCLUDES	= ..
+CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@
+
 AOBJ=print.o static.o trace.o main.o summary.o bdisp.o 	\
 	rlist.o ddisp.o disp.o vector.o cdisp.o pdisp.o risk.o error.o	\
 	gmatch.o tab_disp.o pat_match.o fdisp.o srcfile_name.o		\

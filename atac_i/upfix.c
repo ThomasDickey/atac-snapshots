@@ -12,45 +12,53 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char upfix_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/upfix.c,v 3.4 1994/04/04 10:15:29 jrh Exp $";
+static const char upfix_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/upfix.c,v 3.5 1996/11/13 00:40:26 tom Exp $";
 /*
-*-----------------------------------------------$Log: upfix.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:15:29  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-*Revision 3.4  94/04/04  10:15:29  jrh
-*Add Release Copyright
+* $Log: upfix.c,v $
+* Revision 3.5  1996/11/13 00:40:26  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
 *
-*Revision 3.3  93/08/09  16:09:50  saul
-*error in mvs code
+* Revision 3.4  94/04/04  10:15:29  jrh
+* Add Release Copyright
 *
-*Revision 3.2  93/08/04  15:49:20  ewk
-*Added MVS and solaris support.  Squelched some ANSI warnings.
+* Revision 3.3  93/08/09  16:09:50  saul
+* error in mvs code
 *
-x.c
-*Revision 3.1  93/07/12  11:50:56  saul
-*MVS MODULEID
+* Revision 3.2  93/08/04  15:49:20  ewk
+* Added MVS and solaris support.  Squelched some ANSI warnings.
 *
-*Revision 3.0  92/11/06  07:46:08  saul
-*propagate to version 3.0
+* Revision 3.1  93/07/12  11:50:56  saul
+* MVS MODULEID
 *
-*Revision 2.3  92/10/30  09:49:27  saul
-*include portable.h
+* Revision 3.0  92/11/06  07:46:08  saul
+* propagate to version 3.0
 *
-*Revision 2.2  92/04/07  07:53:08  saul
-*prefix should not begin with underscore
+* Revision 2.3  92/10/30  09:49:27  saul
+* include portable.h
 *
-*Revision 2.1  92/04/07  07:33:52  saul
-*Nov 23, 1989 version
+* Revision 2.2  92/04/07  07:53:08  saul
+* prefix should not begin with underscore
+*
+* Revision 2.1  92/04/07  07:33:52  saul
+* Nov 23, 1989 version
 *
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <string.h>
 #include <stdio.h>
 #include "portable.h"
 
@@ -77,10 +85,10 @@ typedef struct {
 } PREFIX;
 
 /* forward declarations */
-char *upfix();
-void upfix_exclude();
-void upfix_free();
-PREFIX *upfix_init();
+extern char *upfix P_(( PREFIX *p ));
+extern void upfix_exclude P_(( PREFIX *p, char *name ));
+extern void upfix_free P_(( PREFIX *p ));
+extern PREFIX *upfix_init P_(( int maxlen, char *s ));
 
 PREFIX *
 upfix_init(maxlen, s)

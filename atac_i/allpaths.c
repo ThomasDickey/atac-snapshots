@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char allpaths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.4 1995/12/27 23:32:26 tom Exp $";
+static const char allpaths_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.5 1996/11/12 23:45:16 tom Exp $";
 /*
 * $Log: allpaths.c,v $
+* Revision 3.5  1996/11/12 23:45:16  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.4  1995/12/27 23:32:26  tom
 * don't use NULL for int value!
 *
@@ -59,6 +67,9 @@ static char allpaths_c[] =
  * 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 #include "portable.h"
@@ -74,9 +85,9 @@ typedef struct path {
 } PATH;
 
 /* forward declarations */
-PATH *allpaths();
-static PATH *subpaths();
-static PATH *mkpath();
+PATH *allpaths P_(( DUG *dug, FILE *f, int list_them ));
+static PATH *subpaths P_(( BLOCK *node, unsigned *visited, int setsize ));
+static PATH *mkpath P_(( int end_id, PATH *next, int setsize, unsigned *nodes ));
 
 #define BPW	32	/* Bits Per Word */
 #define LBPW	5	/* Log Bits Per Word */

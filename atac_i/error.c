@@ -17,13 +17,18 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.3 1994/04/04 10:12:37 jrh Exp $";
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+static const char error_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.4 1996/11/13 00:42:43 tom Exp $";
 /*
-*-----------------------------------------------$Log: error.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:12:37  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: error.c,v $
+* Revision 3.4  1996/11/13 00:42:43  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.3  94/04/04  10:12:37  jrh
 * Add Release Copyright
 * 
@@ -45,9 +50,9 @@ static char error_c[] =
 * Revision 2.1  91/06/13  12:39:02  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:39  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:39  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 #include <stdio.h>
@@ -55,11 +60,13 @@ static char error_c[] =
 #include "srcpos.h"
 
 /* forward declarations */
-void parse_error();
-void lexical_error();
-void semantic_error();
-void internal_error();
-void supress_warnings();
+/* FIXME: should use varargs */
+#define ERR_ARGS SRCPOS *srcpos, char *msg, char *arg1, char *arg2, char *arg3
+void parse_error P_(( ERR_ARGS ));
+void lexical_error P_(( ERR_ARGS ));
+void semantic_error P_(( ERR_ARGS ));
+void internal_error P_(( ERR_ARGS ));
+void supress_warnings P_(( void ));
 
 #define PARSE_ERROR	2
 #define INTERNAL_ERROR	3

@@ -17,13 +17,18 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char list_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/list.c,v 3.4 1994/04/04 10:13:19 jrh Exp $";
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+static const char list_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/list.c,v 3.5 1996/11/13 00:58:59 tom Exp $";
 /*
-*-----------------------------------------------$Log: list.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:13:19  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: list.c,v $
+* Revision 3.5  1996/11/13 00:58:59  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.4  94/04/04  10:13:19  jrh
 * Add Release Copyright
 * 
@@ -48,13 +53,17 @@ static char list_c[] =
 * Revision 2.1  91/06/13  12:39:09  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:45  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:45  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 #include <stdio.h>
-#include "portable.h"
+#include <portable.h>
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 /*
 * List is implemented as a linked list with forward and backward links.
@@ -78,13 +87,13 @@ typedef struct link {
 } LINK;
 
 /* forward declarations */
-void list_dump();
-int list_prev();
-int list_next();
-int list_put();
-int list_delete();
-int list_free();
-LINK *list_create();
+extern LINK *list_create P_(( void ));
+extern int list_delete P_(( LINK *head, LINK **old ));
+extern int list_free P_(( LINK *head, void (*datafree)(DATA *data) ));
+extern int list_next P_(( LINK *head, LINK **prev, DATA **data ));
+extern int list_prev P_(( LINK *head, LINK **prev, DATA **data ));
+extern int list_put P_(( LINK *head, DATA *data ));
+extern void list_dump P_(( LINK *head, char *(*datadump)(DATA *data), char *label ));
 
 LINK *
 list_create()
@@ -105,7 +114,7 @@ list_create()
 int					/* return status */
 list_free(head, datafree)
 LINK	*head;
-void	(*datafree)();
+void	(*datafree) P_((DATA *));
 {
 	LINK	*link;
 	LINK	*next;
@@ -248,7 +257,7 @@ DATA	**data;
 void
 list_dump(head, datadump, label)
 LINK	*head;
-char	*(*datadump)();
+char	*(*datadump) P_((DATA *));
 char	*label;
 {
 	LINK *link;
@@ -275,7 +284,7 @@ char	*label;
 			if (datadump)
 				(*datadump)(data);
 			else if (data)
-				fprintf(stderr, "%d\n", (DATA)data);
+				fprintf(stderr, "%p\n", data);
 		}
 #ifdef DEBUG
 	}

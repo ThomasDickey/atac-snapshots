@@ -12,6 +12,10 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
@@ -27,48 +31,51 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "version.h"
 
 static char const dump_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/dump.c,v 3.7 1995/12/27 20:46:29 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/dump.c,v 3.8 1996/11/13 01:31:56 tom Exp $";
 /*
 * $Log: dump.c,v $
+* Revision 3.8  1996/11/13 01:31:56  tom
+* include <config.h> to declare 'const'
+*
 * Revision 3.7  1995/12/27 20:46:29  tom
 * adjust headers, prototyped for autoconfig
 * correct gcc warnings (casts)
 *
-*Revision 3.6  94/08/08  13:50:41  saul
-*atactm -d and -e bug (problem with fix in revision 3.5)
+* Revision 3.6  94/08/08  13:50:41  saul
+* atactm -d and -e bug (problem with fix in revision 3.5)
 *
-*Revision 3.5  94/08/03  10:02:20  saul
-*atactm -d and -e bug on non compressed trace fixed
+* Revision 3.5  94/08/03  10:02:20  saul
+* atactm -d and -e bug on non compressed trace fixed
 *
-*Revision 3.4  94/04/04  10:25:09  jrh
-*Add Release Copyright
+* Revision 3.4  94/04/04  10:25:09  jrh
+* Add Release Copyright
 *
-*Revision 3.3  93/08/04  15:53:38  ewk
-*Added MVS and solaris support.  Squelched some ANSI warnings.
+* Revision 3.3  93/08/04  15:53:38  ewk
+* Added MVS and solaris support.  Squelched some ANSI warnings.
 *
 * Revision 3.2  93/03/29  11:38:04  saul
-*Don't free coverage/timestamp vectors that have never been created.
+* Don't free coverage/timestamp vectors that have never been created.
 *
-*Revision 3.1  93/03/26  11:13:14  saul
-*Coverage vector packing. 
+* Revision 3.1  93/03/26  11:13:14  saul
+* Coverage vector packing. 
 *
-*Revision 3.0  92/11/06  07:47:06  saul
-*propagate to version 3.0
+* Revision 3.0  92/11/06  07:47:06  saul
+* propagate to version 3.0
 *
-*Revision 2.5  92/10/30  09:54:08  saul
-*include portable.h
+* Revision 2.5  92/10/30  09:54:08  saul
+* include portable.h
 *
-*Revision 2.4  92/10/01  13:28:32  saul
-*Remove debuging code.
+* Revision 2.4  92/10/01  13:28:32  saul
+* Remove debuging code.
 *
-*Revision 2.3  92/09/22  15:40:02  saul
-*Trace compression.
+* Revision 2.3  92/09/22  15:40:02  saul
+* Trace compression.
 *
-*Revision 2.2  92/09/08  10:12:21  saul
-*changed trace format and data structures
+* Revision 2.2  92/09/08  10:12:21  saul
+* changed trace format and data structures
 *
-*Revision 2.1  92/09/08  09:59:50  saul
-*Purdue trace management
+* Revision 2.1  92/09/08  09:59:50  saul
+* Purdue trace management
 *
 *-----------------------------------------------end of log
 */

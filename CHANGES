@@ -1,3 +1,19 @@
+1996-12-01  Thomas E. Dickey  <dickey@clark.net>
+
+	* configure: RCS_BASE
+
+	* configure.in: sys/wait.h, AC_TYPE_SIGNAL
+
+	* makefile.in: missed a Makefile/makefile conversion
+
+1996-11-11  Thomas E. Dickey  <dickey@clark.net>
+
+	* makefile.in: show cd/make (for tracing log with vile)
+	lowercase makefiles throughout
+
+	* configure.in: generate all subdir-makefiles
+	add test for yacc
+
 1995-12-29  Thomas E. Dickey  <dickey@clark.net>
 
 	* atac.lsm, makefile.in, configure.in: RCS_BASE

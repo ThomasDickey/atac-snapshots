@@ -12,12 +12,15 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-#	$Header: /users/source/archives/atac.vcs/tools/RCS/Makefile,v 3.7 1994/04/04 16:12:40 jrh Exp $
+#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.8 1996/01/11 17:47:36 tom Exp $
 #
-#-----------------------------------------------$Log: Makefile,v $
-#-----------------------------------------------Revision 3.7  1994/04/04 16:12:40  jrh
-#-----------------------------------------------FROM_KEYS
-#-----------------------------------------------
+# $Log: makefile.in,v $
+# Revision 3.8  1996/01/11 17:47:36  tom
+# FROM_KEYS
+#
+# Revision 3.8  1996/01/11 17:47:36  tom
+# separate LINK from CC, to run Purify
+# 
 # Revision 3.7  94/04/04  16:12:40  jrh
 # Release Copyright added
 # 
@@ -56,8 +59,10 @@
 # 
 # Makefile for ATAC components in tools directory.
 #
-INCLUDES=..
-CFLAGS=-I$(INCLUDES) -g
+LINK		= $(CC)
+INCLUDES	= ..
+CFLAGS		= -I$(INCLUDES) @CFLAGS@
+
 SRC=atac atacCC atacLD atacmin atac_rt.c hili.c min.c predefs.list Makefile
 
 system:		atac atacCC atacLD atacmin atac_rt.o hili minimize predefs.c 
@@ -66,21 +71,21 @@ clean:
 		rm -f *.o hili minimize predefs.c
 
 atac_rt.o:	atac_rt.c $(INCLUDES)/portable.h
-		$(CC) $(CFLAGS) -c atac_rt.c
+		$(LINK) $(CFLAGS) -c atac_rt.c
 
 hili:		hili.c $(INCLUDES)/portable.h
 		@rm -f hili
 		@if							\
 		    echo building hili with termcap;		 	\
-		    echo $(CC) $(CFLAGS) hili.c -DM_TERMCAP -ltermcap -o hili;\
-		    $(CC) $(CFLAGS) hili.c -DM_TERMCAP -ltermcap -o hili;\
+		    echo $(LINK) $(CFLAGS) hili.c -DM_TERMCAP -ltermcap -o hili;\
+		    $(LINK) $(CFLAGS) hili.c -DM_TERMCAP -ltermcap -o hili;\
 		    ./hili /dev/null /dev/null 2>/dev/null;		\
 		then							\
 		    echo hili built successfully;			\
 		elif							\
 		    echo building hili with terminfo;		 	\
-		    echo $(CC) $(CFLAGS) hili.c -DM_TERMINFO -lcurses -o hili;\
-		    $(CC) $(CFLAGS) hili.c -DM_TERMINFO -lcurses -o hili;\
+		    echo $(LINK) $(CFLAGS) hili.c -DM_TERMINFO -lcurses -o hili;\
+		    $(LINK) $(CFLAGS) hili.c -DM_TERMINFO -lcurses -o hili;\
 		then							\
 		    echo hili built successfully;			\
 		else							\
@@ -89,7 +94,7 @@ hili:		hili.c $(INCLUDES)/portable.h
 		fi
 
 minimize:	min.c $(INCLUDES)/portable.h
-		$(CC) $(CFLAGS) min.c -o minimize
+		$(LINK) $(CFLAGS) min.c -o minimize
 
 predefs.c:	predefs.list
 		@for n in `grep -v '^#' predefs.list`;			\

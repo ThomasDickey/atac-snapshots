@@ -14,30 +14,30 @@
 ****************************************************************/
 #ifndef man_H
 #define man_H
-static char man_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/man.h,v 3.1 1994/04/04 10:25:39 jrh Exp $";
+static const char man_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/man.h,v 3.2 1996/11/13 01:29:27 tom Exp $";
 /*
-*-----------------------------------------------$Log: man.h,v $
-*-----------------------------------------------Revision 3.1  1994/04/04 10:25:39  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-*Revision 3.1  94/04/04  10:25:39  jrh
-*Add Release Copyright
+* $Log: man.h,v $
+* Revision 3.2  1996/11/13 01:29:27  tom
+* change ident to 'const' to quiet gcc
 *
-*Revision 3.0  92/11/06  07:47:22  saul
-*propagate to version 3.0
+* Revision 3.1  94/04/04  10:25:39  jrh
+* Add Release Copyright
 *
-*Revision 2.4  92/10/30  10:24:25  saul
-*Don't define TRUE/FALSE (defined in portable.h)
+* Revision 3.0  92/11/06  07:47:22  saul
+* propagate to version 3.0
 *
-*Revision 2.3  92/09/08  10:21:26  saul
-*Missing #endif.
+* Revision 2.4  92/10/30  10:24:25  saul
+* Don't define TRUE/FALSE (defined in portable.h)
 *
-*Revision 2.2  92/09/08  10:12:27  saul
-*changed trace format and data structures
+* Revision 2.3  92/09/08  10:21:26  saul
+* Missing #endif.
 *
-*Revision 2.1  92/09/08  10:02:40  saul
-*Purdue trace management
+* Revision 2.2  92/09/08  10:12:27  saul
+* changed trace format and data structures
+*
+* Revision 2.1  92/09/08  10:02:40  saul
+* Purdue trace management
 *
 *-----------------------------------------------end of log
 */

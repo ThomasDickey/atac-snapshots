@@ -14,13 +14,13 @@
 ****************************************************************/
 #ifndef scan_H
 #define scan_H
-static char scan_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.h,v 3.1 1994/04/04 10:14:07 jrh Exp $";
+static const char scan_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.h,v 3.2 1996/11/13 00:26:12 tom Exp $";
 /*
-*-----------------------------------------------$Log: scan.h,v $
-*-----------------------------------------------Revision 3.1  1994/04/04 10:14:07  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: scan.h,v $
+* Revision 3.2  1996/11/13 00:26:12  tom
+* change ident to 'const' to quiet gcc
+*
 * Revision 3.1  94/04/04  10:14:07  jrh
 * Add Release Copyright
 * 
@@ -36,9 +36,9 @@ static char scan_h[] =
 * Revision 2.1  91/06/13  12:39:18  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:49  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:49  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 typedef struct tokenvalue {

@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char srcpos_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.4 1995/12/27 23:32:19 tom Exp $";
+static const char srcpos_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.5 1996/11/12 23:02:07 tom Exp $";
 /*
 * $Log: srcpos.c,v $
+* Revision 3.5  1996/11/12 23:02:07  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.4  1995/12/27 23:32:19  tom
 * don't use NULL for int value!
 *
@@ -54,18 +62,14 @@ static char srcpos_c[] =
  * 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include <stdio.h>
 #include "portable.h"
 #include "srcpos.h"
 #include "tnode.h"
-
-/* forward declarations */
-void node_isrcpos();
-int srcfstamp();
-char *srcfname();
-int store_filename();
-void node_srcpos();
-void print_srcpos();
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
@@ -75,6 +79,13 @@ static char **filenames = NULL;
 static int *stamps = NULL;
 static int n_filenames = 0;
 static fname_buf_size = 0;
+
+extern void print_srcpos P_(( SRCPOS *srcpos, FILE *f ));
+extern void node_srcpos P_(( TNODE *node, int left, FILE *f ));
+extern int store_filename P_(( char *s ));
+extern char * srcfname P_(( int findex ));
+extern int srcfstamp P_(( int findex ));
+extern void node_isrcpos P_(( TNODE *node, int left, FILE *f ));
 
 void
 print_srcpos(srcpos, f)

@@ -28,14 +28,17 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* not MVS */
 #endif /* not vms */
 
-#include "version.h"
 #include "portable.h"
+#include "version.h"
 #include "disp.h"
 
 static char const srcfile_name_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/srcfile_name.c,v 3.5 1995/12/27 20:07:20 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/srcfile_name.c,v 3.6 1996/01/11 17:47:36 tom Exp $";
 /*
 * $Log: srcfile_name.c,v $
+* Revision 3.6  1996/01/11 17:47:36  tom
+* moved include
+*
 * Revision 3.5  1995/12/27 20:07:20  tom
 * adjust headers, prototyped for autoconfig
 *

@@ -1,0 +1,10 @@
+# $Header: /users/source/archives/atac.vcs/tutorial/RCS/makefile.in,v 1.1 1996/11/11 23:28:20 tom Exp $
+
+CFLAGS		= @CFLAGS@
+
+wordcount:	wc.o main.o
+		$(CC) -g -o wordcount wc.o main.o
+
+clean:		; rm -f wc.o main.o wordcount
+
+cleanup:	clean
