@@ -1,0 +1,61 @@
+#!/bin/sh
+#****************************************************************
+#Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+#
+#Permission to use, copy, modify, and distribute this material
+#for any purpose and without fee is hereby granted, provided
+#that the above copyright notice and this permission notice
+#appear in all copies, and that the name of Bellcore not be
+#used in advertising or publicity pertaining to this
+#material without the specific, prior written permission
+#of an authorized representative of Bellcore.  BELLCORE
+#MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+#OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+#WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+#****************************************************************
+#	$Header: /users/source/archives/atac.vcs/tools/RCS/loguse,v 3.5 1994/04/21 09:34:30 saul Exp $
+#
+#$Log: loguse,v $
+#Revision 3.5  1994/04/21 09:34:30  saul
+#FROM_KEYS
+#
+# Revision 3.5  94/04/21  09:34:30  saul
+# Move #!/bin/sh directive back to first line
+# 
+# Revision 3.4  94/04/04  15:12:19  saul
+# Change address to atac-stats@bellcore.com.
+# Change log frequency to 10 blocks
+# 
+# Revision 3.3  94/04/04  10:53:10  jrh
+# Add Release Copyright
+# 
+# Revision 3.2  93/08/27  13:42:52  ewk
+# Change MAILTO address to atac-stats@****.bellcore.com
+# 
+# Revision 3.1  93/08/09  12:49:37  saul
+# *** empty log message ***
+# 
+#-----------------------------------------------end of log
+#
+#
+# loguse
+#
+MAILTO="atac-stats@bellcore.com"
+DAYS=30		#send log if last entry was more than this long ago
+SIZE=10		#send log if size was more than this many blocks (of 512)
+LIB=$1
+LOGFILE=$LIB/log
+shift
+SENDIT=`find $LOGFILE \( -mtime +$DAYS -o -size +$SIZE \) -print 2>/dev/null`
+echo "$LOGNAME" `date` "$*" >>$LOGFILE
+if [ "$SENDIT" != '' -o "$1" = "install" ]
+then
+    {
+	echo "Precedence: bulk"
+	echo "Subject: please forward to atac@bellcore.com"
+	cat $LIB/Version
+	cat $LOGFILE
+	>$LOGFILE
+    } | mail $MAILTO
+fi
+exit 0

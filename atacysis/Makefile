@@ -1,0 +1,194 @@
+#****************************************************************
+#Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+#
+#Permission to use, copy, modify, and distribute this material
+#for any purpose and without fee is hereby granted, provided
+#that the above copyright notice and this permission notice
+#appear in all copies, and that the name of Bellcore not be
+#used in advertising or publicity pertaining to this
+#material without the specific, prior written permission
+#of an authorized representative of Bellcore.  BELLCORE
+#MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+#OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+#WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+#****************************************************************
+# $Header: /users/source/archives/atac.vcs/atacysis/RCS/Makefile,v 3.10 1994/04/05 09:14:09 saul Exp $
+#
+#-----------------------------------------------$Log: Makefile,v $
+#-----------------------------------------------Revision 3.10  1994/04/05 09:14:09  saul
+#-----------------------------------------------FROM_KEYS
+#-----------------------------------------------
+# Revision 3.10  94/04/05  09:14:09  saul
+# Remove memcpy.c
+# 
+# Revision 3.9  94/04/04  10:28:35  jrh
+# Add Release Copyright
+# 
+# Revision 3.8  94/01/31  14:57:44  saul
+# Upgrade revision number.  (Reverted to 1.1 when makefile renamed Makefile.)
+# 
+# Revision 1.2  94/01/31  13:32:45  saul
+# Use cfile calls instead of getfields
+# 
+# Revision 1.1  93/08/23  15:59:50  ewk
+# Initial revision
+# 
+# Revision 3.5  93/06/30  15:23:41  saul
+# Add eval.c for atac -N experimental feature
+# 
+# Revision 3.4  93/05/05  11:08:57  ewk
+# Removed the "print" target.
+# 
+# Revision 3.3  93/04/02  11:06:09  saul
+# add memcpy.o
+# 
+# Revision 3.2  93/03/26  11:17:51  saul
+# Add atac_to_bin.
+# 
+# Revision 3.1  92/12/03  08:54:06  saul
+# Sort option
+# 
+# Revision 3.0  92/11/06  07:48:10  saul
+# propagate to version 3.0
+# 
+# Revision 2.11  92/11/03  08:32:16  saul
+# add dependencies on portable.h
+# 
+# Revision 2.10  92/10/30  09:52:43  saul
+# add CFLAGS=-I..
+# 
+# Revision 2.9  92/10/28  09:05:46  saul
+# add print and clean targets
+# 
+# Revision 2.8  92/10/05  16:00:30  saul
+# bad path name for .o shared with atac_i
+# 
+# Revision 2.7  92/09/30  11:20:08  saul
+# Remove -g compile opition.
+# 
+# Revision 2.6  92/09/22  16:11:47  saul
+# Trace compression.
+# 
+# Revision 2.5  92/09/08  10:35:53  saul
+# add atactm & other new source files.
+# 
+# Revision 2.4  92/07/10  11:28:41  saul
+# new source files risk.c cdisp.c pdisp.c
+# 
+# Revision 2.3  92/03/17  15:27:10  saul
+# copyright
+# 
+# Revision 2.2  91/08/14  09:12:49  saul
+# vector.c added
+# 
+# Revision 2.1  91/06/19  13:10:03  saul
+# Propagate to version 2.0
+# 
+# Revision 1.1  91/06/12  16:58:28  saul
+# Aug 1990 baseline
+# 
+#-----------------------------------------------end of log
+INCLUDES=..
+CFLAGS=-I$(INCLUDES) -g
+AOBJ=print.o static.o trace.o main.o summary.o bdisp.o 	\
+	rlist.o ddisp.o disp.o vector.o cdisp.o pdisp.o risk.o error.o	\
+	gmatch.o tab_disp.o pat_match.o fdisp.o srcfile_name.o		\
+	highest.o greedy.o ../atac_i/filestamp.o lib.o eval.o
+ASRC=$(AOBJ:.o=.c) atacysis.h disp.h
+
+TMOBJ=atactm.o prev.o init.o tmerror.o lib.o mem.o pro.o dump.o		\
+	columns.o pat_match.o gmatch.o pack.o
+TMSRC=$(TMOBJ:.o=.c) man.h ramfile.h
+
+TBOBJ=atac_to_bin.o lib.o static.o error.o gmatch.o pat_match.o
+TBSRC=$(TBOBJ:.o=.c) atacysis.h
+
+system:		atacysis atactm atac_to_bin
+
+clean:
+		rm -f *.o atacysis atactm atac_to_bin
+
+atacysis:	$(AOBJ)
+		$(CC) $(CFLAGS) -o atacysis $(AOBJ)
+
+atactm:		$(TMOBJ)
+		$(CC) $(CFLAGS) -o atactm $(TMOBJ)
+
+atac_to_bin:	$(TBOBJ)
+		$(CC) $(CFLAGS) -o atac_to_bin $(TBOBJ)
+
+#
+# ATACYSIS files
+#
+
+main.o:	main.c atacysis.h
+
+disp.o:		disp.c disp.h $(INCLUDES)/portable.h
+
+bdisp.o:	bdisp.c atacysis.h disp.h $(INCLUDES)/portable.h
+
+bdisp.o:	fdisp.c atacysis.h $(INCLUDES)/portable.h
+
+ddisp.o:	ddisp.c atacysis.h disp.h $(INCLUDES)/portable.h
+
+summary.o:	summary.c atacysis.h $(INCLUDES)/portable.h
+
+print.o:	print.c atacysis.h $(INCLUDES)/portable.h
+
+static.o:	static.c atacysis.h $(INCLUDES)/portable.h
+
+trace.o:	trace.c atacysis.h $(INCLUDES)/portable.h
+
+risk.o:		risk.c atacysis.h $(INCLUDES)/portable.h
+
+vector.o:	vector.c atacysis.h $(INCLUDES)/portable.h
+
+cdisp.o:	cdisp.c atacysis.h $(INCLUDES)/portable.h
+
+pdisp.o:	pdisp.c atacysis.h $(INCLUDES)/portable.h
+
+error.o:	error.c $(INCLUDES)/portable.h
+
+tab_disp.o:	tab_disp.c atacysis.h $(INCLUDES)/portable.h
+
+srcfile_name.o: srcfile_name.c disp.h $(INCLUDES)/portable.h
+
+highest.o:	highest.c atacysis.h $(INCLUDES)/portable.h
+
+greedy.o:	greedy.c atacysis.h $(INCLUDES)/portable.h
+
+eval.o:		eval.c atacysis.h $(INCLUDES)/portable.h
+
+#
+# ATACTM files
+#
+
+atactm.o: atactm.c man.h ramfile.h $(INCLUDES)/portable.h
+
+prev.o: man.h prev.c ramfile.h $(INCLUDES)/portable.h
+
+init.o: init.c man.h ramfile.h $(INCLUDES)/portable.h
+
+tmerror.o: tmerror.c man.h ramfile.h $(INCLUDES)/portable.h
+
+lib.o: lib.c $(INCLUDES)/portable.h
+
+mem.o: man.h mem.c ramfile.h $(INCLUDES)/portable.h
+
+dump.o: dump.c man.h ramfile.h $(INCLUDES)/version.h
+
+pro.o: man.h pro.c ramfile.h $(INCLUDES)/portable.h
+
+pack.o: pack.c $(INCLUDES)/portable.h
+
+#
+# Atac_To_Bin
+#
+atac_to_bin.o: atac_to_bin.c atacysis.h $(INCLUDES)/portable.h
+
+#
+# Shared files
+#
+pat_match.o:	pat_match.c $(INCLUDES)/portable.h
+
+gmatch.o:	gmatch.c $(INCLUDES)/portable.h

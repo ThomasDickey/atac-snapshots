@@ -1,0 +1,213 @@
+#!/bin/sh
+#****************************************************************
+#Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+#
+#Permission to use, copy, modify, and distribute this material
+#for any purpose and without fee is hereby granted, provided
+#that the above copyright notice and this permission notice
+#appear in all copies, and that the name of Bellcore not be
+#used in advertising or publicity pertaining to this
+#material without the specific, prior written permission
+#of an authorized representative of Bellcore.  BELLCORE
+#MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+#OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+#WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+#****************************************************************
+#
+# $Header: /users/source/archives/atac.vcs/tools/RCS/atacmin,v 1.6 1994/04/21 09:34:25 saul Exp $
+#
+#$Log: atacmin,v $
+#Revision 1.6  1994/04/21 09:34:25  saul
+#FROM_KEYS
+#
+# Revision 1.6  94/04/21  09:34:25  saul
+# Move #!/bin/sh directive back to first line
+# 
+# Revision 1.5  94/04/04  15:12:08  saul
+# remove contact info
+# 
+# Revision 1.4  94/04/04  10:53:07  jrh
+# Add Release Copyright
+# 
+# Revision 1.3  93/08/09  12:48:26  saul
+# loguse
+# 
+# Revision 1.2  93/06/30  15:30:21  saul
+# Fix bug causing file name substitution in test names with wild cards.
+# 
+# Revision 1.1  93/04/29  17:21:46  ewk
+# Initial revision
+# 
+# Revision 3.4  93/03/31  11:39:17  saul
+# Avoid use of USAGE=`cat <<! ...
+# 
+# Revision 3.3  93/03/30  14:32:09  saul
+# Change comments to point to base as point of contact.
+# 
+# Revision 3.2  92/12/30  09:44:46  saul
+# Fix usage message.
+# 
+# Revision 3.1  92/12/30  09:19:05  saul
+# New minimize options.
+# 
+# Revision 3.0  92/11/06  07:46:27  saul
+# propagate to version 3.0
+# 
+# Revision 2.11  92/10/28  09:15:35  saul
+# use atacLib instead of INSTALLDIR
+# 
+# Revision 2.10  92/09/30  11:10:35  saul
+# Make compatible with new atacysis
+# 
+# Revision 2.9  92/07/10  11:37:04  saul
+# added -bcdpCDP options; release stderr
+# 
+# Revision 2.8  92/06/11  14:19:04  saul
+# clean up USAGE message
+# 
+# Revision 2.7  92/05/04  15:29:16  saul
+# Fix multipel flag error.
+# 
+# Revision 2.6  92/04/29  08:46:54  saul
+# Remove ksh dependency.
+# 
+# Revision 2.5  92/04/06  14:47:11  saul
+# fix -v option
+# 
+# Revision 2.4  92/03/17  15:34:47  saul
+# copyright
+# 
+# Revision 2.3  91/08/14  09:24:35  saul
+# forgot -m, etc.
+# 
+# Revision 2.2  91/08/14  08:45:54  saul
+# change INSTALLDIR to /usr/public
+# 
+# Revision 2.1  91/08/14  08:35:41  saul
+# new
+# 
+#-----------------------------------------------end of log
+# 
+PGM='atacmin'
+USAGE="Usage:
+	$PGM [-ihK] [-l recursion-limit] [other-options]... files
+	$PGM -v
+other-options:
+	-m {bcdepu}...
+	-F function
+	-n test-name [-x]
+	-c testname
+	-t threshold
+files:
+	trace-file
+	atac-files..."
+#
+LIB=`ataclib`
+$LIB/loguse "$LIB" "$0 $*" >/dev/null 2>/dev/null
+[ "$ATAC_DIR" = '' ] && ATAC_DIR='.'
+MINIMIZE="$LIB/minimize"
+ATACYSIS="$LIB/atacysis"
+VERSION="$LIB/Version"
+HFLAG=''	#omit header (for -K)
+IFLAG=''	#ignore file stamps
+SFLAG=''	#Cumulative cost/covg
+XFLAG=''	#exclude named tests
+RLIMIT=0
+DOTTRACE=''
+DOTATAC=''
+MFLAGS=''
+FUNCTIONS=''
+TESTS=''
+THRESHOLD=''
+#
+while [ $# -ne 0 ]
+do
+	case "$1" in
+	-[mFntl]?*)		# separate flags from value
+		flag=`expr "$1" : '\(..\)'`
+		arg=`expr "$1" : '..\(.*\)'`
+		shift
+		set shiftdummy "$flag" "$arg" "$@"
+		;;
+	-??*)			# separate combined flags
+		flag=`expr "$1" : '\(..\)'`
+		arg=`expr "$1" : '..\(.*\)'`
+		shift
+		set shiftdummy "$flag" "-$arg" "$@"
+		;;
+	-F)	shift
+		[ "$FUNCTIONS" != '' ] && FUNCTIONS="${FUNCTIONS},"
+		FUNCTIONS="${FUNCTIONS}$1"
+		;;
+	-h)	HFLAG='h'
+		;;
+	-i)	IFLAG='i'
+		;;
+	-K)	SFLAG='s'
+		;;
+	-l)	shift
+		RLIMIT="$1"
+		;;
+	-m)	shift
+		MFLAGS="${MFLAGS}$1"
+		;;
+	-n)	shift
+		[ "$TESTS" != '' ] && TESTS="${TESTS},"
+		TESTS="${TESTS}$1"
+		;;
+	-t)	if expr "$2" : '[0-9]*$' >/dev/null
+		then
+			THRESHOLD="$2"
+			shift
+		fi
+		;;
+	-v)
+		cat $VERSION
+		if [ $# -eq 1 ]
+		then
+			exit 0
+		fi
+		;;
+	-x)	XFLAG='x'
+		;;
+	-*)	echo "unknown flag: $1" >&2
+		echo "$USAGE" >&2
+		exit 1
+		;;
+	*.atac)	DOTATAC="$DOTATAC $1"
+		;;
+	*)	if [ -r "$ATAC_DIR/$1" -a ! -r "$1" ]
+		then
+			DOTTRACE="$DOTTRACE $ATAC_DIR/$1"
+		else
+			DOTTRACE="$DOTTRACE $1"
+		fi
+		;;
+	esac
+	shift
+done
+#
+ARGS=''
+#
+ARGS="-M${IFLAG}${XFLAG}"
+[ "$MFLAGS" = '' ] && MFLAGS='bdcp'
+ARGS="$ARGS -m $MFLAGS"
+[ "$FUNCTIONS" != '' ] && ARGS="$ARGS -F $FUNCTIONS"
+[ "$TESTS" != '' ] && ARGS="$ARGS -n $TESTS"
+[ "$THRESHOLD" != '' ] && ARGS="$ARGS -t $THRESHOLD"
+if [ "$DOTTRACE" = '' ]
+then
+	if [ "$ATAC_TRACE" = '' ]
+	then
+		DOTTRACE="$ATAC_DIR/a.out.trace"
+	else
+		if [ -r "$ATAC_TRACE" -o ! -r "$ATAC_DIR/$ATAC_TRACE" ]
+		then
+			DOTTRACE="$ATAC_TRACE"
+		else
+			DOTTRACE="$ATAC_DIR/$ATAC_TRACE"
+		fi
+	fi
+fi
+ARGS="$ARGS $DOTTRACE $DOTATAC"
+$ATACYSIS $ARGS | $MINIMIZE -nq${SFLAG}${HFLAG} -l${RLIMIT}

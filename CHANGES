@@ -1,0 +1,25 @@
+1994-09-13  Thomas E. Dickey  <dickey@clark.net>
+
+	* install.sh: RCS_BASE
+
+1994-08-08  saul
+
+	* portable.h: FROM_KEYS
+
+1994-05-21  Thomas E. Dickey  <dickey@clark.net>
+
+	* mkdirs.sh: RCS_BASE
+
+1994-04-18  saul
+
+	* atac-tutorial.ps: FROM_KEYS
+
+1994-04-05  saul
+
+	* README, atactm.1, atacmin.1, ataclib.1, atacLD.1, atacCC.1, atac.1, Makefile:
+	FROM_KEYS
+
+1994-04-04  jrh
+
+	* version.h: FROM_KEYS
+

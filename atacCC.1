@@ -1,0 +1,200 @@
+.\"****************************************************************
+.\"Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.\"
+.\"Permission to use, copy, modify, and distribute this material
+.\"for any purpose and without fee is hereby granted, provided
+.\"that the above copyright notice and this permission notice
+.\"appear in all copies, and that the name of Bellcore not be
+.\"used in advertising or publicity pertaining to this
+.\"material without the specific, prior written permission
+.\"of an authorized representative of Bellcore.  BELLCORE
+.\"MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+.\"OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+.\"WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.\"****************************************************************
+.\"	$Header: /users/source/archives/atac.vcs/RCS/atacCC.1,v 3.11 1994/04/05 09:50:03 saul Exp $
+.\"
+.\" Copyright @ 1992 Bell Communications Research, Inc. All Rights Reserved.
+.\"$Log: atacCC.1,v $
+.\"Revision 3.11  1994/04/05 09:50:03  saul
+.\"FROM_KEYS
+.\"
+. \"Revision 3.11  94/04/05  09:50:03  saul
+. \"Add DISTRIBUTION heading.
+. \"
+. \"Revision 3.10  94/04/04  10:07:40  jrh
+. \"Add Release Copyright
+. \"
+. \"Revision 3.9  94/04/04  09:48:21  jrh
+. \"Add Release Copyright
+. \"
+. \"Revision 3.8  93/10/28  11:58:00  ewk
+. \"Change header to indicate release 3.3
+. \"
+. \"Revision 3.7  93/07/13  13:34:20  ewk
+. \"Fixed a couple of typose, etc.
+. \"
+. \"Revision 3.6  93/07/13  11:24:40  ewk
+. \" Updated SEE ALSO to include atacLD.
+. \"
+. \"Revision 3.5  93/04/29  17:05:07  ewk
+. \"Changed to reflect the name changes from atacLib
+. \"to ataclib and atacMin to atacmin.
+. \"
+. \"Revision 3.4  93/03/30  14:33:05  saul
+. \"Change comments to point to base as point of contact.
+. \"
+. \"Revision 3.3  93/03/30  08:42:15  saul
+. \"Edits from ewk.
+. \"
+. \"Revision 3.2  93/03/26  10:50:22  saul
+. \"Document ATAC_CC environment variable.
+. \"
+. \"Revision 3.1  92/12/30  11:29:23  saul
+. \"Add last change date
+. \"
+.\"Revision 3.0  92/11/06  07:46:17  saul
+.\"propagate to version 3.0
+.\"
+.\"Revision 2.2  92/10/28  08:58:36  saul
+.\"editorial changes
+.\"
+.\"Revision 2.1  92/09/30  10:45:43  saul
+.\"*** empty log message ***
+.\"
+.\"-----------------------------------------------end of log
+.\"
+.TH "ATAC CC" 1 "$Date: 1994/04/05 09:50:03 $" "ATAC release 3.3"
+.UC 4
+.SH NAME
+atacCC \- automatic test analysis for C programs \-
+compiler
+.SH SYNOPSIS
+.B atacCC
+[ options ]... files...
+.SH DESCRIPTION
+.I AtacCC
+is the compiler/source code instrumentor for the ATAC test coverage tool.
+.I AtacCC
+compiles and links C programs creating a data-flow file 
+(\fIfile\fP\fB.atac\fP for each \fIfile\fP.c)
+and object files or an executable program.
+.I Atac
+provides test coverage information
+by analyzing the data-flow files with
+the trace file
+produced by test executions of the program.
+The arguments to
+.I atacCC
+are exactly the same as arguments to 
+the standard C compiler,
+.IR cc (1).
+Object files created with
+.I atacCC
+may be linked with object files and libraries created by other means,
+using
+.I atacCC.
+When the program compiled by
+.I atacCC
+is tested, a coverage trace is output to
+.IB a.out .trace
+where
+.I a.out
+is the name of the executable file created by
+.I atacCC
+(i.e. the argument to the 
+.B \-o
+option, or, by default, literally 
+.I a.out.).
+If environment variable 
+.B ATAC_TRACE
+has a value, it is used as the trace file name.
+If environment variable 
+.B ATAC_DIR
+has a value, it is used as the directory for the trace file;
+otherwise the current directory is used.
+If the trace file already exists it is appended to.
+Normally the trace is compressed at the end of execution to save file
+space.
+If environment variable 
+.B ATAC_NOCOMPRESS
+has a value trace compression is suppressed.
+A trace may be explicitly compressed using
+.IR atactm (1).
+.PP
+If environment variable
+.B ATAC_TEST
+has a value it is used as the test case name.
+The default test case name is
+.I t.
+A numeric suffix is appended to each test case name to make it unique.
+.PP
+The
+.B \-O
+option is ignored by
+.I atacCC.
+.PP
+.I AtacCC
+parses K&R and ANSI standard C.
+.I AtacCC
+invokes
+.IR cc (1)
+to compile the source file after ATAC-specific preprocessing.
+Another C compiler may be specified by setting the environment variable
+.B ATAC_CC.
+.PP
+.SH EXAMPLE
+The following commands display coverage for
+.I src1.c
+and 
+.I src2.c
+linked with
+.I other.o
+and run with
+.I data
+for test input:
+.PP
+.in +.5i
+.nf
+.ft CB
+atacCC src1.c src2.c other.o	#Creates src1.atac, src2.atac and a.out
+.br
+a.out < data
+.br
+atac \-s src1.atac src2.atac
+.br
+atac src1.atac src2.atac
+.in
+.ft
+.fi
+.SH FILES
+\fIfile\fP.atac \- data-flow file.
+.br
+.IR a.out .trace
+\- coverage trace.
+.SH "SEE ALSO"
+atac(1), atacLD(1), ataclib(1), atacmin(1), atactm(1), cc(1).
+.SH BUGS
+.I AtacCC
+may not accept anachronistic C syntax.
+.PP
+Scoped typedef names will not compile in some cases.
+.PP
+Signal handlers compiled with
+.I atacCC
+may not work correctly.
+.SH DISTRIBUTION
+Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.PP
+Permission to use, copy, modify, and distribute this material
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice and this permission notice
+appear in all copies, and that the name of Bellcore not be
+used in advertising or publicity pertaining to this
+material without the specific, prior written permission
+of an authorized representative of Bellcore.  BELLCORE
+MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.PP
+Send comments or questions to atac@bellcore.com.

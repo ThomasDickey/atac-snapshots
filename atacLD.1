@@ -1,0 +1,130 @@
+.\"****************************************************************
+.\"Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.\"
+.\"Permission to use, copy, modify, and distribute this material
+.\"for any purpose and without fee is hereby granted, provided
+.\"that the above copyright notice and this permission notice
+.\"appear in all copies, and that the name of Bellcore not be
+.\"used in advertising or publicity pertaining to this
+.\"material without the specific, prior written permission
+.\"of an authorized representative of Bellcore.  BELLCORE
+.\"MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+.\"OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+.\"WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.\"****************************************************************
+.\"	$Header: /users/source/archives/atac.vcs/RCS/atacLD.1,v 1.5 1994/04/05 09:50:07 saul Exp $
+.\"
+.\"-----------------------------------------------$Log: atacLD.1,v $
+.\"-----------------------------------------------Revision 1.5  1994/04/05 09:50:07  saul
+.\"-----------------------------------------------FROM_KEYS
+.\"-----------------------------------------------
+Revision 1.5  94/04/05  09:50:07  saul
+Add DISTRIBUTION heading.
+
+Revision 1.4  94/04/04  10:07:47  jrh
+Add Release Copyright
+
+Revision 1.3  94/04/04  09:48:31  jrh
+Add Release Copyright
+
+Revision 1.2  93/10/28  11:58:21  ewk
+Change header to indicate release 3.3
+
+Revision 1.1  93/07/13  13:34:47  ewk
+Initial revision
+
+.\"-----------------------------------------------end of log
+.\"
+.TH "ATAC LD" 1 "$Date: 1994/04/05 09:50:07 $" "ATAC release 3.3"
+.UC 4
+.SH NAME
+atacLD \- automatic test analysis for C programs \-
+link editor
+.SH SYNOPSIS
+.B atacLD
+[ options ]... files...
+.SH DESCRIPTION
+.I AtacLD
+is the link editor for the ATAC test coverage tool.
+.I AtacLD
+links a set of object files creating an executable program.
+The arguments to
+.I atacLD
+are exactly the same as the arguments to 
+the standard link editor,
+.IR ld (1).
+Using
+.I atacLD,
+object files created with
+.I atacCC
+may be linked with object files and libraries created by other means,
+and linking may occur in any order.  \fIAtacLD\fP(1) relates to \fIatacCC\fP(1)
+just as \fIld\fP(1) relates to \fIcc\fP(1), it affords greater
+flexibility during linking if and when such flexibility is required.
+.PP
+When the program linked by
+.I atacLD
+is tested, a coverage trace is output to
+.IB a.out .trace,
+where
+.I a.out
+is the name of the executable file created by
+.I atacLD
+(i.e. the argument to the 
+.B \-o
+option, or, by default, literally 
+.I a.out.).
+.I AtacLD
+invokes
+.IR cc (1)
+to compile ATAC-specific object files prior to its link stage.
+After this ATAC-specific preprocessing has been completed,
+.I atacLD
+then invokes
+.IR ld (1)
+to link all object files.  The use of another C compiler may be specified
+by setting the environment variable
+.B ATAC_CC,
+while the use of another linker may be specified by setting 
+.B ATAC_LD.
+.PP
+.SH EXAMPLE
+The following commands compile \fIsrc1.c\fP using \fIatacCC\fP(1)
+and \fIsrc2.c\fP using \fIcc\fP(1).  The resulting object files
+are then linked with a special version of \fIcrt0.o\fP (\fImycrt0.o\fP)
+to build \fIa.out\fP:
+.PP
+.in +.5i
+.nf
+.ft CB
+atacCC -c src1.c				#Creates src1.atac and src1.o
+.br
+cc -c src2.c					#Creates src2.o
+.br
+atacLD mycrt0.o src1.o src2.o		#Creates a.out
+.br
+.in
+.ft
+.fi
+.SH FILES
+\fIfile\fP.atac \- data-flow file.
+.br
+.IR a.out .trace
+\- coverage trace.
+.SH "SEE ALSO"
+atac(1), atacCC(1), ataclib(1), atacmin(1), atactm(1), cc(1), ld(1).
+.SH DISTRIBUTION
+Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.PP
+Permission to use, copy, modify, and distribute this material
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice and this permission notice
+appear in all copies, and that the name of Bellcore not be
+used in advertising or publicity pertaining to this
+material without the specific, prior written permission
+of an authorized representative of Bellcore.  BELLCORE
+MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.PP
+Send comments or questions to atac@bellcore.com.

@@ -1,0 +1,450 @@
+.\"****************************************************************
+.\"Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.\"
+.\"Permission to use, copy, modify, and distribute this material
+.\"for any purpose and without fee is hereby granted, provided
+.\"that the above copyright notice and this permission notice
+.\"appear in all copies, and that the name of Bellcore not be
+.\"used in advertising or publicity pertaining to this
+.\"material without the specific, prior written permission
+.\"of an authorized representative of Bellcore.  BELLCORE
+.\"MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+.\"OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+.\"WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.\"****************************************************************
+.\" $Header: /users/source/archives/atac.vcs/RCS/atac.1,v 3.14 1994/04/05 09:49:58 saul Exp $
+.\"
+.\"$Log: atac.1,v $
+.\"Revision 3.14  1994/04/05 09:49:58  saul
+.\"FROM_KEYS
+.\"
+. \" Revision 3.14  94/04/05  09:49:58  saul
+. \" Add DISTRIBUTION heading.
+. \" 
+. \" Revision 3.13  94/04/04  10:07:19  jrh
+. \" Add Release Copyright
+. \" 
+. \" Revision 3.12  94/04/04  09:48:11  jrh
+. \" Add Release Copyright
+. \" 
+. \" Revision 3.11  93/10/28  11:57:26  ewk
+. \" Change header to indicate release 3.3
+. \" 
+. \" Revision 3.10  93/07/14  13:27:58  ewk
+. \" Improved -h documentation.
+. \" 
+. \" Revision 3.9  93/07/13  11:21:37  ewk
+. \" Updated SEE ALSO to include atacLD.
+. \" 
+. \" Revision 3.8  93/06/30  14:44:29  saul
+. \" doc for -S option changed to "decreasing additional coverage"
+. \" 
+. \" Revision 3.7  93/04/29  17:04:42  ewk
+. \" Changed to reflect the name changes from atacLib
+. \" to ataclib and atacMin to atacmin.
+. \" 
+. \" Revision 3.6  93/03/30  14:32:58  saul
+. \" Change comments to point to base as point of contact.
+. \" 
+. \" Revision 3.5  93/03/30  08:42:00  saul
+. \" Edits from ewk.
+. \" 
+. \" Revision 3.4  93/03/26  10:54:22  saul
+. \" Change "construct" to testable attribute.
+. \" 
+. \" Revision 3.3  93/02/09  15:30:11  saul
+. \" Missing trace file permitted to get static data only.
+. \" 
+. \" Revision 3.2  92/12/30  11:29:55  saul
+. \" Add last change date
+. \" 
+.\" Revision 3.1  92/12/03  09:00:11  saul
+.\" cumulative, cost, and sort options
+.\" 
+.\" Revision 3.0  92/11/06  07:46:15  saul
+.\" propagate to version 3.0
+.\" 
+.\" Revision 2.5  92/10/29  11:24:42  saul
+.\" Changed default for -s to -mbdcp.
+.\" 
+.\" Revision 2.4  92/10/28  08:58:08  saul
+.\" editorial changes
+.\" 
+.\" Revision 2.3  92/09/30  10:39:43  saul
+.\" Rewritten.  Removed atacCC stuff.
+.\" 
+.\" Revision 2.2  91/06/19  15:04:14  saul
+.\" Fix page header
+.\" 
+.\" Revision 2.1  91/06/19  14:57:43  saul
+.\" Propagte to version 2.0
+.\" 
+.\" Revision 1.1  91/06/12  16:19:54  saul
+.\" Aug 1990 baseline
+.\" 
+.\"-----------------------------------------------end of log
+.\" 
+.TH ATAC 1 "$Date: 1994/04/05 09:49:58 $" "ATAC release 3.3"
+.UC 4
+.SH NAME
+atac \- automatic test analysis for C programs
+.SH SYNOPSIS
+.B atac
+[
+.B \-airu
+] [
+.I other-options
+]... [ trace-file ] atac-files...  
+.br
+.B atac \-s
+[
+.B \-AifghKpqQrS
+] [
+.I other-options
+]... [ trace-file ] atac-files...  
+.br
+.B atac \-C
+[
+.B \-AifghKpqr
+] [
+.I other-options
+]... [ trace-file ] atac-files...  
+.br
+.B atac \-H
+[
+.B \-Aifghpr
+] [
+.I other-options
+]... [ trace-file ] atac-files...  
+.br
+.B atac \-T
+[
+.B \-air
+] [
+.I other-options
+]... [ trace-file ] atac-files...  
+.br
+.B atac \-v
+.br
+.IR other-options :
+.br
+.in +.5i
+.B \-c
+test-name
+.br
+.B \-F
+function
+.br
+.B \-m
+{
+.B bcdepu
+}...
+.br
+.B \-n
+test-name [
+.B -x
+]
+.br
+.B \-t
+threshold
+.in
+.SH DESCRIPTION
+.I Atac
+displays test coverage information
+by analyzing the data-flow files
+created by
+.IR atacCC (1)
+and trace files
+produced by executions of a program
+compiled with
+.IR atacCC (1).
+.I Atac
+will display C source code, highlighting code fragments not covered 
+by test executions.
+Various coverage options
+may be selected with the 
+.B \-m
+flag to display unentered functions or not covered
+.IR blocks ,
+.IR decisions ,
+.IR c-uses ,
+or
+.IR p-uses .
+By default all are displayed.
+The
+.B TERM
+environment variable must be set to display code fragments.
+Output is piped through
+.IR more (1)
+or
+.IR pg (1).
+.PP
+.I Atac
+.RB \- s
+will present a coverage summary for \fIfile\fP\fB.c\fP files
+corresponding to the specified \fIfile\fP\fB.atac\fP files.
+Various coverage options
+may be selected with the 
+.B \-m
+flag to count entered functions or covered
+.IR blocks ,
+.IR decisions ,
+.IR c-uses ,
+.IR p-uses ,
+or
+.IR all-uses .
+By default blocks, decisions, c-uses, and p-uses are counted.
+.PP
+If no trace file is specified the value of the
+.B ATAC_TRACE
+environment variable is used, if set.
+Otherwise 
+.I  a.out.trace
+is used if it exists.
+Otherwise
+.I atac
+assumes that no tests have been run.
+If the trace file name is not a complete path and the trace file is
+not found in the current directory, the directory named by the
+.B ATAC_DIR
+environment variable is searched.
+.SH OPTIONS
+.TP
+.B \-A
+Count only testable attributes whose components are covered by a weaker
+measure.
+Function entries are weakest followed
+in order by blocks, decisions, and c-uses and p-uses.
+C-uses and p-uses are of equal weakness.
+By default, for
+.BR \-s ,
+.BR \-C ,
+and
+.BR \-H
+all testable attributes are counted.
+.TP
+.B \-a
+Display all uncovered testable attributes even if not covered by a weaker measure.
+(See
+.B \-A
+above.)
+By default for displays,
+only uncovered testable attributes whose components are covered by a weaker
+measure are displayed.
+.TP
+.BI \-c \ test-name
+Present a comparison of coverage with that of named test cases.
+A testable attribute is considered covered only if it is not also covered
+by the named test cases.
+Wild cards may be used in the test case name.
+Wild cards are the same as those used for file names by sh(1) (*, ?, and [...]).
+Quote marks may be needed to prevent
+the shell from expanding the test name as file names.
+Multiple test-cases may also be specified by repeating the
+.B \-c
+option.
+.TP
+.B \-C
+Present execution counts.
+.TP
+.B \-f
+Present coverage summary on a per function basis.
+.TP
+.BI \-F \ function
+Present coverage for C subroutine named
+.I function.
+Wild cards may be used in the function name (see 
+.B \-c
+option).
+Multiple functions may also be specified by repeating the
+.B \-F
+option.
+.TP
+.B \-g
+Present coverage summary on a per source file basis.
+.TP
+.B \-h
+Suppress column headings (used with \-s, \-C, and \-H).
+.TP
+.B \-H
+Present maximum execution counts.
+.TP
+.B \-K
+Include test cost in coverage summary.
+(Implies
+.B \-p ).
+.TP
+.B \-i
+Ignore time stamps on source files and atac files.
+By default,
+.I atac
+issues an error if source files have been modified since
+execution of a test represented in the trace file.
+.TP
+.BR \-m { bcdepu }...
+Specifies the coverage measures to be used.
+.TP
+.B \ \ \ \ b
+Blocks \- code fragments not containing control flow branching.
+.TP
+.B  \ \ \ \ c
+C-uses \-
+(computational uses) pairs of blocks for which
+the first block contains an assignment to a variable and
+the second block contains a use of that variable in a computation.
+.TP
+.B  \ \ \ \ d
+Decisions \-
+pairs of blocks for which
+the first block ends at a control flow branch and
+the second block is a target of one of these branches.
+.TP
+.B  \ \ \ \ e
+Function entries \- covered when the function is entered at least once.
+.TP
+.B  \ \ \ \ p
+P-uses \-
+(predicate uses) triples of blocks for which
+the first block contains an assignment to a variable,
+the second block ends at a control flow branch
+based on a predicate containing that variable, and
+the third block is a target of one of these branches.
+.TP
+.B  \ \ \ \ u
+All-uses \-
+sum of
+.I p-uses
+and 
+.I c-uses.
+.TP
+.BI \-n \ test-name
+Present coverage for named test cases only.
+(See also
+.B \-x
+option.)
+Wild cards may be used in the function name (see 
+.B \-c
+option).
+Multiple test-cases may also be specified by repeating the
+.B \-n
+option.
+.TP
+.B \-p
+Present coverage summary on a per test case basis.
+.TP
+.B \-q
+Present cumulative coverage per test case.
+(Implies
+.B \-p ).
+.TP
+.B \-Q
+Sort test cases in order of increasing cost per additional coverage.
+Present cumulative coverage per test case.
+Include test cost in coverage summary.
+Same as
+.B -qSK .
+(Implies
+.B \-p ).
+.TP
+.B \-r
+Reverse the display criteria.
+For summaries, count only
+.I uncovered
+testable attributes.
+For displays, display only
+.I covered
+testable attributes.
+.TP
+.B \-s
+Present coverage summary.
+.TP
+.B \-S
+Sort test cases in order of decreasing additional coverage.
+(Implies
+.B \-p ).
+.TP
+.BI \-t \ threshold
+Count as covered only testable attributes that executed at least
+.I threshold
+times.
+By default
+.I threshold
+is 1.
+(The use of the
+.B \-t
+flag to precede the trace file name is now unnecessary.
+This usage is still supported for compatibility
+as long as the trace file name is not composed of digits.)
+.TP
+.BI \-T
+Present a tabular display of not covered testable attributes.
+.TP
+.B \-u
+Use underscoring instead of other stand-out mode for 
+C source code highlighting.
+.TP
+.B \-v
+Display ATAC release number and date.
+.TP
+.B \-x
+Exclude test cases specified by
+.B \-c
+and
+.B \-n
+options.  Include all unspecified test cases.
+.SH EXAMPLE
+The following commands display coverage for
+.I src1.c
+and 
+.I src2.c
+linked with
+.I other.o
+and run with
+.I data
+for test input:
+.PP
+.in +.5i
+.nf
+.ft CB
+atacCC src1.c src2.c other.o
+.br
+a.out < data
+.br
+atac \-s \-f src1.atac src2.atac
+.br
+atac src1.atac src2.atac
+.in
+.ft
+.fi
+.SH FILES
+\fIfile\fP.atac \- data-flow file.
+.br
+.IR a.out .trace
+\- coverage trace.
+.SH "SEE ALSO"
+atacCC(1), atacLD(1), ataclib(1), atacmin(1), atactm(1),
+cc(1), more(1), pg(1), sh(1).
+.SH CAVEATS
+Coverage trace files become invalid when any change is made to a source
+file.
+.PP
+When any not covered code is inside a preprocessor
+.RI ( cpp (1))
+macro expansion
+.I atac
+highlights the macro name and arguments.
+.SH DISTRIBUTION
+Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.PP
+Permission to use, copy, modify, and distribute this material
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice and this permission notice
+appear in all copies, and that the name of Bellcore not be
+used in advertising or publicity pertaining to this
+material without the specific, prior written permission
+of an authorized representative of Bellcore.  BELLCORE
+MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.PP
+Send comments or questions to atac@bellcore.com.

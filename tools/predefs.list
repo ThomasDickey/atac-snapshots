@@ -1,0 +1,201 @@
+#****************************************************************
+#Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+#
+#Permission to use, copy, modify, and distribute this material
+#for any purpose and without fee is hereby granted, provided
+#that the above copyright notice and this permission notice
+#appear in all copies, and that the name of Bellcore not be
+#used in advertising or publicity pertaining to this
+#material without the specific, prior written permission
+#of an authorized representative of Bellcore.  BELLCORE
+#MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+#OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+#WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+#****************************************************************
+# $Header: /users/source/archives/atac.vcs/tools/RCS/predefs.list,v 3.7 1994/08/03 11:20:49 saul Exp $
+#
+#-----------------------------------------------$Log: predefs.list,v $
+#-----------------------------------------------Revision 3.7  1994/08/03 11:20:49  saul
+#-----------------------------------------------FROM_KEYS
+#-----------------------------------------------
+#Revision 3.7  94/08/03  11:20:49  saul
+#linux and posix predef symbols added.
+#predef symbol pm_i386 corrected to m_i386
+#
+#Revision 3.6  94/04/04  10:53:13  jrh
+#Add Release Copyright
+#
+#Revision 3.5  93/08/11  10:01:32  saul
+#more entries, new format
+#
+#Revision 3.4  93/08/04  15:50:46  ewk
+#Added MVS and solaris support.  Squelched some ANSI warnings.
+#
+#Revision 3.3  93/07/09  14:45:20  saul
+#MVS added.
+#
+#Revision 3.2  93/02/11  10:59:55  saul
+#Add VAX VAX11C VAXC vax11c vaxc
+#
+#Revision 3.1  92/12/21  13:32:22  saul
+#Added predef names from Sun OS 4.1 cpp man page.
+#
+#Revision 3.0  92/11/06  07:46:36  saul
+#propagate to version 3.0
+#
+#Revision 2.3  92/11/02  15:46:35  saul
+#add u3b2
+#
+#Revision 2.2  92/11/02  11:47:02  saul
+#EFT and UTS added for UTS
+#
+#Revision 2.1  92/10/30  11:48:34  saul
+#possible predefined cpp symbols
+#
+#-----------------------------------------------end of log
+#
+NeXT
+aegis
+aix
+aix32
+alliant
+ansi
+ansi_c_source
+ansi_compat
+apollo
+bit_msf
+bsd
+bsd43
+bsd4_2
+builtin_va_arg_incr
+byte_msf
+clcc
+cmu
+convex
+eft
+extended
+gcos
+gnu
+gnuc
+hcx
+host_mips
+hp200
+hp300
+hp9000
+hp9000s200
+hp9000s300
+hpux
+i286
+i386
+i486
+i80286
+i80386
+i80486
+i860
+iAPX286
+iAPX386
+iAPX486
+iapx286
+iapx386
+iapx486
+ibm
+ibmr2
+interdata
+is68k
+language_c
+lint
+linux
+longlong
+m68
+m68000
+m68k
+m88000
+m88k
+m_coff
+m_i286
+m_i386
+m_i486
+m_unix
+m_wordswap
+mach
+math
+mc68000
+mc68010
+mc68020
+mc68030
+mc68k
+mc68k32
+mips
+mipseb
+mipsel
+mtxinu
+mvs
+n16
+news1500
+news1700
+news1800
+news1900
+news700
+news800
+news900
+next
+ns16000
+ns32000
+ns32332
+os
+pdp11
+portar
+posix
+pwb
+pyr
+pyramid
+r3000
+res
+rt
+saa
+saa_l2
+sequent
+sgi
+sony
+sony_news
+sparc
+spur
+stdc
+str
+sun
+sun286
+sun3
+sun4
+sun386
+sun486
+svr3
+svr4
+sysV88
+sysv
+systype_bsd
+systype_sysv
+sysv88
+tahoe
+tower32
+tower32_200
+tower32_600
+tower32_700
+tower32_800
+tower32_850
+tss
+u370
+u3b
+u3b15
+u3b2
+u3b20d
+u3b5
+ultrix
+unix
+unixpc
+usg
+uts
+vax
+vax11c
+vaxc
+vms
+x3j11

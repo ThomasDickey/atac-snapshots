@@ -1,0 +1,332 @@
+/****************************************************************
+*Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+*
+*Permission to use, copy, modify, and distribute this material
+*for any purpose and without fee is hereby granted, provided
+*that the above copyright notice and this permission notice
+*appear in all copies, and that the name of Bellcore not be
+*used in advertising or publicity pertaining to this
+*material without the specific, prior written permission
+*of an authorized representative of Bellcore.  BELLCORE
+*MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+*OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+*WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+****************************************************************/
+#ifdef MVS
+#include <mvapts.h>
+MODULEID(%M%,%J%/%D%/%T%)
+#endif /* MVS */
+
+static char upfix_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/upfix.c,v 3.4 1994/04/04 10:15:29 jrh Exp $";
+/*
+*-----------------------------------------------$Log: upfix.c,v $
+*-----------------------------------------------Revision 3.4  1994/04/04 10:15:29  jrh
+*-----------------------------------------------FROM_KEYS
+*-----------------------------------------------
+*Revision 3.4  94/04/04  10:15:29  jrh
+*Add Release Copyright
+*
+*Revision 3.3  93/08/09  16:09:50  saul
+*error in mvs code
+*
+*Revision 3.2  93/08/04  15:49:20  ewk
+*Added MVS and solaris support.  Squelched some ANSI warnings.
+*
+x.c
+*Revision 3.1  93/07/12  11:50:56  saul
+*MVS MODULEID
+*
+*Revision 3.0  92/11/06  07:46:08  saul
+*propagate to version 3.0
+*
+*Revision 2.3  92/10/30  09:49:27  saul
+*include portable.h
+*
+*Revision 2.2  92/04/07  07:53:08  saul
+*prefix should not begin with underscore
+*
+*Revision 2.1  92/04/07  07:33:52  saul
+*Nov 23, 1989 version
+*
+*-----------------------------------------------end of log
+*/
+#include <stdio.h>
+#include "portable.h"
+
+#ifndef MVS
+#define UPCASE_COUNT	('Z' - 'A' + 1)
+#define LOWCASE_COUNT	('z' - 'a' + 1)
+#else /* MVS */
+#define UPCASE_COUNT	26
+#define LOWCASE_COUNT	26
+#endif /* MVS */
+#define DIGIT_COUNT	('9' - '0' + 1)
+#define USCORE_COUNT	1
+
+typedef struct {
+	int		charsleft;
+	unsigned long	upcase;
+	unsigned long	lowcase;
+	int 		uscore;
+	unsigned long	digit;
+	int		prefixlen;
+	int		unique;
+	int		maxlen;
+	char		*prefix;
+} PREFIX;
+
+/* forward declarations */
+char *upfix();
+void upfix_exclude();
+void upfix_free();
+PREFIX *upfix_init();
+
+PREFIX *
+upfix_init(maxlen, s)
+int	maxlen;
+char	*s;
+{
+	PREFIX *p;
+
+	p = (PREFIX *)malloc(sizeof *p);
+	if (p == NULL) return NULL;
+
+	p->charsleft = UPCASE_COUNT + LOWCASE_COUNT;
+	p->upcase = (1 << UPCASE_COUNT) - 1;
+	p->lowcase = (1 << LOWCASE_COUNT) - 1;
+	p->uscore = 0;
+	p->digit = 0;
+	p->maxlen = maxlen;
+	p->prefix = (char *)malloc(maxlen + 1);
+	if (p->prefix == NULL) {
+		free(p);
+		return NULL;
+	}
+	if (s) {
+		p->prefixlen = strlen(s);
+		if (p->prefixlen > maxlen) {
+			free(p->prefix);
+			free(p);
+			return NULL;
+		}
+		else strcpy(p->prefix, s);
+		if (p->prefixlen > 0) p->unique = 1;	/* unique so far */
+		else p->unique = 0;
+	}
+	else {
+		p->prefixlen = 0;
+		p->unique = 0;
+	}
+
+	return p;
+}
+
+void
+upfix_free(p)
+PREFIX *p;
+{
+	free(p->prefix);
+	free(p);
+}
+
+void
+upfix_exclude(p, name)
+PREFIX *p;
+char *name;
+{
+	int namelen;
+	int c;
+	int bit;
+
+	namelen = strlen(name);
+	if (namelen < p->prefixlen) return;
+
+	if (p->prefixlen) {
+		if (strncmp(name, p->prefix, p->prefixlen)) return;
+		p->unique = 0;
+		if (p->prefixlen == p->maxlen)
+			return;		/* upfix() will fail. */
+	}
+
+	if (namelen == p->prefixlen) return;
+
+	c = name[p->prefixlen];
+#ifndef MVS
+	if (c >= 'A' && c <= 'Z') {
+		bit = 1 << (c - 'A');
+		if (p->upcase & bit) {
+			p->upcase &= ~bit;
+			p->charsleft--;
+		}
+	}
+	else if (c >= 'a' && c <= 'z') {
+		bit = 1 << (c - 'a');
+		if (p->lowcase & bit) {
+			p->lowcase &= ~bit;
+			p->charsleft--;
+		}
+	} 
+#else /* MVS */
+	if (c >= 'A' && c <= 'I') {
+		bit = 1 << (c - 'A');
+		if (p->upcase & bit) {
+			p->upcase &= ~bit;
+			p->charsleft--;
+		}
+	}
+	else if (c >= 'J' && c <= 'R') {
+		bit = 1 << ((c - 'J')+ 9);
+		if (p->upcase & bit) {
+			p->upcase &= ~bit;
+			p->charsleft--;
+		}
+	}
+	else if (c >= 'S' && c <= 'Z') {
+		bit = 1 << ((c - 'S')+ 18);
+		if (p->upcase & bit) {
+			p->upcase &= ~bit;
+			p->charsleft--;
+		}
+	}
+	else if (c >= 'a' && c <= 'i') {
+		bit = 1 << (c - 'a');
+		if (p->lowcase & bit) {
+			p->lowcase &= ~bit;
+			p->charsleft--;
+		}
+	} 
+	else if (c >= 'j' && c <= 'r') {
+		bit = 1 << ((c - 'j')+ 9);
+		if (p->lowcase & bit) {
+			p->lowcase &= ~bit;
+			p->charsleft--;
+		}
+	} 
+	else if (c >= 's' && c <= 'z') {
+		bit = 1 << ((c - 's')+ 18);
+		if (p->lowcase & bit) {
+			p->lowcase &= ~bit;
+			p->charsleft--;
+		}
+	} 
+#endif /* MVS */
+	else if (c >= '0' && c <= '9') {
+		bit = 1 << (c - '0');
+		if (p->digit & bit) {
+			p->digit &= ~bit;
+			p->charsleft--;
+		}
+	} 
+	else if (c == '_' && p->uscore) {
+		p->uscore = 0;
+		p->charsleft--;
+	}
+
+	if (p->charsleft > 1) return;
+
+#ifndef MVS
+	if (p->upcase) {
+		c = 'A';
+		while (p->upcase >>= 1) ++c;
+	}
+	else if (p->lowcase) {
+		c = 'a';
+		while (p->lowcase >>= 1) ++c;
+	}
+#else /* MVS */
+	if (p->upcase) {
+		c = 'A';
+		while (p->upcase >>= 1)
+		    {
+			++c;
+			if (c > 'I' && c < 'J')
+			    c = 'J';
+			else if (c > 'R' && c < 'S')
+			    c = 'S';
+		    }
+	}
+	else if (p->lowcase) {
+		c = 'a';
+		while (p->lowcase >>= 1)
+		    {
+			++c;
+			if (c > 'i' && c < 'j')
+			    c = 'j';
+			else if (c > 'r' && c < 's')
+			    c = 's';
+		    }
+	}
+#endif /* MVS */
+	else if (p->digit) {
+		c = '0';
+		while (p->digit >>= 1) ++c;
+	}
+	else c = '_';
+
+	p->prefix[p->prefixlen++] = c;
+	p->unique = 1;
+	p->charsleft = DIGIT_COUNT + UPCASE_COUNT + LOWCASE_COUNT + USCORE_COUNT;
+	p->digit = (1 << DIGIT_COUNT) - 1;
+	p->upcase = (1 << UPCASE_COUNT) - 1;
+	p->lowcase = (1 << LOWCASE_COUNT) - 1;
+	p->uscore = 1;
+}
+
+char *
+upfix(p)
+PREFIX *p;
+{
+	int c;
+	unsigned long tmp;
+
+	if (!p->unique)
+	{
+		if (p->prefixlen == p->maxlen) return NULL;
+
+		if (p->upcase) {
+			tmp = p->upcase;
+			c = 'A';
+#ifndef MVS
+			while (tmp >>= 1) ++c;
+#else /* MVS */
+			while (tmp >>= 1)
+			    {
+				++c;
+				if (c > 'I' && c < 'J')
+				    c = 'J';
+				else if (c > 'R' && c < 'S')
+				    c = 'S';
+			    }
+#endif
+		}
+		else if (p->lowcase) {
+			tmp = p->lowcase;
+			c = 'a';
+#ifndef MVS
+			while (tmp >>= 1) ++c;
+#else /* MVS */
+			while (tmp >>= 1)
+			    {
+				++c;
+				if (c > 'i' && c < 'j')
+				    c = 'j';
+				else if (c > 'r' && c < 's')
+				    c = 's';
+			    }
+#endif /* MVS */
+		}
+		else if (p->digit) {
+			tmp = p->digit;
+			c = '0';
+			while (tmp >>= 1) ++c;
+		}
+		else c = '_';
+	
+		p->prefix[p->prefixlen] = c;
+	}
+
+	p->prefix[p->prefixlen+1] = '\0';
+
+	return p->prefix;
+}
