@@ -1,0 +1,17 @@
+atac-980919 - summary of changes made 1998/9/19
+	Thomas Dickey (dickey@clark.net)
+
+	+ change error-message format to put filename, line, col before the message
+	  to make it simpler to parse with vile's error-finder
+
+	+ compiler warning fixes.
+
+# ------------------------------------------------------------------------------
+# atac_cpp/cexp.y     |    8 ++++++--
+# atac_i/deparse.c    |    7 +++++--
+# atac_i/dug.c        |   25 ++++++++++++++++++++++---
+# atac_i/error.c      |   44 +++++++++++++++++++++++---------------------
+# atac_i/srcpos.c     |   15 ++++++++++-----
+# atacysis/tab_disp.c |   12 +++++++++---
+# 6 files changed, 75 insertions, 36 deletions
+# ------------------------------------------------------------------------------

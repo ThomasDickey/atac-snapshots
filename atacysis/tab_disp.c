@@ -27,9 +27,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "atacysis.h"           /* ATAC post run-time stuff     */
 
 static char const tab_disp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tab_disp.c,v 3.7 1996/11/13 01:35:57 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tab_disp.c,v 3.8 1998/09/19 14:24:28 tom Exp $";
 /*
 * $Log: tab_disp.c,v $
+* Revision 3.8  1998/09/19 14:24:28  tom
+* int/size_t compiler warning
+*
 * Revision 3.7  1996/11/13 01:35:57  tom
 * ifdef'd unused code
 *
@@ -73,6 +76,9 @@ static char const tab_disp_c[] =
  * 17 Feb 1992  -- MSM -- creation  
  * 
  * $Log: tab_disp.c,v $
+ * Revision 3.8  1998/09/19 14:24:28  tom
+ * int/size_t compiler warning
+ *
  * Revision 3.7  1996/11/13 01:35:57  tom
  * ifdef'd unused code
  *
@@ -821,9 +827,9 @@ static void
 right_pad(to, from, max)
 char *to;
 char *from;
-size_t   max;
+size_t max;
 {
-  int j;
+  size_t j;
 
   strncpy(to, from, max);
   if (strlen(from) < max)

@@ -29,12 +29,16 @@ Boston, MA 02111-1307, USA.
 #include <setjmp.h>
 /* #define YYDEBUG 1 */
 
-#ifdef MULTIBYTE_CHARS
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+
+#ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif
 
 #include <stdio.h>
+#include <string.h>
 
 typedef unsigned char U_CHAR;
 
@@ -452,7 +456,7 @@ parse_number (olen)
     if (largest_digit < digit)
       largest_digit = digit;
     nd = n * base + digit;
-    overflow |= ULONG_MAX_over_base < n | nd < n;
+    overflow |= (ULONG_MAX_over_base < n) | (nd < n);
     n = nd;
   }
 
