@@ -24,10 +24,13 @@ extern	int main(int, char **);
 #endif
 
 static const char portable_h[] = 
-	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.13 1995/12/27 19:48:27 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.14 1997/05/12 00:19:04 tom Exp $";
 /*
 * Copyright @ 1992 Bell Communications Research, Inc. All Rights Reserved.
 *$Log: portable.h,v $
+*Revision 3.14  1997/05/12 00:19:04  tom
+*correct sign in LURSHIFT
+*
 *Revision 3.13  1995/12/27 19:48:27  tom
 *define P_ macro
 *
@@ -120,7 +123,7 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define DECODE(x)	((int) ((x)-'0'))	/* int value of a digit	*/
 
 /* long unsigned right shift */
-#define LURSHIFT(n, b)	(((long)(n) >> (b)) & (0x7fffffffL >> ((b)-1)))
+#define LURSHIFT(n, b)	(((unsigned long)(n) >> (b)) & (0x7fffffffL >> ((b)-1)))
 
 /* number of elements in array a */
 #define DIM(a)		(sizeof(a) /sizeof(*(a)))

@@ -15,9 +15,12 @@
 #ifndef scan_H
 #define scan_H
 static const char scan_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.h,v 3.2 1996/11/13 00:26:12 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.h,v 3.3 1997/05/10 20:40:39 tom Exp $";
 /*
 * $Log: scan.h,v $
+* Revision 3.3  1997/05/10 20:40:39  tom
+* add prototypes for scan.c
+*
 * Revision 3.2  1996/11/13 00:26:12  tom
 * change ident to 'const' to quiet gcc
 *
@@ -45,4 +48,12 @@ typedef struct tokenvalue {
 	char	*text;
 	SRCPOS	srcpos[2];
 } TOKENVALUE;
+
+/* scan.c */
+void scan_setType P_((char *name));
+void scan_pushScope P_((void));
+int scan_popScope P_((void));
+void scan_init P_((FILE *srcfile));
+void scan_end P_((char **uprefix));
+
 #endif /* scan_H */

@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char reglist_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/reglist.c,v 3.4 1996/11/13 00:41:37 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/reglist.c,v 3.5 1997/05/11 23:06:28 tom Exp $";
 /*
 * $Log: reglist.c,v $
+* Revision 3.5  1997/05/11 23:06:28  tom
+* split-out reglist.h
+*
 * Revision 3.4  1996/11/13 00:41:37  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -58,24 +61,10 @@ static const char reglist_c[] =
 #endif
 #include <stdio.h>
 #include "portable.h"
-
-typedef struct node {
-	void		*data;
-	int		idno;
-	struct node	*left;
-	struct node	*right;
-} NODE;
-
-typedef struct {
-	NODE	*tree;
-	int	idno;
-} REGLST;
+#include "reglist.h"
 
 /* forward declarations */
-extern int reglst_insert P_(( REGLST *reglst, void *data ));
-extern void reglst_free P_(( REGLST *reglst ));
-static void tree_free P_(( NODE *tree ));
-extern REGLST *reglst_create P_(( void ));
+static void tree_free P_(( REGNODE *tree ));
 
 REGLST *
 reglst_create()
@@ -93,7 +82,7 @@ reglst_create()
 
 static void
 tree_free(tree)
-NODE	*tree;
+REGNODE	*tree;
 {
 	if (tree) {
 		tree_free(tree->left);
@@ -117,8 +106,8 @@ reglst_insert(reglst, data)
 REGLST	*reglst;
 void	*data;
 {
-	NODE	*n;
-	NODE	**next;
+	REGNODE	*n;
+	REGNODE	**next;
 
 	if (reglst == NULL) return -1;		/* no reglst */
 
@@ -130,7 +119,7 @@ void	*data;
 		else return n->idno;		/* found */
 	}
 
-	n = (NODE *)malloc(sizeof *n);
+	n = (REGNODE *)malloc(sizeof *n);
 	if (n == NULL) return -1;	/* out of memory */
 
 	*next = n;

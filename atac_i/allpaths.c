@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char allpaths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.5 1996/11/12 23:45:16 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.7 1997/05/11 23:45:33 tom Exp $";
 /*
 * $Log: allpaths.c,v $
+* Revision 3.7  1997/05/11 23:45:33  tom
+* split-out allpaths.h, fix compiler warnings.
+*
+* Revision 3.6  1997/05/10 23:20:53  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.5  1996/11/12 23:45:16  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -72,22 +78,19 @@ static const char allpaths_c[] =
 #endif
 #include <stdio.h>
 #include <ctype.h>
+
 #include "portable.h"
+
+#include "error.h"
 #include "sym.h"
 #include "dug.h"
+#include "allpaths.h"
 
 #define CHECK_MALLOC(p)	((p)?1:internal_error(NULL, "Out of memory"))
 
-typedef struct path {
-	int		end_id;
-	struct path	*next;
-	unsigned	nodes[1];
-} PATH;
-
 /* forward declarations */
-PATH *allpaths P_(( DUG *dug, FILE *f, int list_them ));
-static PATH *subpaths P_(( BLOCK *node, unsigned *visited, int setsize ));
-static PATH *mkpath P_(( int end_id, PATH *next, int setsize, unsigned *nodes ));
+static PATH *subpaths P_(( BLOCK *node, unsigned *visited, size_t setsize ));
+static PATH *mkpath P_(( int end_id, PATH *next, size_t setsize, unsigned *nodes ));
 
 #define BPW	32	/* Bits Per Word */
 #define LBPW	5	/* Log Bits Per Word */
@@ -99,7 +102,7 @@ static PATH *
 mkpath(end_id, next, setsize, nodes)
 int		end_id;
 PATH		*next;
-int		setsize;
+size_t		setsize;
 unsigned	*nodes;
 {
 	PATH *p;
@@ -123,7 +126,7 @@ static PATH *
 subpaths(node, visited, setsize)
 BLOCK		*node;
 unsigned	*visited;
-int		setsize;
+size_t		setsize;
 {
 	int	node_id;	/* ID of this node. */
 	unsigned *v;		/* Nodes already visited including this one. */
@@ -134,7 +137,7 @@ int		setsize;
 	unsigned nloop_subsets;
 	unsigned **loop_tab = NULL;
 	PATH	*simple;	/* List of other subpaths. */
-	char	*t;		/* Loop control. */
+	LIST	*t;		/* Loop control. */
 	PATH	*p;
 	PATH	*next;
 	PATH	*sp;		/* Loop control for simple. */
@@ -180,7 +183,7 @@ int		setsize;
 	loop = NULL;
 	nloop = 0;
 	simple = NULL;
-	for (t = NULL; list_next(node->branches, &t, &subn); ) {
+	for (t = 0; LIST_NEXT(node->branches, &t, &subn); ) {
 		subp = subpaths(subn, v, setsize);
 		for (p = subp; p != NULL; p = next) {
 			next = p->next;
@@ -265,9 +268,9 @@ DUG	*dug;
 FILE	*f;
 int	list_them;
 {
-	char		*t;
+	LIST		*t;
 	BLOCK		*node;
-	int		setsize;
+	size_t		setsize;
 	unsigned	*visited;
 	int		i;
 	int		count;
@@ -278,10 +281,10 @@ int	list_them;
 	* Skip over block 0.  It is the start block and is
 	* also the flag for done.
 	*/
-	t = NULL;
-	if (list_next(dug->block_list, &t, NULL) == 0)
+	t = 0;
+	if (LIST_NEXT(dug->block_list, &t, NULL) == 0)
 		return NULL;
-	if (list_next(dug->block_list, &t, &node) == 0)
+	if (LIST_NEXT(dug->block_list, &t, &node) == 0)
 		return NULL;
 
 	setsize = (dug->count + BPW - 1) >> LBPW;

@@ -26,9 +26,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char table_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.4 1996/11/13 00:42:17 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.6 1997/05/11 20:56:12 tom Exp $";
 /*
 * $Log: table.c,v $
+* Revision 3.6  1997/05/11 20:56:12  tom
+* rename DATA to TABLE_DATATYPE
+*
+* Revision 3.5  1997/05/10 20:48:41  tom
+* split-out table.h
+*
 * Revision 3.4  1996/11/13 00:42:17  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -67,32 +73,9 @@ static const char table_c[] =
 #endif
 #include <stdio.h>
 #include "portable.h"
+#include "table.h"
 
-typedef	int DATA;
-
-typedef struct node {
-	DATA		*data;
-	struct node	*left;
-	struct node	*right;
-	struct node	*up;
-} NODE;
-
-typedef	int	(*CMP) P_((DATA *, DATA *));
-
-typedef struct {
-	NODE	*tree;
-	CMP	cmp;
-} TABLE;
-
-/* forward declarations */
-extern DATA *table_find P_(( TABLE *table, DATA *key, NODE **node, int matchtype ));
-extern DATA *table_insert P_(( TABLE *table, DATA *data, int duplicates ));
-extern DATA *table_next P_(( TABLE *table, NODE **node ));
-extern TABLE *table_create P_(( CMP cmp ));
-extern int intcmp P_(( int a, int b ));
-extern void table_free P_(( TABLE *table, void (*datafree)(DATA *) ));
-
-static void tree_free P_(( NODE *tree, void (*datafree)(DATA *) ));
+static void tree_free P_(( NODE *tree, void (*datafree)(TABLE_DATATYPE *) ));
 
 int
 intcmp(a, b)	/* dummy integer compare routine */
@@ -120,7 +103,7 @@ CMP	cmp;
 void
 table_free(table, datafree)
 TABLE	*table;
-void	(*datafree) P_((DATA *));
+void	(*datafree) P_((TABLE_DATATYPE *));
 {
 	if (table == NULL) return;		/* no table */
 
@@ -131,7 +114,7 @@ void	(*datafree) P_((DATA *));
 static void
 tree_free(tree, datafree)
 NODE	*tree;
-void	(*datafree) P_((DATA *));
+void	(*datafree) P_((TABLE_DATATYPE *));
 {
 	if (tree) {
 		tree_free(tree->left, datafree);
@@ -150,10 +133,10 @@ void	(*datafree) P_((DATA *));
 *	Matchtype may be OR'ed with REVERSE to reverse the ordering
 *	(not implemented).
 */
-DATA *					/* return pointer to data found */
+TABLE_DATATYPE *			/* return pointer to data found */
 table_find(table, key, node, matchtype)
 TABLE	*table;
-DATA	*key;
+TABLE_DATATYPE	*key;
 NODE	**node;
 int	matchtype;	/* not implemented */
 {
@@ -197,7 +180,7 @@ int	matchtype;	/* not implemented */
 	return NULL;				/* not found */
 }
 
-DATA *					/* return pointer to data found */
+TABLE_DATATYPE *			/* return pointer to data found */
 table_next(table, node)
 TABLE	*table;
 NODE	**node;
@@ -225,10 +208,10 @@ NODE	**node;
 	else return NULL;
 }
 
-DATA *
+TABLE_DATATYPE *
 table_insert(table, data, duplicates)
 TABLE	*table;
-DATA	*data;
+TABLE_DATATYPE	*data;
 int	duplicates;
 {
 	NODE	*n;

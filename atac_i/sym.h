@@ -15,9 +15,18 @@
 #ifndef sym_H
 #define sym_H
 static const char sym_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.5 1996/11/13 00:25:02 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.8 1997/05/12 00:20:24 tom Exp $";
 /*
 * $Log: sym.h,v $
+* Revision 3.8  1997/05/12 00:20:24  tom
+* correct sign in QUAL_OVERFLOW
+*
+* Revision 3.7  1997/05/11 23:07:09  tom
+* add prototypes for print_sym.c
+*
+* Revision 3.6  1997/05/10 23:59:15  tom
+* add prototypes for const.c, which use this module
+*
 * Revision 3.5  1996/11/13 00:25:02  tom
 * change ident to 'const' to quiet gcc
 *
@@ -125,7 +134,7 @@ static const char sym_h[] =
 
 #define QUAL_SHIFT	2
 #define QUAL_MASK	3
-#define QUAL_OVERFLOW(q)	((q) & ~ LURSHIFT(~0L, QUAL_SHIFT))
+#define QUAL_OVERFLOW(q) ((q) & (unsigned long)(~ LURSHIFT(~0L, QUAL_SHIFT)))
 
 #define QUAL_ISPTR(q)	(((q) & QUAL_MASK) == QUAL_PTR)
 #define QUAL_ISFUNC(q)	(((q) & QUAL_MASK) == QUAL_FUNC)
@@ -239,4 +248,14 @@ typedef struct sym {
 		VALTYPE		valtype;		/* also type_name */
 	} type;
 } SYM;
+
+/* const.c */
+extern int evalIConstExpr P_(( struct tnode *node ));
+extern void evalConstExpr P_(( struct tnode *n, CONST_VALUE *value ));
+extern void testConst P_(( void ));
+
+/* print_sym.c */
+extern void print_sym P_(( SYM *sym, char *prefix ));
+extern void print_type P_(( FILE *f, VALTYPE *type, char *name, char *prefix ));
+
 #endif /* sym_H */

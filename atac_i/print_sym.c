@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char print_sym_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/print_sym.c,v 3.5 1996/11/12 22:33:41 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/print_sym.c,v 3.7 1997/05/11 23:03:24 tom Exp $";
 /*
 * $Log: print_sym.c,v $
+* Revision 3.7  1997/05/11 23:03:24  tom
+* correct gcc warnings, including an erroneous call on internal_error()
+*
+* Revision 3.6  1997/05/10 23:19:47  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.5  1996/11/12 22:33:41  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -69,13 +75,11 @@ static const char print_sym_c[] =
 */
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "sym.h"
 
 /* forward declarations */
-extern void print_sym P_(( SYM *sym, char *prefix ));
-extern void print_type P_(( FILE *f, VALTYPE *type, char *name, char *prefix ));
 static int bit_align P_(( FILE *f, SYM *sym, int indent, int alignment ));
 static void iprint_sym P_(( FILE *f, SYM *sym, int indent, char *prefix ));
 static void print_rqual P_(( FILE *f, char *name, unsigned long rqual, int needparen, DIMLIST *dim ));
@@ -192,20 +196,20 @@ char	*prefix;
 		if (type->tag && type->tag->name) 
 			fprintf(f, "struct %s ",
 				type->tag->name);
-		else fprintf(f, "struct %s%u ", prefix ? prefix : "",
+		else fprintf(f, "struct %s%p ", prefix ? prefix : "",
 			type->tag);
 		break;
 	case BT_UNION:
 		if (type->tag && type->tag->name) 
 			fprintf(f, "union %s ",
 				type->tag->name);
-		else fprintf(f, "union %s%u ", prefix ? prefix : "", type->tag);
+		else fprintf(f, "union %s%p ", prefix ? prefix : "", type->tag);
 		break;
 	case BT_ENUM:
 		if (type->tag && type->tag->name) 
 			fprintf(f, "enum %s ",
 				type->tag->name);
-		else fprintf(f, "enum %s%u ", prefix ? prefix : "", type->tag);
+		else fprintf(f, "enum %s%p ", prefix ? prefix : "", type->tag);
 		break;
 	default:
 		if (base & BTB_UNSIGNED)
@@ -376,7 +380,7 @@ char	*prefix;
 		fprintf(f, "%s:", sym->name);
 		break;
 	default: 
-		internal_error("unknown symbol type: %d", sym->nametype);
+		internal_error((SRCPOS*)0, "unknown symbol type: %d", sym->nametype);
 		break;
 	}
 }

@@ -25,9 +25,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char const_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/const.c,v 3.7 1996/11/13 00:57:09 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/const.c,v 3.8 1997/05/10 23:14:09 tom Exp $";
 /*
 * $Log: const.c,v $
+* Revision 3.8  1997/05/10 23:14:09  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.7  1996/11/13 00:57:09  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -66,7 +69,7 @@ static const char const_c[] =
 */
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "sym.h"
 #include "tree.h"
@@ -78,10 +81,6 @@ static const char const_c[] =
 	((c) >= 'a' && (c) <= 'f') ? ((c) - 'a' + 10) : -1)
 #define DEC_DECODE(c) (							\
 	((c) >= '0' && (c) <= '9') ? ((c) - '0') : -1)
-
-/* forward declarations */
-extern int evalIConstExpr P_(( TNODE *node ));
-extern void evalConstExpr P_(( TNODE *n, CONST_VALUE *value ));
 
 static int evalSizeof P_(( SYM *sym ));
 static void evalIcon P_(( SRCPOS *srcpos, char *fulltext, CONST_VALUE *value ));

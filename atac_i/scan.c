@@ -27,17 +27,26 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <stdio.h>
 
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
+#include "list.h"
 #include "scan.h"
+#include "strtab.h"
 #include "tnode.h"	/* Pgram.h needs it */
 #include "Pgram.h"
 
 #define DEBUG 0
 
 static char const scan_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.11 1996/11/12 23:50:31 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.13 1997/05/11 22:07:02 tom Exp $";
 /*
 * $Log: scan.c,v $
+* Revision 3.13  1997/05/11 22:07:02  tom
+* use ID_TYPE to fix mismatches
+*
+* Revision 3.12  1997/05/11 00:22:31  tom
+* absorb srcpos.h into error.h
+* correct type of strtab variable.
+*
 * Revision 3.11  1996/11/12 23:50:31  tom
 * add forward-ref prototypes
 * remove bizarre 'NULL' statements (a plain ';' works!)
@@ -163,10 +172,8 @@ void yyerror P_(( char *string ));
 #define BUF_MALLOC_SIZE	40
 #define MAX_DIRECTIVE_SIZE  20	  
 
-extern char *strtab_insert();
-
 typedef struct {
-    int			*idType;
+    ID_TYPE		*idType;
     int			oldType;
 } typeFix_t;
 
@@ -236,14 +243,14 @@ static int		charTable[MAXCHAR + 1];	/* MAXCHAR is in portable.h */
 
 static FILE		*srcin  = NULL;		/* input file; */
 static char		*buf = NULL;
-static int		bufSize = 0;
-static struct table	*strtab = NULL;
+static size_t		bufSize = 0;
+static struct strtab	*strtab = NULL;
 static SRCPOS 		src = {-1, 0, 0};
 static SRCPOS 		m_begin;
 static SRCPOS 		m_end;
 static 			macro_nesting = 0;
-static int		scopeList;
-static int		typeFixList;
+static LIST *		scopeList;
+static LIST *		typeFixList;
 
 /*
 * initCharTable:  One time initialization of character table.
@@ -720,7 +727,7 @@ void
 scan_setType(name)
 char	*name;
 {
-    int		*idType;
+    ID_TYPE	*idType;
     typeFix_t	*typeFix;
 
     strtab_insert(strtab, name, &idType);
@@ -746,11 +753,11 @@ scan_pushScope()
 int
 scan_popScope()
 {
-    int		t;
+    LIST *	t;
     typeFix_t	*typeFix;
 
     if (typeFixList) {
-	for (t = 0; list_next(typeFixList, &t, &typeFix);) {
+	for (t = 0; LIST_NEXT(typeFixList, &t, &typeFix);) {
 	    *typeFix->idType = typeFix->oldType;
 	    free(typeFix);
 	    list_delete(typeFixList, &t);
@@ -759,7 +766,7 @@ scan_popScope()
     }
 
     t = 0;
-    if (list_prev(scopeList, &t, &typeFixList)) {
+    if (LIST_PREV(scopeList, &t, &typeFixList)) {
 	list_delete(scopeList, &t);
 	return 1;
     } else {
@@ -776,7 +783,7 @@ scan_init(srcfile)
 FILE		*srcfile;
 {
     int		c;
-    int		*idType;
+    ID_TYPE	*idType;
     static int	firstCall = 1;
     int		i;
 
@@ -811,7 +818,7 @@ FILE		*srcfile;
     /*
     * Create string table.
     */
-    strtab = (struct table *)strtab_create();
+    strtab = (struct strtab *)strtab_create();
 
     /*
     * Insert keywords in string table.
@@ -1010,7 +1017,7 @@ yylex()
 {
     int		c;
     int		charType;
-    int		*idType;
+    ID_TYPE	*idType;
     int		value = 0;
 
     yylval.token.text = NULL;

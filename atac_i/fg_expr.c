@@ -25,9 +25,18 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_expr_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.6 1996/11/12 23:59:34 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.9 1997/05/11 19:48:01 tom Exp $";
 /*
 * $Log: fg_expr.c,v $
+* Revision 3.9  1997/05/11 19:48:01  tom
+* split-out flowgraph.h, compile-clean
+*
+* Revision 3.8  1997/05/11 19:01:45  tom
+* make this compile clean against dug.h with all prototypes from dug.c
+*
+* Revision 3.7  1997/05/10 23:18:24  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.6  1996/11/12 23:59:34  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -75,25 +84,14 @@ static const char fg_expr_c[] =
 */
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "tree.h"
 #include "sym.h"
-#include "dug.h"
+#include "flowgraph.h"
 
 /* forward declarations */
-static void fg_asgn P_(( TNODE *n, DUG *dug, int sblk, int *endblk, int var_lhs, int ptr_lhs, int var_rhs, int ptr_rhs ));
-extern void fg_expr P_(( TNODE *n, DUG *dug, int sblk, int *endblk, int *Tendblk, int *Fendblk, int var_use, int ptr_use ));
-
-typedef struct {
-	int	s;	/* start block */
-	int	e;	/* end block */
-} SUBGRAPH;
-
-typedef struct gotolist {
-	int		block;
-	struct gotolist *next;
-} GOTOLIST;
+static void fg_asgn P_(( TNODE *n, DUG *dug, BLOCK * sblk, BLOCK ** endblk, int var_lhs, int ptr_lhs, int var_rhs, int ptr_rhs ));
 
 extern SYM decis_sym;	/* from fg_module.c */
 
@@ -134,10 +132,10 @@ void
 fg_expr(n, dug, sblk, endblk, Tendblk, Fendblk, var_use, ptr_use)
 TNODE	*n;
 DUG	*dug;
-int	sblk;
-int	*endblk;
-int	*Tendblk;
-int	*Fendblk;
+BLOCK * sblk;
+BLOCK **endblk;
+BLOCK **Tendblk;
+BLOCK **Fendblk;
 int	var_use;
 int	ptr_use;
 {
@@ -145,8 +143,8 @@ int	ptr_use;
 	SUBGRAPH	e2;	/* expr 2 */
 	SUBGRAPH	e3;	/* expr 3 */
 	TNODE		*p;
-	int		end;
-	int		tmp;
+	BLOCK 		*end;
+	BLOCK 		*tmp;
 
 	if (sblk == 0) {
 		/* unreachable code */
@@ -172,8 +170,8 @@ int	ptr_use;
 	case EXPR_QCOLON:
 		{
 			TNODE	*p2;
-			int	Tend;
-			int	Fend;
+			BLOCK	*Tend;
+			BLOCK	*Fend;
 
 			end = dug_newblk(dug);
 			fg_expr(CHILD0(n), dug, sblk, &e1.e, &Tend, &Fend,
@@ -233,11 +231,11 @@ int	ptr_use;
 		case BINOP_OROR:
 			{
 				TNODE	*p2;
-				int	start;
-				int	Tstart;
-				int	Fstart;
-				int	Tend;
-				int	Fend;
+				BLOCK	*start;
+				BLOCK	*Tstart;
+				BLOCK	*Fstart;
+				BLOCK	*Tend;
+				BLOCK	*Fend;
 	
 				end = dug_newblk(dug);
 				Tend = dug_newblk(dug);
@@ -459,8 +457,8 @@ static void
 fg_asgn(n, dug, sblk, endblk, var_lhs, ptr_lhs, var_rhs, ptr_rhs)
 TNODE	*n;
 DUG	*dug;
-int	sblk;
-int	*endblk;
+BLOCK	*sblk;
+BLOCK	**endblk;
 int	var_lhs;
 int	ptr_lhs;
 int	var_rhs;
@@ -468,7 +466,7 @@ int	ptr_rhs;
 {
 	SUBGRAPH	lhs;	/* left hand side */
 	SUBGRAPH	rhs;	/* right hand side */
-	int		end;
+	BLOCK	 	*end;
 
 	/*
 	* RHS of assignment is analysed first because it

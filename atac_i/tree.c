@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char tree_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.c,v 3.5 1996/11/13 00:40:33 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.c,v 3.7 1997/05/11 20:26:01 tom Exp $";
 /*
 * $Log: tree.c,v $
+* Revision 3.7  1997/05/11 20:26:01  tom
+* moved prototypes to tnode.h
+*
+* Revision 3.6  1997/05/10 23:20:36  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.5  1996/11/13 00:40:33  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -76,21 +82,13 @@ static const char tree_c[] =
 #endif
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "sym.h"
 #include "tree.h"
 #include "hook.h"	/* for tree_print of GEN_HOOK */
 
 /* forward declarations */
-extern TNODE *tFindDef P_(( TNODE *n ));
-extern TNODE *tFindPred P_(( TNODE *n ));
-extern TNODE *tFindSwitch P_(( TNODE *n ));
-extern TNODE *tlist_ladd P_(( TNODE *list, TNODE *next ));
-extern TNODE *tsrc_pos P_(( TNODE *node, SRCPOS *begin, SRCPOS *end ));
-extern int print_tree P_(( TNODE *node, int id, int parent, int level ));
-extern void tFindVDef P_(( TNODE *n, CONST_VALUE *value ));
-extern void tfreenode P_(( TNODE *node ));
 static char *genstr P_(( int token ));
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))

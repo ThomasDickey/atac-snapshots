@@ -22,9 +22,19 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_module_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.6 1996/11/12 23:57:55 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.9 1997/05/11 23:38:16 tom Exp $";
 /*
 * $Log: fg_module.c,v $
+* Revision 3.9  1997/05/11 23:38:16  tom
+* include allpaths.h
+*
+* Revision 3.8  1997/05/11 20:03:27  tom
+* split-out flowgraph.h
+* correct type of global_defs to 'LIST*'
+*
+* Revision 3.7  1997/05/10 23:18:39  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.6  1996/11/12 23:57:55  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -82,21 +92,21 @@ static const char fg_module_c[] =
 */
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "tree.h"
 #include "sym.h"
 #include "dug.h"
+#include "allpaths.h"
+#include "flowgraph.h"
 #include "version.h"
 
 /* forward declarations */
 static void fg_funcspec P_(( TNODE *n, char **fname ));
-static void fg_global_defs P_(( TNODE *n, char *global_defs ));
-static void fg_local_defs P_(( TNODE *n, DUG *dug, int sblk, int *endblk, int init ));
-static void fg_module P_(( TNODE *n, FILE *outsrc, FILE *outtables, char *global_defs, char *prefix ));
+static void fg_global_defs P_(( TNODE *n, LIST *global_defs ));
+static void fg_local_defs P_(( TNODE *n, DUG *dug, BLOCK * sblk, BLOCK * *endblk, int init ));
+static void fg_module P_(( TNODE *n, FILE *outsrc, FILE *outtables, LIST *global_defs, char *prefix ));
 static void init_outtables P_(( FILE *f ));
-void fg_body P_(( TNODE *n, DUG *dug, int sblk, int bblk, int cblk, int swblk, int *endblk, int *dblk ));
-void flowgraph P_(( TNODE *tree, FILE *outsrc, FILE *outtables, char *prefix ));
 
 #define MAX_PREFIX	4	/* generated name prefix */
 
@@ -111,7 +121,7 @@ char	*prefix;
 { 
 	char	*filename;
 	int	i;
-	char	*global_defs;	/* list of global variable defs. seen */
+	LIST	*global_defs;	/* list of global variable defs. seen */
 	extern char * srcfname P_(( int findex ));
 
 	init_outtables(outtables);
@@ -121,9 +131,9 @@ char	*prefix;
 	/*
 	* Parse all functions.
 	*/
-	global_defs = (char *)list_create();
+	global_defs = list_create();
 	fg_module(tree, outsrc, outtables, global_defs, prefix);
-	list_free(global_defs, (void (*)())NULL);
+	list_free(global_defs, (DataFree)0);
 }
 
 static void
@@ -131,7 +141,7 @@ fg_module(n, outsrc, outtables, global_defs, prefix)
 TNODE	*n;
 FILE	*outsrc;
 FILE	*outtables;
-char	*global_defs;
+LIST	*global_defs;
 char	*prefix;
 {
 	TNODE	*p;
@@ -151,9 +161,9 @@ char	*prefix;
 		return;
 	case GEN_FUNCTION:
 		{
-			int	start;
-			int	e;
-			int	*i;
+			BLOCK *	start;
+			BLOCK *	e;
+			LIST	*i;
 			SYM	*s;
 			DUG	*dug;
 			char	*fname;
@@ -193,7 +203,7 @@ char	*prefix;
 			* also, but it doesn't matter because there won't be
 			* any USES for them. ]
 			*/
-			for (i = NULL; list_next(global_defs, &i, &s); ) {
+			for (i = 0; LIST_NEXT(global_defs, &i, &s); ) {
 				s_type = s->type.valtype.qual;
 				if (!QUAL_ISARRAY(s_type))
 					dug_du(dug, s, start, VAR_DEF, s->def);
@@ -307,14 +317,14 @@ void
 fg_body(n, dug, sblk, bblk, cblk, swblk, endblk, dblk)
 TNODE	*n;
 DUG	*dug;
-int	sblk;	/* block at which statement or expression starts */
-int	bblk;	/* block reached by break stmt */
-int	cblk;	/* block reached by continue stmt */
-int	swblk;	/* block containing switch to case label */
-int	*endblk;	/* return block at end of stmt or expression */
-int	*dblk;	/* return block with "default:" label (used as flag) */
+BLOCK *	sblk;	/* block at which statement or expression starts */
+BLOCK *	bblk;	/* block reached by break stmt */
+BLOCK *	cblk;	/* block reached by continue stmt */
+BLOCK *	swblk;	/* block containing switch to case label */
+BLOCK **endblk;	/* return block at end of stmt or expression */
+BLOCK **dblk;	/* return block with "default:" label (used as flag) */
 {
-	int end;
+	BLOCK * end;
 
 	end = sblk;
 	if (n == NULL) {
@@ -375,7 +385,7 @@ int	*dblk;	/* return block with "default:" label (used as flag) */
 static void
 fg_global_defs(n, global_defs)
 TNODE	*n;
-char	*global_defs;
+LIST	*global_defs;
 {
 	TNODE	*p;
 
@@ -404,11 +414,11 @@ static void
 fg_local_defs(n, dug, sblk, endblk, init)
 TNODE	*n;
 DUG	*dug;
-int	sblk;
-int	*endblk;
+BLOCK*	sblk;
+BLOCK**	endblk;
 int	init;
 {
-	int end;
+	BLOCK * end;
 
 	end = sblk;
 

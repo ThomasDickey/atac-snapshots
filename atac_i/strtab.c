@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char strtab_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/strtab.c,v 3.4 1996/11/13 00:42:39 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/strtab.c,v 3.6 1997/05/11 22:08:45 tom Exp $";
 /*
 * $Log: strtab.c,v $
+* Revision 3.6  1997/05/11 22:08:45  tom
+* use ID_TYPE to correct prototype for strtab_insert()
+*
+* Revision 3.5  1997/05/11 00:16:56  tom
+* split-out strtab.h
+*
 * Revision 3.4  1996/11/13 00:42:39  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -76,6 +82,9 @@ static const char strtab_c[] =
 #include <stdio.h>
 #include <string.h>
 #include "portable.h"
+#include "error.h"
+#include "strtab.h"
+#include "upfix.h"
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
@@ -84,34 +93,11 @@ static const char strtab_c[] =
 * share the same space.  There is no explicit limit on string length, but
 * long strings tend to waste space at the end of a buffer.
 */
-#define BUFSIZE		500
 #define UPFIX_MAX_LEN	5
 #define DEFAULT_PREFIX	"aTaC_"
 #define IDSIZE	sizeof(long)
 
-typedef struct table *TABLE;
-
-typedef struct buffer {
-	struct buffer	*next;
-	long		buf[BUFSIZE/sizeof(long)];
-} BUFFER;
-
-typedef struct strtab {
-	BUFFER 	*buf_list;	/* List of buffers to be freed */
-	char	*buf_ptr;	/* Next available possition. */
-	int	size;		/* Number of bytes left in current buffer */
-	                        /* May be negative (when padding goes over). */
-	TABLE	*index;		/* Table to find duplicates. */
-	void	*upfix;		/* Unique prefix table. */
-} STRTAB;
-
 static int alignSize = 0;
-
-/* forward declarations */
-extern char *strtab_upfix P_(( STRTAB *strtab ));
-extern void strtab_free P_(( STRTAB *strtab ));
-extern char *strtab_insert P_(( STRTAB *strtab, char *str, char **id ));
-extern STRTAB *strtab_create P_(( void ));
 
 /*
 * strtab_create:  Return pointer to strtab; to be passed to strtab_insert()
@@ -121,7 +107,6 @@ STRTAB *
 strtab_create()
 {
 	STRTAB	*strtab;
-	extern	strcmp();		
 
 	/*
 	* Set alignSize to one less thatn the least power of 2 greater or
@@ -160,7 +145,7 @@ char *
 strtab_insert(strtab, str, id)
 STRTAB	*strtab;
 char	*str;
-char	**id;
+ID_TYPE	**id;
 {
 	char	*s;
 	BUFFER	*buf;
@@ -171,7 +156,7 @@ char	**id;
 
 	s = (char *)table_find(strtab->index, str, 0, 0);
 	if (s) {
-	    if (id) *id = s - IDSIZE;
+	    if (id) *id = (ID_TYPE *)(s - IDSIZE);
 	    return s;
 	}
 
@@ -188,7 +173,7 @@ char	**id;
 	*(long *)strtab->buf_ptr = 0;
 	strcpy(strtab->buf_ptr + IDSIZE, str);
 	s = (char *)table_insert(strtab->index, strtab->buf_ptr + IDSIZE, 0);
-	if (id) *id = strtab->buf_ptr;
+	if (id) *id = (ID_TYPE *)(strtab->buf_ptr);
 	size = (size + alignSize) & ~alignSize;
 	strtab->buf_ptr += size;
 	strtab->size -= size;

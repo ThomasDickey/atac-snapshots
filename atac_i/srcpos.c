@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char srcpos_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.5 1996/11/12 23:02:07 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.7 1997/05/12 00:34:05 tom Exp $";
 /*
 * $Log: srcpos.c,v $
+* Revision 3.7  1997/05/12 00:34:05  tom
+* remove redundant prototypes
+*
+* Revision 3.6  1997/05/10 23:19:59  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.5  1996/11/12 23:02:07  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -68,7 +74,7 @@ static const char srcpos_c[] =
 
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
@@ -79,13 +85,6 @@ static char **filenames = NULL;
 static int *stamps = NULL;
 static int n_filenames = 0;
 static fname_buf_size = 0;
-
-extern void print_srcpos P_(( SRCPOS *srcpos, FILE *f ));
-extern void node_srcpos P_(( TNODE *node, int left, FILE *f ));
-extern int store_filename P_(( char *s ));
-extern char * srcfname P_(( int findex ));
-extern int srcfstamp P_(( int findex ));
-extern void node_isrcpos P_(( TNODE *node, int left, FILE *f ));
 
 void
 print_srcpos(srcpos, f)

@@ -1,3 +1,4 @@
+#FIXME: update dependencies
 #****************************************************************
 #Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
 #
@@ -12,9 +13,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atac_i/RCS/makefile.in,v 1.5 1997/04/25 13:42:31 tom Exp $
+# $Header: /users/source/archives/atac.vcs/atac_i/RCS/makefile.in,v 1.6 1997/05/10 23:19:07 tom Exp $
 #
 # $Log: makefile.in,v $
+# Revision 1.6  1997/05/10 23:19:07  tom
+# first cut of restructuring (must update dependencies)
+#
 # Revision 1.5  1997/04/25 13:42:31  tom
 # CC-substitution
 #
@@ -148,42 +152,26 @@ atac_i:	$(OBJ) $(PARSER_OBJ)
 parser:	parser.o $(PARSER_OBJ)
 	$(CC) $(CFLAGS) parser.o $(PARSER_OBJ) -o parser
 
-filestamp.o:	filestamp.c $(INCLUDES)/portable.h
+SCAN_TEST_OBJS	= \
+		scan.o \
+		scan_test.o \
+		table.o \
+		strtab.o \
+		srcpos.o \
+		error.o \
+		list.o	\
+		filestamp.o \
+		upfix.o
 
-alldu.o:	alldu.c dug.h bitvec.h $(INCLUDES)/portable.h
+scan_test:	$(SCAN_TEST_OBJS)
+		$(CC) $(SCAN_TEST_OBJS) -o $@
 
-allpaths.o:	allpaths.c dug.h $(INCLUDES)/portable.h
-
-type.o:		type.c srcpos.h tnode.h sym.h tree.h hook.h		\
-			$(INCLUDES)/portable.h
-
-error.o:	error.c srcpos.h $(INCLUDES)/portable.h
-
-srcpos.o:	srcpos.c srcpos.h tnode.h $(INCLUDES)/portable.h
-
-fg_module.o:	fg_module.c srcpos.h tnode.h tree.h sym.h dug.h		\
-			$(INCLUDES)/version.h $(INCLUDES)/portable.h
-
-fg_stmt.o:	fg_stmt.c srcpos.h tnode.h tree.h sym.h dug.h		\
-			$(INCLUDES)/portable.h
-
-fg_expr.o:	fg_expr.c srcpos.h tnode.h tree.h sym.h dug.h		\
-			 $(INCLUDES)/portable.h
-
-paths.o:	paths.c sym.h dug.h bitvec.h $(INCLUDES)/portable.h
-
-dug.o:		dug.c sym.h dug.h $(INCLUDES)/version.h $(INCLUDES)/portable.h
-
-mark.o:		mark.c srcpos.h tnode.h tree.h dug.h $(INCLUDES)/portable.h
-
-deparse.o:	deparse.c srcpos.h tnode.h tree.h deparse.h		\
-			 $(INCLUDES)/portable.h
-
-atac_i.o:	atac_i.c srcpos.h tnode.h tree.h $(INCLUDES)/portable.h
-
-scan.o:		scan.c srcpos.h scan.h Pgram.h $(INCLUDES)/portable.h
-
-Pgram.o:	Pgram.c srcpos.h scan.h tnode.h tree.h $(INCLUDES)/portable.h
+Pgram.o:	Pgram.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		scan.h \
+		tnode.h \
+		tree.h
 		$(CC) -c -D'YYMAXDEPTH=200' $(CFLAGS) Pgram.c
 
 Pgram.h Pgram.c:	Pgram.y
@@ -191,27 +179,150 @@ Pgram.h Pgram.c:	Pgram.y
 		mv y.tab.h Pgram.h
 		mv y.tab.c Pgram.c
 
-strtab.o:	strtab.c $(INCLUDES)/portable.h
+ERROR_H	= \
+	error.h \
+	srcpos.h
 
-tree.o:		tree.c srcpos.h tnode.h tree.h hook.h $(INCLUDES)/portable.h
+alldu.o:	alldu.c \
+		$(INCLUDES)/portable.h \
+		bitvec.h \
+		dug.h
 
-print_sym.o:	print_sym.c srcpos.h tnode.h sym.h $(INCLUDES)/portable.h
+allpaths.o:	allpaths.c \
+		$(INCLUDES)/portable.h \
+		dug.h
 
-sym.o:		sym.c srcpos.h tnode.h sym.h tree.h $(INCLUDES)/portable.h
+atac_i.o:	atac_i.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		tnode.h \
+		tree.h
 
-scan_test:	scan.o scan_test.o table.o strtab.o srcpos.o error.o list.o	\
-			 filestamp.o upfix.o $(INCLUDES)/portable.h
-		$(CC) scan.o scan_test.o strtab.o table.o srcpos.o list.o	\
-			error.o upfix.o filestamp.o -o scan_test
+const.o:	const.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		sym.h \
+		tnode.h \
+		tree.h
 
-scantest.o:	srcpos.h scan.c y.tab.h tnode.h $(INCLUDES)/portable.h
+deparse.o:	deparse.c \
+		$(INCLUDES)/portable.h \
+		deparse.h \
+		srcpos.h \
+		tnode.h \
+		tree.h
 
-list.o:		list.c $(INCLUDES)/portable.h
+dug.o:		dug.c sym.h dug.h \
+		$(INCLUDES)/version.h \
+		$(INCLUDES)/portable.h
 
-parser.o:	parser.c srcpos.h tnode.h tree.h $(INCLUDES)/portable.h
+error.o:	error.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h
 
-reglist.o:	reglist.c $(INCLUDES)/portable.h
+fg_expr.o:	fg_expr.c \
+		$(INCLUDES)/portable.h \
+		dug.h \
+		srcpos.h \
+		tnode.h \
+		tree.h \
+		sym.h
 
-const.o:	const.c srcpos.h tnode.h tree.h sym.h $(INCLUDES)/portable.h
+fg_module.o:	fg_module.c \
+		$(INCLUDES)/version.h \
+		$(INCLUDES)/portable.h \
+		dug.h \
+		srcpos.h \
+		tnode.h \
+		tree.h \
+		sym.h
 
-tnode.o:	srcpos.h tnode.h $(INCLUDES)/portable.h
+fg_stmt.o:	fg_stmt.c \
+		$(INCLUDES)/portable.h \
+		dug.h \
+		srcpos.h \
+		tnode.h \
+		tree.h \
+		sym.h
+
+filestamp.o:	filestamp.c \
+		$(INCLUDES)/portable.h
+
+list.o:		list.c \
+		$(INCLUDES)/portable.h
+
+mark.o:		mark.c \
+		$(INCLUDES)/portable.h \
+		dug.h \
+		srcpos.h \
+		tnode.h \
+		tree.h
+
+parser.o:	parser.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		tnode.h \
+		tree.h
+
+paths.o:	paths.c \
+		$(INCLUDES)/portable.h \
+		bitvec.h \
+		dug.h \
+		sym.h
+
+print_sym.o:	print_sym.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		sym.h \
+		tnode.h
+
+reglist.o:	reglist.c \
+		$(INCLUDES)/portable.h
+
+scan.o:		scan.c \
+		$(INCLUDES)/portable.h \
+		Pgram.h \
+		scan.h \
+		srcpos.h
+
+scantest.o:	scantest.c \
+		$(INCLUDES)/portable.h \
+		scan.c \
+		srcpos.h \
+		tnode.h \
+		y.tab.h
+
+srcpos.o:	srcpos.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		tnode.h
+
+strtab.o:	strtab.c \
+		$(INCLUDES)/portable.h
+
+sym.o:		sym.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		sym.h \
+		tnode.h \
+		tree.h
+
+tnode.o:	tnode.c \
+		$(INCLUDES)/portable.h \
+		srcpos.h \
+		tnode.h
+
+tree.o:		tree.c \
+		$(INCLUDES)/portable.h \
+		hook.h \
+		srcpos.h \
+		tnode.h \
+		tree.h
+
+type.o:		type.c \
+		$(INCLUDES)/portable.h \
+		hook.h \
+		srcpos.h \
+		sym.h \
+		tnode.h \
+		tree.h

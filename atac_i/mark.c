@@ -25,9 +25,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char mark_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.6 1996/11/13 00:42:22 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.8 1997/05/11 23:27:56 tom Exp $";
 /*
 * $Log: mark.c,v $
+* Revision 3.8  1997/05/11 23:27:56  tom
+* correct gcc warnings
+*
+* Revision 3.7  1997/05/10 23:19:23  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.6  1996/11/13 00:42:22  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -72,7 +78,7 @@ static const char mark_c[] =
 #endif
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "tree.h"
 #include "sym.h"		/* for type info in cast stuff */
@@ -80,7 +86,6 @@ static const char mark_c[] =
 #include "hook.h"
 
 /* forward declarations */
-extern void dug_mark P_(( DUG *dug ));
 static void marker P_(( TNODE *node, int mtype, int blkno, VALTYPE *type, int tempno ));
 static int tempvar P_(( TNODE *local_pos, int stmt_no, TNODE *n ));
 static void expr_marker P_(( DUG *dug, BLOCK *b, TNODE *end, TNODE *local_pos, int *stmt_no ));
@@ -383,16 +388,16 @@ DUG	*dug;
 	int	stmt_no;	/* Controls reuse of temp vars */
 
 	t = NULL;
-	if (list_next(dug->block_list, &t, &b) == 0) {
+	if (LIST_NEXT(dug->block_list, &t, &b) == 0) {
 		internal_error(NULL, "dug_mark: no start block");
 		return;
 	}
-	start = (TNODE *)b->parse_start;
+	start = b->parse_start;
 	local_pos = start;
 	marker(start, HOOK_START, 0, dug->fname, 0);
 	stmt_no = 0;
 
-	while (list_next(dug->block_list, &t, &b)) {
+	while (LIST_NEXT(dug->block_list, &t, &b)) {
 		start = (TNODE *)b->parse_start;
 		end = (TNODE *)b->parse_end;
 		if (start == NULL) continue;

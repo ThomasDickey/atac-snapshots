@@ -21,9 +21,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char Pgram_y[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.9 1996/11/13 01:26:26 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.10 1997/05/10 22:17:14 tom Exp $";
 /*
 * $Log: Pgram.y,v $
+* Revision 3.10  1997/05/10 22:17:14  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.9  1996/11/13 01:26:26  tom
 * undo redefinition of literal-tokens (e.g., ';' vs TOK_SEMICOLON).
 * change def of AUTO to avoid conflict with bison's ENDFILE.
@@ -99,7 +102,7 @@ static char Pgram_y[] =
 */
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "scan.h"
 #include "tnode.h"
 #include "tree.h"
