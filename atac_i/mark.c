@@ -25,9 +25,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char mark_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.8 1997/05/11 23:27:56 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.9 1997/12/09 00:53:23 tom Exp $";
 /*
 * $Log: mark.c,v $
+* Revision 3.9  1997/12/09 00:53:23  tom
+* cast dug->fname to cover up special marker() case
+*
 * Revision 3.8  1997/05/11 23:27:56  tom
 * correct gcc warnings
 *
@@ -394,7 +397,7 @@ DUG	*dug;
 	}
 	start = b->parse_start;
 	local_pos = start;
-	marker(start, HOOK_START, 0, dug->fname, 0);
+	marker(start, HOOK_START, 0, (VALTYPE *)(dug->fname), 0);
 	stmt_no = 0;
 
 	while (LIST_NEXT(dug->block_list, &t, &b)) {

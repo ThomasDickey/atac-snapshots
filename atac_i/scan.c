@@ -37,9 +37,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #define DEBUG 0
 
 static char const scan_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.14 1997/11/01 19:12:24 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.16 1997/12/12 00:09:42 tom Exp $";
 /*
 * $Log: scan.c,v $
+* Revision 3.16  1997/12/12 00:09:42  tom
+* make yylex() return a negative value on end-of-file, rather than bogus
+* ENDFILE symbol.
+*
 * Revision 3.14  1997/11/01 19:12:24  tom
 * add __inline, since gcc uses it...
 *
@@ -157,13 +161,13 @@ int scan_popScope P_(( void ));
 int yylex P_(( void ));
 static int expandedMacro P_(( void ));
 static int scanAssignOp P_(( int c ));
-static int scanNumber P_(( FILE *srcin, int offset, int nextC ));
+static int scanNumber P_(( FILE *srcin, size_t offset, int nextC ));
 static int scanSpaces P_(( int c ));
 static int scanWhiteSpace P_(( int c ));
 static void initCharTable P_(( void ));
 static void poundDirective P_(( void ));
 static void scanComment P_(( void ));
-static void scanQuotedString P_(( FILE *srcin, int offset, int quote ));
+static void scanQuotedString P_(( FILE *srcin, size_t offset, int quote ));
 void scan_end P_(( char **uprefix ));
 void scan_init P_(( FILE *srcfile ));
 void scan_pushScope P_(( void ));
@@ -789,7 +793,7 @@ FILE		*srcfile;
     int		c;
     ID_TYPE	*idType;
     static int	firstCall = 1;
-    int		i;
+    size_t	i;
 
     if (firstCall) {
 	firstCall = 0;
@@ -860,11 +864,11 @@ char **uprefix;
 static void
 scanQuotedString(srcin2, offset, quote)
 FILE	*srcin2;
-int	offset;
+size_t	offset;
 int	quote;
 {
     int	c;
-    int	i;
+    size_t i;
     int escape;
 
     i = offset;
@@ -963,11 +967,11 @@ int	c;
 static int
 scanNumber(srcin2, offset, nextC)
 FILE	*srcin2;
-int	offset;
+size_t	offset;
 int	nextC;
 {
     int		c;
-    int		i;
+    size_t	i;
     int 	value;
     int		charType;
 
@@ -1053,7 +1057,7 @@ yylex()
     {
     case LETTER:
         {
-	    int	i = 0;
+	    size_t i = 0;
 
 	    if (c == 'L') {
 		/*
@@ -1126,7 +1130,7 @@ yylex()
 
     case DIGIT:
         {
-	    int i = 0;
+	    size_t i = 0;
 
 	    /*
 	     * Get integer part of number.
@@ -1272,7 +1276,7 @@ yylex()
 	*idType = value;
 	break;
     case ENDOFFILE:
-	if (c == EOF) value = ENDFILE;
+	if (c == EOF) value = -1;
 	else lexical_error(&src, "invalid character");	/* '\0377' */
 	break;
     case BADCHAR:

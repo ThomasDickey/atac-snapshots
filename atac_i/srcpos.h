@@ -15,9 +15,12 @@
 #ifndef srcpos_H
 #define srcpos_H
 static const char srcpos_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.h,v 3.2 1996/11/13 00:25:43 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.h,v 3.3 1997/12/09 00:46:10 tom Exp $";
 /*
 * $Log: srcpos.h,v $
+* Revision 3.3  1997/12/09 00:46:10  tom
+* add 'filestamp()' prototype
+*
 * Revision 3.2  1996/11/13 00:25:43  tom
 * change ident to 'const' to quiet gcc
 *
@@ -33,9 +36,9 @@ static const char srcpos_h[] =
 * Revision 2.1  91/06/13  12:39:20  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:51  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:51  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 typedef struct srcpos {
@@ -43,5 +46,8 @@ typedef struct srcpos {
 	short	col;
 	int	line;
 } SRCPOS;
+
+/* filestamp.c */
+extern int filestamp P_(( char *path ));
 
 #endif /* srcpos_H */

@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char strtab_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/strtab.c,v 3.6 1997/05/11 22:08:45 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/strtab.c,v 3.7 1997/12/09 00:03:39 tom Exp $";
 /*
 * $Log: strtab.c,v $
+* Revision 3.7  1997/12/09 00:03:39  tom
+* int/size_t fix
+*
 * Revision 3.6  1997/05/11 22:08:45  tom
 * use ID_TYPE to correct prototype for strtab_insert()
 *
@@ -97,7 +100,7 @@ static const char strtab_c[] =
 #define DEFAULT_PREFIX	"aTaC_"
 #define IDSIZE	sizeof(long)
 
-static int alignSize = 0;
+static size_t alignSize = 0;
 
 /*
 * strtab_create:  Return pointer to strtab; to be passed to strtab_insert()

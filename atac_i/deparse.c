@@ -22,9 +22,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char deparse_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.8 1997/05/12 00:22:26 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.9 1997/12/08 23:23:43 tom Exp $";
 /*
 * $Log: deparse.c,v $
+* Revision 3.9  1997/12/08 23:23:43  tom
+* int/size_t fix.
+* correct char* cast of n->sym.hook.type
+*
 * Revision 3.8  1997/05/12 00:22:26  tom
 * corrent sprintf-format
 *
@@ -90,7 +94,6 @@ static const char deparse_c[] =
 #include "hook.h"
 
 /* forward declarations */
-extern void deparse P_(( TNODE *n, FILE *f, char *hookname, char *prefix ));
 static void dparse P_(( TNODE *n, FILE *f, int tablevel, char *hookname, char *prefix ));
 static void init_scriptIndex P_(( void ));
 
@@ -132,7 +135,7 @@ init_scriptIndex()
 {
 	int	g;
 	int	s = 0;
-	int	i;
+	size_t	i;
 
 	g = -1;
 	for (i = 0; i < N_ALL_SCRIPTS; ++i) {
@@ -174,6 +177,7 @@ char	*prefix;
 	char	*string;
 	SCRIPT	*script = NULL;
 	char	*p;
+	char	*q;
 	TNODE	*next;
 	int	genus;
 	int	species;
@@ -271,13 +275,13 @@ char	*prefix;
 				sprintf(string, "%p", n->sym.sym);
 				break;
 			case 'C':
-				if (strlen((char *) n->sym.hook.type) >= sizeof stringBuf) 
+				q = (char *) n->sym.hook.type; /* kludge */
+				if (strlen(q) >= sizeof stringBuf) 
 				{
-				    string = (char *)
-					malloc(strlen((char *) n->sym.hook.type) + 1);
+				    string = (char *) malloc(strlen(q) + 1);
 				    CHECK_MALLOC(string);
 				}
- /* kludge */			sprintf(string, "%s", n->sym.hook.type);
+ 				sprintf(string, "%s", q);
 				break;
 			case 'T':
 /* ? counting problem */

@@ -12,13 +12,17 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.4 1997/11/04 01:50:49 tom Exp $
+# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.5 1997/12/10 11:35:05 tom Exp $
 # 
 # Makefile for ATAC.  See README.
 #
-
+.SUFFIXES:
 #
 # $Log: makefile.in,v $
+# Revision 3.5  1997/12/10 11:35:05  tom
+# turn off suffixes (so GNU make doesn't convert install.sh to install).
+# modify distclean rule to preserve config.guess and config.sub
+#
 # Revision 3.4  1997/11/04 01:50:49  tom
 # add EXTRA_CFLAGS
 #
@@ -142,7 +146,7 @@ clean:
 	cd tools;    $(MAKE) $@
 
 distclean: clean
-	rm -f config.* makefile install */makefile
+	rm -f config.cache config.status config.log config.h makefile install */makefile
 
 install: system LIB BIN MAN TUTORIAL
 install.source: SOURCE

@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_module_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.9 1997/05/11 23:38:16 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.10 1997/12/09 00:50:13 tom Exp $";
 /*
 * $Log: fg_module.c,v $
+* Revision 3.10  1997/12/09 00:50:13  tom
+* moved externs to atac_i.h
+*
 * Revision 3.9  1997/05/11 23:38:16  tom
 * include allpaths.h
 *
@@ -92,6 +95,8 @@ static const char fg_module_c[] =
 */
 #include <stdio.h>
 #include "portable.h"
+
+#include "atac_i.h"
 #include "error.h"
 #include "tnode.h"
 #include "tree.h"
@@ -122,7 +127,6 @@ char	*prefix;
 	char	*filename;
 	int	i;
 	LIST	*global_defs;	/* list of global variable defs. seen */
-	extern char * srcfname P_(( int findex ));
 
 	init_outtables(outtables);
 	for (i = 0; (filename = srcfname(i)); ++i)
@@ -169,12 +173,6 @@ char	*prefix;
 			char	*fname;
 			unsigned long	s_type;
 			static	funcno = 0;
-			extern	dump_tables;
-			extern	cyclomaticFlag;
-			extern	all_paths;
-			extern	list_all_paths;
-			extern	count_alldu;
-			extern	feasableFlag;
 
 			dug = (DUG *)dug_create();
 

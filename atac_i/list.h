@@ -1,4 +1,4 @@
-/* $Id: list.h,v 3.4 1997/05/11 21:43:07 tom Exp $ */
+/* $Id: list.h,v 3.5 1997/12/10 01:51:44 tom Exp $ */
 
 #ifndef list_H
 #define list_H
@@ -13,8 +13,8 @@
 #define LIST_DATATYPE void
 #endif
 
-typedef void (*DataFree)(LIST_DATATYPE *);
-typedef char*(*DataDump)(LIST_DATATYPE *);
+typedef void (*DataFree) P_((LIST_DATATYPE *));
+typedef char*(*DataDump) P_((LIST_DATATYPE *));
 
 typedef struct link {
 #ifdef DEBUG

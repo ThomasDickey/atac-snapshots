@@ -15,9 +15,12 @@
 #ifndef tnode_H
 #define tnode_H
 static const char tnode_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.h,v 3.7 1997/05/11 23:58:01 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.h,v 3.8 1997/12/08 22:16:46 tom Exp $";
 /*
 * $Log: tnode.h,v $
+* Revision 3.8  1997/12/08 22:16:46  tom
+* add prototypes for parse(), deparse()
+*
 * Revision 3.7  1997/05/11 23:58:01  tom
 * add prototypes for sym.c, and include srcpos.h
 *
@@ -81,6 +84,12 @@ typedef struct tnode {
 		}		 hook;
 	} sym;
 } TNODE;
+
+/* Pgram.y */
+extern int parse P_(( FILE *srcfile, TNODE **tree, char **uprefix ));
+
+/* dparse.c */
+extern void deparse P_(( TNODE *n, FILE *f, char *hookname, char *prefix ));
 
 /* srcpos.c */
 extern char *srcfname P_(( int findex));

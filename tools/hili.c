@@ -17,12 +17,15 @@
 #endif
 
 static const char hili_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.7 1996/12/02 01:55:52 tom Exp $";
+"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.8 1997/12/10 01:51:44 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: hili.c,v $
+* Revision 3.8  1997/12/10 01:51:44  tom
+* prototyped outchar()
+*
 * Revision 3.7  1996/12/02 01:55:52  tom
 * gcc warnings (missing prototypes)
 *
@@ -386,12 +389,21 @@ initcap()
 	}
 }
 
-static
-outchar(c)
-char c;
-{
-	putchar(c&0177);
-}
+#ifndef OUTC_ARGS
+#define OUTC_ARGS int c
+#endif
+
+#if CC_HAS_PROTOS
+#define OUTC_FUNC(func) func(OUTC_ARGS)
+#else
+#define OUTC_FUNC(func) func(c) OUTC_ARGS;
+#endif
+
+#ifdef OUTC_RETURN
+static int  OUTC_FUNC(outchar) { return putchar(c&0177); }
+#else
+static void OUTC_FUNC(outchar) { (void) putchar(c&0177); }
+#endif
 
 static void
 mode_normal()

@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.7 1997/11/03 19:14:46 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.8 1997/12/10 01:51:44 tom Exp $";
 /*
 * $Log: error.c,v $
+* Revision 3.8  1997/12/10 01:51:44  tom
+* ifdef'd to build with K&R compiler.
+*
 * Revision 3.7  1997/11/03 19:14:46  tom
 * change type of internal_error() to int, since it is used in expression.
 *
@@ -65,7 +68,24 @@ static const char error_c[] =
 *-----------------------------------------------end of log
 */
 #include <stdio.h>
+
+#if HAVE_VARARGS_H && !CC_HAS_PROTOS
+#include <varargs.h>
+#else
+#if HAVE_STDARG_H
 #include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
+#endif
+
+/* Some systems have a fake <stdarg.h> which really is <varargs.h> */
+#if __STDC__
+#define VaStart(ap,arg) va_start(ap,arg)
+#else
+#define VaStart(ap,arg) va_start(ap)
+#endif
+
 #include "portable.h"
 #include "error.h"
 #include "tnode.h"
@@ -81,13 +101,19 @@ supress_warnings()
 	warn_flag = 0;
 }
 
+#if CC_HAS_PROTOS
+#define MY_FUNC(func) func(SRCPOS *srcpos, char *msg, ...)
+#else
+#define MY_FUNC(func) func(srcpos, msg, va_alist) SRCPOS *srcpos; char *msg; va_dcl
+#endif
+
 int
-internal_error(SRCPOS *srcpos, char *msg, ...)
+MY_FUNC(internal_error)
 {
 	fputs("internal error", stderr);
 	if (msg) {
 		va_list ap;
-		va_start(ap, msg);
+		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
@@ -103,14 +129,14 @@ internal_error(SRCPOS *srcpos, char *msg, ...)
 }
 
 void
-semantic_error(SRCPOS *srcpos, char *msg, ...)
+MY_FUNC(semantic_error)
 {
 	if (warn_flag == 0) return;
 
 	fputs("semantic error", stderr);
 	if (msg) {
 		va_list ap;
-		va_start(ap, msg);
+		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
@@ -125,14 +151,14 @@ semantic_error(SRCPOS *srcpos, char *msg, ...)
 }
 
 void
-lexical_error(SRCPOS *srcpos, char *msg, ...)
+MY_FUNC(lexical_error)
 {
 	if (warn_flag == 0) return;
 
 	fputs("lexical error", stderr);
 	if (msg) {
 		va_list ap;
-		va_start(ap, msg);
+		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
@@ -147,12 +173,12 @@ lexical_error(SRCPOS *srcpos, char *msg, ...)
 }
 
 void
-parse_error(SRCPOS *srcpos, char *msg, ...)
+MY_FUNC(parse_error)
 {
 	fputs("parse error", stderr);
 	if (msg) {
 		va_list ap;
-		va_start(ap, msg);
+		VaStart(ap, msg);
 		fputs(": ", stderr);
 		vfprintf(stderr, msg, ap);
 		va_end(ap);

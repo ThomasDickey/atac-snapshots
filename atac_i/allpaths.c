@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char allpaths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.7 1997/05/11 23:45:33 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.8 1997/12/09 00:19:02 tom Exp $";
 /*
 * $Log: allpaths.c,v $
+* Revision 3.8  1997/12/09 00:19:02  tom
+* int/size_t fixes.
+*
 * Revision 3.7  1997/05/11 23:45:33  tom
 * split-out allpaths.h, fix compiler warnings.
 *
@@ -106,7 +109,7 @@ size_t		setsize;
 unsigned	*nodes;
 {
 	PATH *p;
-	int i;
+	size_t i;
 
 	p = (PATH *)malloc(sizeof *p + ((setsize - 1) << LBYPW));
 	CHECK_MALLOC(p);
@@ -145,7 +148,7 @@ size_t		setsize;
 	unsigned i;
 	unsigned j;
 	int	k;
-	int	m;
+	size_t	m;
 
 	node_id = node->block_id;
 

@@ -1,0 +1,55 @@
+atac-971211 - summary of changes made 1997/12/11
+	Thomas Dickey (dickey@clark.net)
+
+I made more improvements to the type-checking, and started work on a more
+sophisticated configure script, using macros from my other programs (in
+aclocal.m4).  This builds/runs properly both with gcc and on SunOS with the K&R
+compiler.  It now also works with bison, yacc and byacc.
+
+Added __inline symbol for gcc.
+
+# ------------------------------------------------------------------------------
+#  atac_971211/aclocal.m4      |  306 ++++++++++++++++++++++++++++++++++++++++++
+#  atac_971211/atac_i/atac_i.h |   14 +
+#  atac_cpp/makefile.in        |    7 
+#  atac_i/Pgram.y              |   13 +
+#  atac_i/alldu.c              |   15 +-
+#  atac_i/allpaths.c           |    9 -
+#  atac_i/atac_i.c             |    8 -
+#  atac_i/deparse.c            |   18 +-
+#  atac_i/dug.c                |   52 +++----
+#  atac_i/dug.h                |    9 +
+#  atac_i/error.c              |   50 +++++-
+#  atac_i/error.h              |    6 
+#  atac_i/fg_expr.c            |    7 
+#  atac_i/fg_module.c          |   14 -
+#  atac_i/fg_stmt.c            |    7 
+#  atac_i/filestamp.c          |    8 -
+#  atac_i/list.h               |    6 
+#  atac_i/makefile.in          |   14 +
+#  atac_i/mark.c               |    7 
+#  atac_i/parser.c             |    7 
+#  atac_i/paths.c              |   26 ++-
+#  atac_i/scan.c               |   30 ++--
+#  atac_i/srcpos.h             |   14 +
+#  atac_i/strtab.c             |    7 
+#  atac_i/sym.h                |    8 -
+#  atac_i/table.c              |   30 ++--
+#  atac_i/table.h              |    8 -
+#  atac_i/tnode.h              |   11 +
+#  atac_i/upfix.c              |    7 
+#  atac_i/upfix.h              |    4 
+#  atacysis/atactm.c           |   11 -
+#  atacysis/makefile.in        |    7 
+#  atacysis/static.c           |   10 +
+#  config_h.in                 |    8 -
+#  configure.in                |   69 +++++----
+#  makefile.in                 |   15 +-
+#  portable.h                  |   41 +++--
+#  tools/atac_rt.c             |   82 ++++++-----
+#  tools/hili.c                |   26 ++-
+#  tools/makefile.in           |    7 
+#  tools/min.c                 |   33 ++--
+#  tutorial/makefile.in        |    6 
+#  42 files changed, 774 insertions, 263 deletions
+# ------------------------------------------------------------------------------
