@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char dug_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.12 1997/05/11 21:23:30 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.13 1997/12/11 01:27:38 tom Exp $";
 /*
 * $Log: dug.c,v $
+* Revision 3.13  1997/12/11 01:27:38  tom
+* corrected pointer types to compile cleanly.
+*
 * Revision 3.12  1997/05/11 21:23:30  tom
 * corrected prototypes for du_use, du_use_type
 *
@@ -117,11 +120,20 @@ extern void free();
 
 #include "portable.h"
 
+
 #include "sym.h"
 #include "error.h"
 #include "tnode.h"
 #include "dug.h"
 #include "version.h"
+
+typedef struct {
+	SYM	*symbol;		/* key. Must be first */
+	int	id;
+} V_ID;
+
+#define TABLE_DATATYPE V_ID
+#include "table.h"
 
 /* forward declarations */
 static void block_dump P_(( BLOCK *b ));
@@ -136,11 +148,6 @@ static void var_clean P_(( DUG *dug ));
 
 #define DUG_MAGIC	((int)dug_create)	/* unlikely number */
 #define BRANCH_MAGIC	(DUG_MAGIC + 1)
-
-typedef struct {
-	SYM	*symbol;		/* key. Must be first */
-	int	id;
-} V_ID;
 
 DUG *
 dug_create()
@@ -390,7 +397,7 @@ struct tnode * parse_pos;
 	CHECK_MALLOC(du);
 
 	du->symbol = symbol;
-	du->var_id = -1;
+	du->var_id = VAR_ID(0);
 	du->ref_type = ref_type;
 	if (ref_type & VAR_DEF) {
 	    du->defPos = parse_pos;
@@ -564,13 +571,11 @@ DUG	*dug;
 	BLOCK	*node;
 	DU	*du;
 	int	var_count;
-	int	var_list;
-	int	dref_list;
-	int	list;
+	TABLE	*var_list;
+	TABLE	*dref_list;
+	TABLE	*list;
 	V_ID	*var_id;
 	VARSYM	*vartab;
-	extern	V_ID	*table_next();
-	extern	V_ID	*table_find();
 
 	var_list = table_create(NULL);
 	dref_list = table_create(NULL);
@@ -602,15 +607,16 @@ DUG	*dug;
 	* Copy temporary tables into final table.
 	*/
 	if (var_count) {
+		NODE *n;
 		vartab = (VARSYM *)malloc(var_count * sizeof(VARSYM));
 		CHECK_MALLOC(vartab);
 		var_count = 0;
-		for (i = 0; (var_id = table_next(var_list, &i)) != 0;) {
+		for (n = 0; (var_id = table_next(var_list, &n)) != 0;) {
 			vartab[var_count].symbol = var_id->symbol;
 			vartab[var_count].ref_type = VAR_VOID;
 			var_id->id = var_count++;
 		}
-		for (i = 0; (var_id = table_next(dref_list, &i)) != 0;) {
+		for (n = 0; (var_id = table_next(dref_list, &n)) != 0;) {
 			vartab[var_count].symbol = var_id->symbol;
 			vartab[var_count].ref_type = VAR_DREF;
 			var_id->id = var_count++;
@@ -624,9 +630,11 @@ DUG	*dug;
 	*/
 	for (i = 0; LIST_NEXT(dug->block_list, &i, &node);) {
 		for (j = 0; LIST_NEXT(node->du_list, &j, &du);) {
-			if (du->ref_type & VAR_DREF)
-				var_id = table_find(dref_list, du->symbol, 0,0);
-			else var_id = table_find(var_list, du->symbol, 0, 0);
+			var_id = table_find(
+				(du->ref_type & VAR_DREF)
+					? dref_list
+					: var_list,
+					(TABLE_DATATYPE *)(du->symbol), 0, 0);
 			if (var_id)
 				du->var_id = var_id->id;
 			else {
@@ -639,8 +647,8 @@ DUG	*dug;
 	/*
 	* Cleanup.
 	*/
-	table_free(var_list, free);
-	table_free(dref_list, free);
+	table_free(var_list, (TabledataFree)free);
+	table_free(dref_list, (TabledataFree)free);
 }
 
 void
@@ -688,8 +696,7 @@ DUG	*dug;
 		    if (LIST_NEXT(r->to->du_list, NULL, NULL)) {
 			LIST *	i2;
 			DU	*du;
-			extern SYM decis_sym;
-			
+
 			for (i2 = 0; LIST_NEXT(r->to->du_list, &i2, &du);) {
 			    if (du->symbol != &decis_sym)
 			        internal_error(NULL, "dug: unexpec du_list");
@@ -763,7 +770,6 @@ FILE	*f;
 	int	du_count;
 	int	blk_count;
 	char	*filename;
-	extern char * srcfname P_(( int findex ));
 #ifndef NOCOMMENT
 	int	n;
 #endif
@@ -989,7 +995,7 @@ int	mode;
 	if (node->du_list == 0) return 0;
 
 	for (i = 0; LIST_NEXT(node->du_list, &i, &du);)
-		if ((du->var_id + 1 == symbol) &&
+		if ((du->var_id == VAR_ID(symbol)) &&
 			((du->ref_type & VAR_DREF) == (mode & VAR_DREF)))
 		{
 			return du;

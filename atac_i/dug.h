@@ -15,9 +15,12 @@
 #ifndef dug_H
 #define dug_H
 static const char dug_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.7 1997/05/11 23:49:33 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.8 1997/12/08 23:45:36 tom Exp $";
 /*
 * $Log: dug.h,v $
+* Revision 3.8  1997/12/08 23:45:36  tom
+* add macros ID_SYM and VAR_ID
+*
 * Revision 3.7  1997/05/11 23:49:33  tom
 * add prototypes for mark.c, paths.c, alldu.c
 *
@@ -92,6 +95,10 @@ typedef struct {
 	struct tnode * usePos;
 	struct tnode * defPos;
 } DU;
+
+/* convert between DU.var_id and SYM */
+#define ID_SYM(v) ((SYM *)((v) + 1))
+#define VAR_ID(s) ((int)(s) - 1)
 
 typedef int COND_TYPE;
 #define COND_UNCONDITIONAL  ((COND_TYPE) 0)

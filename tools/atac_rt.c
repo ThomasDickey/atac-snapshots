@@ -21,10 +21,13 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.14 1997/11/01 16:05:34 tom Exp $";
+static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.15 1997/12/10 11:19:23 tom Exp $";
 
 /*
 * $Log: atac_rt.c,v $
+* Revision 3.15  1997/12/10 11:19:23  tom
+* simplified/corrected ifdef's for atexit() vs on_exit()
+*
 * Revision 3.14  1997/11/01 16:05:34  tom
 * Linux's atexit() expects void function.
 *
@@ -242,8 +245,7 @@ static int add_path P_((DU *use, int def_blk, int use_blk));
 static int atac_flush P_((FILE *fp, int final));
 static int atac_zero P_((void));
 static int redoFileNames P_((FILE *fp));
-static int setupSignal P_((void));
-static int aTaC_cleanup P_((void));
+static void setupSignal P_((void));
 static void prepareEnd P_((void));
 
 static int
@@ -334,16 +336,18 @@ atac_zero()
 
 #undef END_PROCESSING
 
-#ifdef ON_EXIT_SUPPORT
+/* 'atexit()' is ANSI - 'on_exit()' is not, but we only want one */
+#ifdef HAVE_ATEXIT
 #define END_PROCESSING
-#undef ATEXIT_SUPPORT
+#undef HAVE_ON_EXIT
 #undef _EXIT_SUPPORT
-#endif /*  ON_EXIT_SUPPORT */
+#endif /*  HAVE_ATEXIT */
 
-#ifdef ATEXIT_SUPPORT
+#ifdef HAVE_ON_EXIT
 #define END_PROCESSING
+#undef HAVE_ATEXIT
 #undef _EXIT_SUPPORT
-#endif /*  ATEXIT_SUPPORT */
+#endif /*  HAVE_ON_EXIT */
 
 #ifdef _EXIT_SUPPORT
 #define END_PROCESSING
@@ -351,16 +355,19 @@ atac_zero()
 
 #ifndef FORK_SUPPORT
 #undef END_PROCESSING
-#undef ONEXIT_SUPPORT
-#undef ATEXIT_SUPPORT
+#undef HAVE_ON_EXIT
+#undef HAVE_ATEXIT
 #undef _EXIT_SUPPORT
 #endif
 
 #ifdef END_PROCESSING
-#ifndef CSAM
-static
-#endif /* CSAM */
-int aTaC_cleanup()
+#if HAVE_ATEXIT
+static void aTaC_cleanup P_((void))
+#else	/* using 'on_exit()' */
+static void aTaC_cleanup (status, arg)
+	int status;
+	char *arg;
+#endif
 {
     int		pid;
     int		wpid;
@@ -373,15 +380,15 @@ int aTaC_cleanup()
     }
 
 #ifdef FORK_SUPPORT
-    if (getenv("ATAC_NOCOMPRESS") != NULL) return 0;
+    if (getenv("ATAC_NOCOMPRESS") != NULL) return;
 
     compress = getenv("ATAC_COMPRESS");
     if (compress != NULL) {
 	nthCompress = atoi(compress);
 	if (nthCompress <= 0)
-	    return 0;
+	    return;
 	if ((time(0) % nthCompress) != 0)
-	    return 0;
+	    return;
     }
 
     /*
@@ -395,7 +402,8 @@ int aTaC_cleanup()
 	open("/dev/null", O_WRONLY, 0);		/* 1 (stdout) */
 	close(2);
 	open("/dev/null", O_WRONLY, 0);		/* 2 (stderr) */
-	return execlp("atactm", "atactm", traceName, 0);
+	execlp("atactm", "atactm", traceName, 0);
+	_exit(1);
     } else {
 	while ((wpid = wait(0)) != pid) {
 	    if (wpid == -1 && errno != EINTR) break;
@@ -408,20 +416,20 @@ int aTaC_cleanup()
 static void
 prepareEnd()
 {
-#ifdef ATEXIT_SUPPORT
+#ifdef HAVE_ATEXIT
     atexit(aTaC_cleanup);
-#else /* no ATEXIT_SUPPORT */
-#ifdef ON_EXIT_SUPPORT
+#else /* no HAVE_ATEXIT */
+#ifdef HAVE_ON_EXIT
     on_exit(aTaC_cleanup, 0);
-#endif /* ON_EXIT_SUPPORT */
-#endif /* no ATEXIT_SUPPORT */
+#endif /* HAVE_ON_EXIT */
+#endif /* no HAVE_ATEXIT */
     return;
 }
 
 #ifndef MARCH
 #ifdef _EXIT_SUPPORT
-#ifndef ATEXIT_SUPPORT
-#ifndef ON_EXIT_SUPPORT
+#ifndef HAVE_ATEXIT
+#ifndef HAVE_ON_EXIT
 exit(status)
 int	status;
 {
@@ -429,8 +437,8 @@ int	status;
     _cleanup();
     _exit(status);
 }
-#endif /* no ON_EXIT_SUPPORT */
-#endif /* no ATEXIT_SUPPORT */
+#endif /* no HAVE_ON_EXIT */
+#endif /* no HAVE_ATEXIT */
 #endif /* _EXIT_SUPPORT */
 #endif /* MARCH */
 
@@ -900,11 +908,11 @@ int n;
 #endif
 }
 
-static int
+static void
 setupSignal()
 {
     char	*envsig;
-    int		i;
+    size_t	i;
     static struct signames {
 	char	*name;
 	int	number;
@@ -1033,20 +1041,22 @@ setupSignal()
 
     envsig = getenv("ATAC_SIGNAL");
     if (envsig == NULL)
-	return (int)SIG_DFL;
+	return;
 
-    if (atoi(envsig) != 0)
-	return (int)signal(atoi(envsig), sigHandler);
+    if (atoi(envsig) != 0) {
+	signal(atoi(envsig), sigHandler);
+	return;
+    }
 
     if (strncmp(envsig, "SIG", 3) == 0 || strncmp(envsig, "sig", 3) == 0)
 	envsig += 3;
 
     for (i = 0; i < sizeof signames/sizeof *signames; ++i) {
-	if (strcmp(envsig, signames[i].name) == 0)
-	    return (int)signal(signames[i].number, sigHandler);
+	if (strcmp(envsig, signames[i].name) == 0) {
+	    signal(signames[i].number, sigHandler);
+	    return;
+	}
     }
-
-    return (int)SIG_ERR;
 }
 
 int

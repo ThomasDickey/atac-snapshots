@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char upfix_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/upfix.c,v 3.7 1997/05/11 23:14:24 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/upfix.c,v 3.8 1997/12/09 00:00:52 tom Exp $";
 /*
 * $Log: upfix.c,v $
+* Revision 3.8  1997/12/09 00:00:52  tom
+* int/size_t fixes
+*
 * Revision 3.7  1997/05/11 23:14:24  tom
 * use size_t
 *
@@ -132,7 +135,7 @@ upfix_exclude(p, name)
 PREFIX *p;
 char *name;
 {
-	int namelen;
+	size_t namelen;
 	int c;
 	int bit;
 

@@ -1,4 +1,4 @@
-MANIFEST for atac, version atac_971103
+MANIFEST for atac, version atac_971211
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
@@ -13,7 +13,10 @@ atacLD.1                        atac3.3.13
 ataclib.1                       atac3.3.13
 atacmin.1                       atac3.3.13
 atactm.1                        atac3.3.13
+config.guess                    script to guess configuration
+config.sub                      script to translate guessed configuration
 config_h.in                     template for config.h
+configure                       configure-script
 configure.in                    configure-script template
 install.sh                      install-script, if none found by configure
 makefile.in                     makefile-template, for auto-configure
@@ -39,6 +42,7 @@ atac_i/alldu.c                  atac3.3.13
 atac_i/allpaths.c               atac3.3.13
 atac_i/allpaths.h               interface of allpaths.c
 atac_i/atac_i.c                 atac3.3.13
+atac_i/atac_i.h                 interface for atac_it data
 atac_i/bitvec.h                 atac3.3.13
 atac_i/const.c                  atac3.3.13
 atac_i/deparse.c                atac3.3.13
@@ -126,6 +130,8 @@ atacysis/vms_disp.c             atac3.3.13
 changes                         subdirectory
 changes/atac_19951230.txt       summary of changes for atac_961230 version.
 changes/atac_19961112.txt       changes for 961112
+changes/atac_19970511.txt       changes for 970511
+changes/atac_19971211.txt       changes for 971211
 tools                           subdirectory
 tools/atac                      atac3.3.13
 tools/atacCC                    atac3.3.13

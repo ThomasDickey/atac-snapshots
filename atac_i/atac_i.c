@@ -23,12 +23,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char atac_i_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.9 1997/05/11 23:59:50 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.10 1997/12/09 00:48:59 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: atac_i.c,v $
+* Revision 3.10  1997/12/09 00:48:59  tom
+* use TNODE* instead of void*
+*
 * Revision 3.9  1997/05/11 23:59:50  tom
 * add includes to get prototypes
 *
@@ -93,6 +96,7 @@ static const char bellcoreCopyRight[] =
 #include "portable.h"
 #include "error.h"
 #include "flowgraph.h"
+#include "atac_i.h"
 
 /* forward declarations */
 static void usage P_(( char * ));
@@ -134,7 +138,7 @@ int	argc;
 char	*argv[];
 {
     static char	*prefix;
-    void	*tree;
+    TNODE	*tree;
     int	status;
     int	i;
     char	*p;

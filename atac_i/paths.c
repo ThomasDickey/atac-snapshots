@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char paths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.10 1997/07/17 18:32:53 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.11 1997/12/09 00:37:22 tom Exp $";
 /*
 * $Log: paths.c,v $
+* Revision 3.11  1997/12/09 00:37:22  tom
+* repair int/SYM* casts with ID_SYM/VAR_ID macros, use SYM* where applicable
+*
 * Revision 3.10  1997/07/17 18:32:53  tom
 * missed a NULL used as int.
 *
@@ -116,7 +119,7 @@ static const char paths_c[] =
 static int feasableBranch P_(( BRANCH *br ));
 static void pathCount P_(( DUG *dug, BLOCK *node, int *counts ));
 static void paths_from P_(( DUG *dug, BLOCK *node, int feasableOnly ));
-static void print_dupath P_(( int use_type, int sym, BLOCK *def_node, BRANCH *branch, BLOCK *prev_node, TNODE * dPos, TNODE * uPos ));
+static void print_dupath P_(( int use_type, SYM* sym, BLOCK *def_node, BRANCH *branch, BLOCK *prev_node, TNODE * dPos, TNODE * uPos ));
 static void uCount P_(( DUG *dug, BRANCH *branch, BVPTR *list, DU *def, int p_use, int *counts ));
 static void u_traverse P_(( DUG *dug, BRANCH *branch, BVPTR *list, BLOCK *d_node, DU *def, int p_use, BLOCK *prev_node, TNODE * prevPos, int feasableOnly ));
 
@@ -221,7 +224,7 @@ if (branch->to->block_id == 0) return;
 	* If PUSE in previous node, print PUSE here.
 	*/
 	if (p_use & VAR_PUSE)
-		print_dupath(VAR_PUSE, def->var_id + 1, d_node, branch,
+		print_dupath(VAR_PUSE, ID_SYM(def->var_id), d_node, branch,
 			     prev_node, def->defPos, prevPos);
 
 	/*
@@ -230,7 +233,7 @@ if (branch->to->block_id == 0) return;
 	if (BVTEST(list, branch->to->block_id)) return;
 	BVSET(list, branch->to->block_id);
 
-	use = du_use_type(dug, branch->to, def->var_id + 1, def->ref_type);
+	use = du_use_type(dug, branch->to, ID_SYM(def->var_id), def->ref_type);
 	if (use) {
 	    use_type = use->ref_type;
 	    usePos = use->usePos;
@@ -244,7 +247,7 @@ if (branch->to->block_id == 0) return;
 	* If C-USE at node, print it.
 	*/
 	if (use_type & VAR_CUSE)
-		print_dupath(VAR_CUSE, def->var_id + 1, d_node, branch,
+		print_dupath(VAR_CUSE, ID_SYM(def->var_id), d_node, branch,
 			     prev_node, def->defPos, usePos);
 	
 	/*
@@ -266,7 +269,7 @@ if (branch->to->block_id == 0) return;
 static void
 print_dupath(use_type, sym, def_node, branch, prev_node, dPos, uPos)
 int	use_type;
-int	sym;
+SYM*	sym;
 BLOCK*	def_node;
 BRANCH*	branch;
 BLOCK*	prev_node;
@@ -280,14 +283,14 @@ TNODE*	uPos;
 	defPos = tFindDef(dPos);
 
 	if (use_type & VAR_CUSE) {
-		fprintf(outfile, "C %d %d %d", sym - 1,
+		fprintf(outfile, "C %d %d %d", VAR_ID(sym),
 			def_node->block_id, branch->to->block_id);
 		usePos = uPos;
 	} else {
 		if (branch->to)
 			use_node_id = branch->to->block_id;
 		else use_node_id = 0;
-		fprintf(outfile, "P %d %d %d %d", sym - 1,
+		fprintf(outfile, "P %d %d %d %d", VAR_ID(sym),
 			def_node->block_id, prev_node->block_id, use_node_id);
 		usePos = tFindPred(uPos);
 	}
@@ -491,7 +494,7 @@ int	*counts;		/* counts of C-uses & P-uses */
 	if (BVTEST(list, branch->to->block_id)) return;
 	BVSET(list, branch->to->block_id);
 
-	use = du_use_type(dug, branch->to, def->var_id + 1, def->ref_type);
+	use = du_use_type(dug, branch->to, ID_SYM(def->var_id), def->ref_type);
 	if (use) {
 	    use_type = use->ref_type;
 	}

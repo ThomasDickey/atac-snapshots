@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char filestamp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/filestamp.c,v 3.4 1996/11/13 00:42:11 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/filestamp.c,v 3.5 1997/12/09 00:46:12 tom Exp $";
 /*
 * $Log: filestamp.c,v $
+* Revision 3.5  1997/12/09 00:46:12  tom
+* move 'filestamp()' prototype to srcpos.h
+*
 * Revision 3.4  1996/11/13 00:42:11  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototype
@@ -69,8 +72,7 @@ static const char filestamp_c[] =
 #endif /* MVS */
 #endif
 
-/* forward declarations */
-extern int filestamp P_(( char *path ));
+#include "srcpos.h"
 
 int
 filestamp(path)

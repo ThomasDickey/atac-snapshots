@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_stmt_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.7 1997/05/11 19:57:16 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.8 1997/12/09 00:12:56 tom Exp $";
 /*
 * $Log: fg_stmt.c,v $
+* Revision 3.8  1997/12/09 00:12:56  tom
+* moved externs to header-file
+*
 * Revision 3.7  1997/05/11 19:57:16  tom
 * split-out flowgraph.h, compile-clean
 *
@@ -84,8 +87,6 @@ static const char fg_stmt_c[] =
 #include "flowgraph.h"
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
-
-extern SYM decis_sym;	/* from fg_module.c */
 
 /* forward declarations */
 static void fg_for P_(( DUG *dug, TNODE *expr1, TNODE *expr2, TNODE *expr3, TNODE *stmt, BLOCK *sblk, BLOCK *swblk, BLOCK **endblk, BLOCK **dblk ));

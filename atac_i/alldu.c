@@ -22,9 +22,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char alldu_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.7 1997/07/17 18:32:53 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.8 1997/12/09 00:41:45 tom Exp $";
 /*
 * $Log: alldu.c,v $
+* Revision 3.8  1997/12/09 00:41:45  tom
+* repair int/SYM* cast with macro ID_SYM.
+* correct int/ulong type of prev_adu_count.
+*
 * Revision 3.7  1997/07/17 18:32:53  tom
 * missed a NULL used as int
 *
@@ -139,7 +143,7 @@ BLOCK	*node;
 	for (i = 0; (du = du_use(dug, node, &i)) != 0;) {
 		if ((du->ref_type & VAR_DEF) == 0) continue;
 		if (node->branches == NULL) continue;
-		definfo.sym = (SYM *)(du->var_id + 1);
+		definfo.sym = ID_SYM(du->var_id);
 		definfo.star = du->ref_type & VAR_DREF;
 		definfo.list = BVALLOC(dug->count);
 		definfo.fruitless = BVALLOC(dug->count);
@@ -157,7 +161,7 @@ BLOCK	*node;			/* possible use node */
 	LIST*	i;
 	BLOCK*	f;
 	DU*	du;
-	int	prev_adu_count;
+	unsigned long prev_adu_count;
 
 	if (node->block_id == 0) return;
 	/*

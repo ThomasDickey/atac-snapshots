@@ -1,3 +1,28 @@
+1997-12-10  Thomas E. Dickey  <dickey@clark.net>
+
+	* makefile.in:
+	turn off suffixes (so GNU make doesn't convert install.sh to install).
+	modify distclean rule to preserve config.guess and config.sub
+
+1997-12-09  Thomas E. Dickey  <dickey@clark.net>
+
+	* configure: 971211
+
+	* config.guess, config.sub: RCS_BASE
+
+	* aclocal.m4:
+	add CF_CHECK_CACHE, CF_FUNC_TGETENT, CF_OUTCHAR, CF_SED_CONFIG_H
+
+	* config_h.in:
+	moved TARGET_xxx to configure.in, because td_config doesn't grok them.
+
+	* portable.h: simplified ifdefs for atexit() and on_exit()
+
+	* configure.in:
+	use CF_CHECK_CACHE, CF_FUNC_TGETENT, CF_TYPE_OUTCHAR, CF_SED_CONFIG_H
+	to simplify/modularize this.  also, moved some fixed #define's here,
+	since td_config doesn't parse them properly.
+
 1997-11-03  Thomas E. Dickey  <dickey@clark.net>
 
 	* makefile.in: add EXTRA_CFLAGS

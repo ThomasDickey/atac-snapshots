@@ -1,4 +1,4 @@
-/* $Id: upfix.h,v 3.2 1997/05/11 23:13:12 tom Exp $ */
+/* $Id: upfix.h,v 3.3 1997/12/08 23:58:53 tom Exp $ */
 
 #ifndef upfix_H
 #define upfix_H
@@ -11,7 +11,7 @@ typedef struct {
 	unsigned long	digit;
 	size_t		prefixlen;
 	int		unique;
-	int		maxlen;
+	size_t		maxlen;
 	char		*prefix;
 } PREFIX;
 

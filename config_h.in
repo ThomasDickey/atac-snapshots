@@ -1,8 +1,2 @@
+/* $Id: config_h.in,v 3.2 1997/12/10 01:51:44 tom Exp $ */
 @DEFS@
-#define TARGET_BELL 007
-#define TARGET_BS 010
-#define TARGET_TAB 011
-#define TARGET_NEWLINE 012
-#define TARGET_VT 013
-#define TARGET_FF 014
-#define TARGET_CR 015

@@ -21,9 +21,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char Pgram_y[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.11 1997/11/03 19:06:56 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.13 1997/12/11 23:34:34 tom Exp $";
 /*
 * $Log: Pgram.y,v $
+* Revision 3.13  1997/12/11 23:34:34  tom
+* remove unused/misleading symbol ENDFILE.
+*
 * Revision 3.11  1997/11/03 19:06:56  tom
 * move <stdio.h> down below the include for config.h so we have const
 * consistently
@@ -114,7 +117,6 @@ static char Pgram_y[] =
 /* forward declarations */
 extern int yyparse P_(( void ));
 static void insertTypeNames P_(( TNODE *node ));
-extern int parse P_(( FILE *srcfile, TNODE **tree, char **uprefix ));
 
 static TNODE *tree_root;
 
@@ -228,7 +230,6 @@ static SRCPOS nosrcpos[2] = {{-1,0,0}, {-1,0,0}};
 %term <token> STRING		402
 %term <token> ICON		403
 %term <token> FCON		404
-%term ENDFILE			0
 
 %left CHAR_KW DOUBLE ENUM FLOAT INT LONG SHORT STRUCT UNION UNSIGNED VOID TOK_SEMICOLON
 %right T_NAME

@@ -18,12 +18,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char parser_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/parser.c,v 3.5 1997/05/12 00:11:47 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/parser.c,v 3.6 1997/12/08 22:22:48 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: parser.c,v $
+* Revision 3.6  1997/12/08 22:22:48  tom
+* use TNODE* instead of void*
+*
 * Revision 3.5  1997/05/12 00:11:47  tom
 * add includes to get prototypes
 *
@@ -98,7 +101,7 @@ int	argc;
 char	*argv[];
 {
 	static char	*prefix;
-	void	*tree;
+	TNODE	*tree;
 	int	status;
 	int	i;
 	char	*p;

@@ -18,16 +18,22 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #if __STDC__ || defined(CC_HAS_PROTOS)
 #define P_(p) p
 extern	int main(int, char **);
+#ifndef CC_HAS_PROTOS
+#define CC_HAS_PROTOS 1
+#endif
 #else	/* assume K&R */
 #define P_(p) ()
 #define const
 #endif
 
 static const char portable_h[] = 
-	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.15 1997/11/03 19:12:28 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.16 1997/12/10 01:51:44 tom Exp $";
 /*
 * Copyright @ 1992 Bell Communications Research, Inc. All Rights Reserved.
 *$Log: portable.h,v $
+*Revision 3.16  1997/12/10 01:51:44  tom
+*simplified ifdefs for atexit() and on_exit()
+*
 *Revision 3.15  1997/11/03 19:12:28  tom
 *quick hack to use autoconf symbol for saying we do prototypes
 *
@@ -153,9 +159,8 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define portable_h_AIX 1		/* for debugging */
 #define SET_unix 1
 #define FORK_SUPPORT 1
-#define ATEXIT_SUPPORT 1
+/* HAVE_ATEXIT */
 #define _EXIT_SUPPORT 1
-#define RENAME_SUPPORT 1
 #define SYS_RESOURCE_H_SUPPORT 1
 #define GETRLIMIT_SUPPORT 1
 #define TMP_MAXPATHLEN	1024
@@ -169,9 +174,8 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define portable_h_SUN 1		/* for debugging */
 #define SET_unix 1
 #define FORK_SUPPORT 1
-#define ON_EXIT_SUPPORT 1
+#define HAVE_ON_EXIT 1
 #define _EXIT_SUPPORT 1
-#define RENAME_SUPPORT 1
 #define SYS_RESOURCE_H_SUPPORT 1
 #define GETRLIMIT_SUPPORT 1
 #define TMP_MAXPATHLEN	1024
@@ -181,8 +185,8 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #endif /* _SIZE_T */
 #ifdef solaris
 #define portable_h_SOLARIS 1		/* for debugging */
-#undef ON_EXIT_SUPPORT
-#define ATEXIT_SUPPORT 1
+#undef HAVE_ON_EXIT
+/* HAVE_ATEXIT */
 #define index strchr
 #define rindex strrchr
 #endif /* solaris */
@@ -196,9 +200,8 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define portable_h_LINUX 1		/* for debugging */
 #define SET_unix 1
 #define FORK_SUPPORT 1
-#define ON_EXIT_SUPPORT 1
+#define HAVE_ON_EXIT 1
 #define _EXIT_SUPPORT 1
-#define RENAME_SUPPORT 1
 #define SYS_RESOURCE_H_SUPPORT 1
 #define GETRLIMIT_SUPPORT 1
 #define TMP_MAXPATHLEN	1024
@@ -212,9 +215,8 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define portable_h_hpux 1		/* for debugging */
 #define SET_unix 1
 #define FORK_SUPPORT 1
-#define ATEXIT_SUPPORT 1
+/* HAVE_ATEXIT */
 #define _EXIT_SUPPORT 1
-#define RENAME_SUPPORT 1
 #define SYS_RESOURCE_H_SUPPORT 1
 #define GETRLIMIT_SUPPORT 1
 #define TMP_MAXPATHLEN	1024
@@ -228,9 +230,8 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define portable_h_ULTRIX 1		/* for debugging */
 #define SET_unix 1
 #define FORK_SUPPORT 1
-#define ATEXIT_SUPPORT 1
+/* HAVE_ATEXIT */
 #define _EXIT_SUPPORT 1
-#define RENAME_SUPPORT 1
 #define SYS_RESOURCE_H_SUPPORT 1
 #define GETRLIMIT_SUPPORT 1
 #define TMP_MAXPATHLEN	1024
@@ -291,7 +292,7 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define MAXCHAR		0xff		/* largest character value	*/
 #undef CHAR
 #define CHAR(x)		((x) & 0xff)		/* Truncate to 8 bits on MVS */
-#define ATEXIT_SUPPORT 1
+#define HAVE_ATEXIT 1
 #define index strchr
 #define rindex strrchr
 #define TMP_MAXPATHLEN	1024	/* ? */
@@ -311,7 +312,6 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define SET_unix 1
 #define FORK_SUPPORT 1
 #define _EXIT_SUPPORT 1
-#define RENAME_SUPPORT 1
 #define SYS_RESOURCE_H_SUPPORT 1
 #define GETRLIMIT_SUPPORT 1
 #define TMP_MAXPATHLEN	1024
@@ -357,9 +357,9 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 * ANSI C
 */
 #ifdef __STDC__
-#ifndef ATEXIT_SUPPORT
-#define ATEXIT_SUPPORT 1
-#undef ON_EXIT_SUPPORT
+#ifndef HAVE_ATEXIT
+#define HAVE_ATEXIT 1
+#undef HAVE_ON_EXIT
 #endif /* __STDC__ */
 #endif
 

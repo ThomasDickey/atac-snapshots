@@ -15,9 +15,12 @@
 #ifndef sym_H
 #define sym_H
 static const char sym_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.8 1997/05/12 00:20:24 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.9 1997/12/09 00:12:45 tom Exp $";
 /*
 * $Log: sym.h,v $
+* Revision 3.9  1997/12/09 00:12:45  tom
+* moved extern-declaration of decis_sym here.
+*
 * Revision 3.8  1997/05/12 00:20:24  tom
 * correct sign in QUAL_OVERFLOW
 *
@@ -248,6 +251,9 @@ typedef struct sym {
 		VALTYPE		valtype;		/* also type_name */
 	} type;
 } SYM;
+
+/* fg_module.c */
+extern SYM decis_sym;
 
 /* const.c */
 extern int evalIConstExpr P_(( struct tnode *node ));

@@ -25,9 +25,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_expr_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.9 1997/05/11 19:48:01 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.10 1997/12/09 00:13:03 tom Exp $";
 /*
 * $Log: fg_expr.c,v $
+* Revision 3.10  1997/12/09 00:13:03  tom
+* moved externs to header file
+*
 * Revision 3.9  1997/05/11 19:48:01  tom
 * split-out flowgraph.h, compile-clean
 *
@@ -92,8 +95,6 @@ static const char fg_expr_c[] =
 
 /* forward declarations */
 static void fg_asgn P_(( TNODE *n, DUG *dug, BLOCK * sblk, BLOCK ** endblk, int var_lhs, int ptr_lhs, int var_rhs, int ptr_rhs ));
-
-extern SYM decis_sym;	/* from fg_module.c */
 
 /*
 * fg_expr:  Build on to the data flow graph "dug" for the parse sub-tree
