@@ -21,10 +21,13 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.15 1997/12/10 11:19:23 tom Exp $";
+static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.16 1998/08/23 22:01:18 tom Exp $";
 
 /*
 * $Log: atac_rt.c,v $
+* Revision 3.16  1998/08/23 22:01:18  tom
+* moved timestamp code into 'write_timestamp()', documented Y2K impact (none).
+*
 * Revision 3.15  1997/12/10 11:19:23  tom
 * simplified/corrected ifdef's for atexit() vs on_exit()
 *
@@ -245,8 +248,9 @@ static int add_path P_((DU *use, int def_blk, int use_blk));
 static int atac_flush P_((FILE *fp, int final));
 static int atac_zero P_((void));
 static int redoFileNames P_((FILE *fp));
-static void setupSignal P_((void));
 static void prepareEnd P_((void));
+static void setupSignal P_((void));
+static void write_timestamp P_((void));
 
 static int
 atac_flush(fp, final)
@@ -492,6 +496,28 @@ getTestName()
     return testName;
 }
 
+/*
+ * Write timestamp and version, used later for accounting purposes.  ATAC does
+ * not compare dates except to see if they are equal, so there is no need to
+ * make a new file-format version with a 4-digit year.
+ */
+static void write_timestamp()
+{
+    time_t now;
+    struct tm *tm;
+
+    now = time((time_t*)0);
+    tm = (struct tm *)localtime(&now);
+    fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
+	    tm->tm_mon+1,
+	    tm->tm_mday,
+	    tm->tm_year,
+	    tm->tm_hour,
+	    tm->tm_min,
+	    tm->tm_sec);
+    fprintf(f, " %s %s\n", VERSION, getTestName());
+}
+
 int					/* returns call level */
 aTaC(level, blk)
 int		level;
@@ -513,20 +539,8 @@ int		blk;
 	busy = 1;
 
 	if (restartFlag != 0 && f != NULL) {
-	    long		now;
-	    struct tm	*tm;
-
 	    atac_flush(f, FINAL_FLUSH);
-	    time(&now);
-	    tm = (struct tm *)localtime(&now);
-	    fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
-		    tm->tm_mon+1,
-		    tm->tm_mday,
-		    tm->tm_year,
-		    tm->tm_hour,
-		    tm->tm_min,
-		    tm->tm_sec);
-	    fprintf(f, " %s %s\n", VERSION, getTestName());
+	    write_timestamp();
 	    redoFileNames(f);
 	    restartFlag = 0;
 	}
@@ -542,23 +556,11 @@ int		blk;
 			* One time initializations.
 			*/
 			if (f == NULL) {
-				long		now;
-				struct tm	*tm;
-
 				prepareEnd();
 				setupSignal();
 				f = opentrace();
 				if (f == NULL) exit(1);
-				time(&now);
-				tm = (struct tm *)localtime(&now);
-				fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
-					tm->tm_mon+1,
-					tm->tm_mday,
-					tm->tm_year,
-					tm->tm_hour,
-					tm->tm_min,
-					tm->tm_sec);
-				fprintf(f, " %s %s\n", VERSION, getTestName());
+				write_timestamp();
 				call_level = 0;
 				restartFlag = 0;
 			}
@@ -1062,9 +1064,6 @@ setupSignal()
 int
 atac_child()
 {
-    long	now;
-    struct tm	*tm;
-
     atac_zero();
 
     fclose(f);
@@ -1075,16 +1074,7 @@ atac_child()
 	fprintf(stderr, "atac runtime can't write trace file: %s\n",
 		traceName);
 
-    time(&now);
-    tm = (struct tm *)localtime(&now);
-    fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
-	    tm->tm_mon+1,
-	    tm->tm_mday,
-	    tm->tm_year,
-	    tm->tm_hour,
-	    tm->tm_min,
-	    tm->tm_sec);
-    fprintf(f, " %s %s\n", VERSION, getTestName());
+    write_timestamp();
     redoFileNames(f);
     restartFlag = 0;
 

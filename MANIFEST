@@ -1,4 +1,4 @@
-MANIFEST for atac, version atac_971211
+MANIFEST for atac, version atac_980823
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
@@ -12,6 +12,7 @@ atacCC.1                        atac3.3.13
 atacLD.1                        atac3.3.13
 ataclib.1                       atac3.3.13
 atacmin.1                       atac3.3.13
+atacterm.h                      atac's curses/termcap common-header
 atactm.1                        atac3.3.13
 config.guess                    script to guess configuration
 config.sub                      script to translate guessed configuration
@@ -132,6 +133,7 @@ changes/atac_19951230.txt       summary of changes for atac_961230 version.
 changes/atac_19961112.txt       changes for 961112
 changes/atac_19970511.txt       changes for 970511
 changes/atac_19971211.txt       changes for 971211
+changes/atac_19980823.txt       changes for 980823
 tools                           subdirectory
 tools/atac                      atac3.3.13
 tools/atacCC                    atac3.3.13

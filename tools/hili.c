@@ -17,12 +17,15 @@
 #endif
 
 static const char hili_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.8 1997/12/10 01:51:44 tom Exp $";
+"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.9 1998/08/23 19:50:57 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: hili.c,v $
+* Revision 3.9  1998/08/23 19:50:57  tom
+* fix gcc warnings for both termcap and terminfo configurations.
+*
 * Revision 3.8  1997/12/10 01:51:44  tom
 * prototyped outchar()
 *
@@ -79,6 +82,7 @@ static const char bellcoreCopyRight[] =
 *
 *-----------------------------------------------end of log
 */
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -86,6 +90,16 @@ static const char bellcoreCopyRight[] =
 #include <curses.h>
 #include <term.h>
 #endif
+
+#ifdef M_TERMCAP
+#if HAVE_TERMCAP_H
+#include <termcap.h>
+#else
+extern int tgetent();
+extern char *tgetstr();
+#endif
+#endif
+
 #include "portable.h"
 
 /* forward declarations */
@@ -141,8 +155,8 @@ char *argv[];
 	char	*p;
 	FILE	*script;
 	FILE	*text;
-	int	cur_line;
-	int	cur_col;
+	unsigned	cur_line;
+	unsigned	cur_col;
 	unsigned	line;
 	unsigned	col;
 	int	cmd;
@@ -363,7 +377,6 @@ initcap()
 	static char tcapbuf[512];
 	char termcap[1024];
 	char *bp = tcapbuf;
-	char *getenv(), *tgetstr();
 
 	termtype = getenv("TERM");
 	if (termtype == NULL)
@@ -419,11 +432,10 @@ mode_reverse()
 #endif
 
 #ifdef M_TERMINFO
-initcap()
+void initcap()
 {
 	char	*termtype;
 	int	err;
-	char	*getenv();
 
 	termtype = getenv("TERM");
 	if (termtype == NULL)

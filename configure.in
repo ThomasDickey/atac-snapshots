@@ -1,11 +1,12 @@
 dnl Process this file with 'autoconf' to produce a 'configure' script
-dnl $Id: configure.in,v 3.7 1997/12/10 01:51:44 tom Exp $
-AC_REVISION($Revision: 3.7 $)
+dnl $Id: configure.in,v 3.14 1998/08/23 21:25:58 tom Exp $
+AC_REVISION($Revision: 3.14 $)
 AC_INIT(tools/atac)
 
 dnl Normally we'll install in /usr/local, but this will let the user override
 dnl once and not be bothered again.
 AC_PREFIX_PROGRAM(atacCC)
+AC_CONFIG_HEADER(config.h:config_h.in)
 
 CF_CHECK_CACHE
 
@@ -28,7 +29,6 @@ AC_SUBST(LIBS)
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_CHECK_HEADERS(\
-curses.h \
 fcntl.h \
 stdlib.h \
 stdarg.h \
@@ -40,6 +40,38 @@ time.h \
 unistd.h \
 varargs.h \
 )
+
+CF_DISABLE_ECHO
+
+AC_CACHE_CHECK(if you want to use ncurses,cf_cv_use_ncurses,[
+AC_ARG_WITH(ncurses,
+[  --with-ncurses          use ncurses library for highlighting],
+	[cf_cv_use_ncurses=yes],
+	[cf_cv_use_ncurses=no])])
+
+cf_save_LIBS="$LIBS"
+if test $cf_cv_use_ncurses = yes ; then
+	CF_NCURSES_LIBS
+	CF_NCURSES_CPPFLAGS
+	cf_cv_lib_termcap=ncurses
+else
+	CF_TERMCAP_LIBS
+fi
+
+CHECK_DECL_FLAG="-I$srcdir"
+CHECK_DECL_HDRS='#include <atacterm.h>'
+CF_TYPE_OUTCHAR
+
+# We only need this for 'hili'.
+TERMLIBS="$LIBS"
+AC_SUBST(TERMLIBS)
+LIBS="$cf_save_LIBS"
+
+if test $cf_cv_lib_termcap = termcap ; then
+	AC_DEFINE(M_TERMCAP)
+else
+	AC_DEFINE(M_TERMINFO)
+fi
 
 AC_ARG_ENABLE(debugging,
 [  --enable-debugging      turn on debug option],,[enableval=no])
@@ -65,9 +97,6 @@ on_exit \
 strerror \
 vfprintf \
 )
-
-CF_FUNC_TGETENT
-CF_TYPE_OUTCHAR
 
 ###	Get the host's sizes, in bits, for cexp.y
 for td_type in char short int long
@@ -150,7 +179,4 @@ AC_OUTPUT(makefile
 	atac_i/makefile
 	atacysis/makefile
 	tools/makefile
-	tutorial/makefile
-	config_h,
-	[CF_SED_CONFIG_H(config_h,config.h)],
-	[ac_cv_path_TD_CONFIG="$ac_cv_path_TD_CONFIG"])
+	tutorial/makefile,,,sort)

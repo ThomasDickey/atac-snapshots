@@ -12,16 +12,15 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.5 1997/12/10 11:35:05 tom Exp $
-# 
+# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.6 1998/08/23 18:34:15 tom Exp $
+#
 # Makefile for ATAC.  See README.
 #
 .SUFFIXES:
 #
 # $Log: makefile.in,v $
-# Revision 3.5  1997/12/10 11:35:05  tom
-# turn off suffixes (so GNU make doesn't convert install.sh to install).
-# modify distclean rule to preserve config.guess and config.sub
+# Revision 3.6  1998/08/23 18:34:15  tom
+# don't pass CFLAGS to lower-levels, since autoconf does that properly.
 #
 # Revision 3.4  1997/11/04 01:50:49  tom
 # add EXTRA_CFLAGS
@@ -38,86 +37,86 @@
 #
 # Revision 3.21  94/04/05  09:22:08  saul
 # Don't append contact info to README
-# 
+#
 # Revision 3.20  94/04/04  09:46:08  jrh
 # Add Release Copyright
-# 
+#
 # Revision 3.19  93/09/01  16:59:41  ewk
 # Change installation of tutorial/makefile to tutorial/Makefile.
-# 
+#
 # Revision 3.18  93/08/09  12:49:11  saul
 # loguse
-# 
+#
 # Revision 3.17  93/07/13  11:13:26  ewk
 # Add atacLD and atacLD.1 information.
-# 
+#
 # Revision 3.16  93/07/11  09:03:27  saul
 # continue after chmod on man1 fails
 # drop install date from Version
-# 
+#
 # Revision 3.15  93/06/07  15:38:20  ewk
 # Now ignores failed attempts to remove directories in .../lib/atac.
-# 
+#
 # Revision 3.14  93/05/17  12:24:57  ewk
 # Added chmod calls to make lib/src, lib/tutorial, man/man1,
 # and man/cat1 directories executable (755).
-# 
+#
 # Revision 3.13  93/05/14  16:02:28  ewk
 # Revised chmod calls to explicitly set permissions in bin, lib, and man.
-# 
+#
 # Revision 3.12  93/05/05  11:28:32  ewk
 # Removed the "print" target.  Specified all "rm's" and "chmod's"
 # in the bin and man/man1 directories to avoid effecting user
 # created executables and man pages.  Added a "chmod" to tutorial
 # target.  Changed permissions so man pages are not made executable.
-# 
+#
 # Revision 3.11  93/05/03  16:40:26  ewk
 # Removed comments at end of lines not portable to Pyramid.
 # Also, moved and added "rm" and "chmod" calls to avoid
 # problems overwriting or appending to existing files during
 # installation.
-# 
+#
 # Revision 3.10  93/04/29  17:01:57  ewk
 # Changed to reflect the name changes from atacLib
 # to ataclib and atacMin to atacmin.
-# 
+#
 # Revision 3.9  93/04/15  10:46:32  saul
 # Avoid sh cannot create durring installation.
 # Change contact to atac@****.bellcore.com
-# 
+#
 # Revision 3.8  93/04/08  10:51:46  saul
 # install all .1 files (man pages).
-# 
+#
 # Revision 3.7  93/03/31  11:57:29  saul
 # syntax error.
-# 
+#
 # Revision 3.6  93/03/31  11:36:23  saul
 # Change sence of if so false is in else branch.  Pyramid needs this.
-# 
+#
 # Revision 3.5  93/03/26  10:52:41  saul
 # Install atac_to_bin.
-# 
+#
 # Revision 3.4  93/03/16  07:48:21  saul
 # need "else; true;".  Correct err msg for ommitted INSTALLDIR
-# 
+#
 # Revision 3.3  93/03/15  15:43:48  saul
 # Installation improvements (LIBDIR, MANDIR, etc.)
-# 
+#
 # Revision 3.2  93/02/23  13:13:51  saul
 # traditional vs ansi cpp configurations
-# 
+#
 # Revision 3.1  92/12/03  08:59:29  saul
 # newform/pg portability
-# 
+#
 # Revision 3.0  92/11/06  07:42:49  saul
 # propagate to version 3.0
-# 
+#
 # Revision 2.23  92/10/30  10:00:44  saul
 # add CFLAGS=-I.. remove -Dvoid=int
-# 
+#
 # Revision 2.22  92/10/29  11:18:32  saul
 # New installation procedure.
-# 
+#
 #-----------------------------------------------end of log
 
 SHELL		= /bin/sh
@@ -129,13 +128,11 @@ INSTALL		= @INSTALL@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
 INSTALL_DATA	= @INSTALL_DATA@
 
-CFLAGS		= -I.. -DHAVE_CONFIG_H @CFLAGS@ @EXTRA_CFLAGS@
-
-BINDIR=$(INSTALLDIR)/bin
-LIBDIR=$(INSTALLDIR)/lib
-SRCDIR=$(LIBDIR)/atac/src
-TUTORIALDIR=$(LIBDIR)/atac/tutorial
-MANDIR=$(INSTALLDIR)/man
+BINDIR		= $(INSTALLDIR)/bin
+LIBDIR		= $(INSTALLDIR)/lib
+SRCDIR		= $(LIBDIR)/atac/src
+TUTORIALDIR	= $(LIBDIR)/atac/tutorial
+MANDIR		= $(INSTALLDIR)/man
 
 system:	ATAC_I ATACYSIS ATAC_CPP TOOLS
 
@@ -170,16 +167,16 @@ uninstall:
 	rm -f  $(MANDIR)/cat1/atac*
 
 ATAC_I:
-	cd atac_i; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd atac_i; $(MAKE)
 
 ATACYSIS:	ATAC_I
-	cd atacysis; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd atacysis; $(MAKE)
 
 ATAC_CPP:
-	cd atac_cpp; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd atac_cpp; $(MAKE)
 
 TOOLS:
-	cd tools; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd tools; $(MAKE)
 
 #
 # create install directories as needed
@@ -194,7 +191,7 @@ $(TUTORIALDIR) :
 
 #
 # install lib
-#  
+#
 LIB:	$(BINDIR) $(LIBDIR)/atac
 	@ $(INSTALL_PROGRAM) tools/loguse $(LIBDIR)/atac
 	-@$(LIBDIR)/atac/loguse $(LIBDIR)/atac install old $(BINDIR) \
@@ -244,7 +241,7 @@ LIB:	$(BINDIR) $(LIBDIR)/atac
 		>/dev/null 2>/dev/null
 #
 # install bin
-#  
+#
 BIN:	$(BINDIR)
 	@rm -f $(BINDIR)/atac
 	@rm -f $(BINDIR)/atacCC
@@ -274,14 +271,14 @@ BIN:	$(BINDIR)
 	chmod 755 $(BINDIR)/atac
 	@:
 	@: ataclib
-	@:	
+	@:
 	@echo "#!/bin/sh" >$(BINDIR)/ataclib
 	@chmod u+w $(BINDIR)/ataclib
 	echo "echo $(LIBDIR)/atac" >>$(BINDIR)/ataclib
 	chmod 755 $(BINDIR)/ataclib
 	@:
 	@: bin
-	@:	
+	@:
 	$(INSTALL_PROGRAM) tools/atacCC    $(BINDIR)
 	$(INSTALL_PROGRAM) tools/atacLD    $(BINDIR)
 	$(INSTALL_PROGRAM) tools/atacmin   $(BINDIR)
@@ -289,7 +286,7 @@ BIN:	$(BINDIR)
 
 #
 # install man
-#  
+#
 MAN:	$(MANDIR)/man1 $(MANDIR)/cat1
 	-@chmod 755 $(MANDIR)/man1 2>/dev/null
 	-@chmod 755 $(MANDIR)/cat1 2>/dev/null
@@ -298,7 +295,7 @@ MAN:	$(MANDIR)/man1 $(MANDIR)/cat1
 
 #
 # install tutorial
-#  
+#
 TUTORIAL: $(TUTORIALDIR)
 	@chmod 755 $(TUTORIALDIR)
 	rm -f $(TUTORIALDIR)/*
@@ -311,7 +308,7 @@ TUTORIAL: $(TUTORIALDIR)
 
 #
 # install source
-#  
+#
 SOURCE:	$(SRCDIR)
 	@chmod 755 $(SRCDIR)
 	rm -f $(SRCDIR)/*

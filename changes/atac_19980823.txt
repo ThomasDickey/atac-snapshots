@@ -1,0 +1,29 @@
+atac-980823 - summary of changes made 1998/8/23
+	Thomas Dickey (dickey@clark.net)
+
+Someone requested information on the Y2K status of ATAC.  I investigated, found
+no impact (though it writes some timestamps with 2-digit years, the strings are
+not used for comparison).
+
+I imported newer configure-script macros to make atac build with ncurses if
+desired, improve the autoconfigure with termcap/terminfo libraries, and
+make it build in another directory using the --srcdir option.
+
+Also added suffix rules for C preprocessor output.
+
+# ------------------------------------------------------------------------------
+#  README-TOO             |    2 
+#  aclocal.m4             |  569 +++++++++++++++++++++++++++++++++++++++++------
+#  atac_980823/atacterm.h |   24 +
+#  atac_cpp/makefile.in   |   79 ++++--
+#  atac_i/makefile.in     |   38 ++-
+#  atacysis/makefile.in   |   80 ++++--
+#  configure.in           |   46 ++-
+#  makefile.in            |   91 +++----
+#  tools/atac_rt.c        |   72 ++---
+#  tools/hili.c           |   24 +
+#  tools/makefile.in      |   61 ++---
+#  tools/min.c            |  292 ++++++++++++------------
+#  tutorial/makefile.in   |   19 +
+#  13 files changed, 991 insertions, 406 deletions
+# ------------------------------------------------------------------------------
