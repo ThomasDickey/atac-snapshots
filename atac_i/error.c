@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.4 1996/11/13 00:42:43 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.6 1997/05/12 00:34:13 tom Exp $";
 /*
 * $Log: error.c,v $
+* Revision 3.6  1997/05/12 00:34:13  tom
+* include tnode.h
+*
+* Revision 3.5  1997/05/10 22:15:42  tom
+* rewrote using <stdarg.h> and vfprintf.
+*
 * Revision 3.4  1996/11/13 00:42:43  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -56,17 +62,10 @@ static const char error_c[] =
 *-----------------------------------------------end of log
 */
 #include <stdio.h>
+#include <stdarg.h>
 #include "portable.h"
-#include "srcpos.h"
-
-/* forward declarations */
-/* FIXME: should use varargs */
-#define ERR_ARGS SRCPOS *srcpos, char *msg, char *arg1, char *arg2, char *arg3
-void parse_error P_(( ERR_ARGS ));
-void lexical_error P_(( ERR_ARGS ));
-void semantic_error P_(( ERR_ARGS ));
-void internal_error P_(( ERR_ARGS ));
-void supress_warnings P_(( void ));
+#include "error.h"
+#include "tnode.h"
 
 #define PARSE_ERROR	2
 #define INTERNAL_ERROR	3
@@ -80,17 +79,15 @@ supress_warnings()
 }
 
 void
-internal_error(srcpos, msg, arg1, arg2, arg3)
-char	*msg;
-SRCPOS	*srcpos;
-char	*arg1;
-char	*arg2;
-char	*arg3;
+internal_error(SRCPOS *srcpos, char *msg, ...)
 {
 	fputs("internal error", stderr);
 	if (msg) {
+		va_list ap;
+		va_start(ap, msg);
 		fputs(": ", stderr);
-		fprintf(stderr, msg, arg1, arg2, arg3);
+		vfprintf(stderr, msg, ap);
+		va_end(ap);
 	}
 	if (srcpos) {
 		fputs(" at ", stderr);
@@ -102,19 +99,17 @@ char	*arg3;
 }
 
 void
-semantic_error(srcpos, msg, arg1, arg2, arg3)
-char	*msg;
-SRCPOS	*srcpos;
-char	*arg1;
-char	*arg2;
-char	*arg3;
+semantic_error(SRCPOS *srcpos, char *msg, ...)
 {
 	if (warn_flag == 0) return;
 
 	fputs("semantic error", stderr);
 	if (msg) {
+		va_list ap;
+		va_start(ap, msg);
 		fputs(": ", stderr);
-		fprintf(stderr, msg, arg1, arg2, arg3);
+		vfprintf(stderr, msg, ap);
+		va_end(ap);
 	}
 	if (srcpos) {
 		fputs(" at line ", stderr);
@@ -126,19 +121,17 @@ char	*arg3;
 }
 
 void
-lexical_error(srcpos, msg, arg1, arg2, arg3)
-char	*msg;
-SRCPOS	*srcpos;
-char	*arg1;
-char	*arg2;
-char	*arg3;
+lexical_error(SRCPOS *srcpos, char *msg, ...)
 {
 	if (warn_flag == 0) return;
 
 	fputs("lexical error", stderr);
 	if (msg) {
+		va_list ap;
+		va_start(ap, msg);
 		fputs(": ", stderr);
-		fprintf(stderr, msg, arg1, arg2, arg3);
+		vfprintf(stderr, msg, ap);
+		va_end(ap);
 	}
 	if (srcpos) {
 		fputs(" at line ", stderr);
@@ -150,17 +143,15 @@ char	*arg3;
 }
 
 void
-parse_error(srcpos, msg, arg1, arg2, arg3)
-char	*msg;
-SRCPOS	*srcpos;
-char	*arg1;
-char	*arg2;
-char	*arg3;
+parse_error(SRCPOS *srcpos, char *msg, ...)
 {
 	fputs("parse error", stderr);
 	if (msg) {
+		va_list ap;
+		va_start(ap, msg);
 		fputs(": ", stderr);
-		fprintf(stderr, msg, arg1, arg2, arg3);
+		vfprintf(stderr, msg, ap);
+		va_end(ap);
 	}
 	if (srcpos) {
 		fputs(" at line ", stderr);

@@ -27,15 +27,26 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <stdio.h>
 
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
+#include "reglist.h"
 #include "sym.h"
 #include "tree.h"
 
 static char const sym_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.c,v 3.9 1996/11/13 00:13:21 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.c,v 3.12 1997/05/11 23:57:58 tom Exp $";
 /*
 * $Log: sym.c,v $
+* Revision 3.12  1997/05/11 23:57:58  tom
+* move prototypes to tnode.h
+* rename sym() to do_sym() to avoid variable-shadowing warnings
+*
+* Revision 3.11  1997/05/11 23:09:18  tom
+* include reglist.h
+*
+* Revision 3.10  1997/05/10 23:14:40  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.9  1996/11/13 00:13:21  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -130,9 +141,6 @@ typedef int symType_t;
 #define SYM_TYPE_NOSPEC		((symType_t) 6)
 
 /* forward declarations */
-extern SYM *sym_find P_(( char *name, NAMETYPE nametype, SYMLIST *symtab ));
-extern void dump_sym P_(( TNODE *node, char *prefix ));
-
 static DIMLIST *copy_dimlist P_(( DIMLIST *list ));
 static SYM *dcl_enum P_(( TNODE *node, SYMTABLIST *symtablist ));
 static SYM *dcl_struct P_(( TNODE *node, SYMTABLIST *symtablist ));
@@ -1778,10 +1786,8 @@ char		*prefix;
 		dump_sym(p, prefix);
 }
 
-extern void sym P_(( TNODE *node ));
-
 void
-sym(node)
+do_sym(node)
 TNODE *node;
 {
 	if (node->genus != GEN_MODULE) {

@@ -22,9 +22,18 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char dug_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.9 1997/04/25 13:42:31 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.12 1997/05/11 21:23:30 tom Exp $";
 /*
 * $Log: dug.c,v $
+* Revision 3.12  1997/05/11 21:23:30  tom
+* corrected prototypes for du_use, du_use_type
+*
+* Revision 3.11  1997/05/11 19:01:20  tom
+* second cut of prototyping, moved prototypes to dug.h, cleanup against fg_expr.c
+*
+* Revision 3.10  1997/05/10 23:21:18  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.9  1997/04/25 13:42:31  tom
 * fix for SunOS K&R, which declares "int free()"
 * casts to appease compiler
@@ -105,9 +114,11 @@ static const char dug_c[] =
 extern void free();
 #endif
 #include <stdio.h>
+
 #include "portable.h"
+
 #include "sym.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "dug.h"
 #include "version.h"
@@ -120,25 +131,6 @@ static void free_block P_(( BLOCK *b ));
 static void free_branch P_(( BRANCH *r ));
 static void print_structs P_(( char *prefix, FILE *f ));
 static void var_clean P_(( DUG *dug ));
-
-/* FIXME: move to dug.h (but there's a lot of int's where BLOCK* should be! */
-extern BLOCK *dug_newblk P_(( DUG *dug ));
-extern DU *du_use P_(( DUG *dug, BLOCK *node, LIST *n ));
-extern DU *du_use_type P_(( DUG *dug, BLOCK *node, int symbol, int mode ));
-extern DUG *dug_create P_(( void ));
-extern int dug_blocks P_(( DUG *dug, FILE *f ));
-extern int dug_branch P_(( DUG *dug, BLOCK *from, BLOCK *bTo, COND_TYPE condType, long value, void *node ));
-extern int dug_cyclomatic P_(( DUG *dug ));
-extern int dug_du P_(( DUG *dug, SYM *symbol, BLOCK *block, int ref_type, int parse_pos ));
-extern int dug_endblk P_(( DUG *dug, BLOCK *blk, int parse_end ));
-extern int dug_fname P_(( DUG *dug, char *fname ));
-extern int dug_free P_(( DUG *dug ));
-extern int dug_startblk P_(( DUG *dug, BLOCK *blk, int parse_start ));
-extern void dug_clean P_(( DUG *dug ));
-extern void dug_du_combine P_(( DUG *dug, BLOCK *first, BLOCK *second ));
-extern void dug_dump P_(( DUG *dug ));
-extern void dug_tables P_(( DUG *dug, int funcno, char *prefix, FILE *f ));
-extern void dug_var_table P_(( DUG *dug, FILE *f ));
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
@@ -158,11 +150,11 @@ dug_create()
 	dug = (DUG *)malloc(sizeof *dug);
 	CHECK_MALLOC(dug);
 	dug->magic = DUG_MAGIC;
-	dug->fname = NULL;
+	dug->fname = 0;
 	dug->count = 0;
 	dug->block_list = (LIST *)list_create();
 	dug->nvar = 0;
-	dug->vartab = NULL;
+	dug->vartab = 0;
 	return dug;
 }
 
@@ -182,8 +174,8 @@ static void
 free_block(b)
 BLOCK	*b;
 {
-	if (b->branches) list_free(b->branches, free_branch);
-	list_free(b->du_list, free);
+	if (b->branches) LIST_FREE(b->branches, free_branch);
+	LIST_FREE(b->du_list, free);
 	b->magic = 0;
 	free(b);
 }
@@ -192,7 +184,7 @@ int
 dug_free(dug)
 DUG	*dug;
 {
-	list_free(dug->block_list, free_block);
+	LIST_FREE(dug->block_list, free_block);
 	if (dug->vartab) free(dug->vartab);
 	dug->magic = 0;
 	free(dug);
@@ -218,11 +210,11 @@ DUG	*dug;
 	b->magic = DUG_MAGIC;
 	b->block_id = dug->count++;
 	b->du_list = (LIST *)list_create();
-        if (b->du_list == NULL) {
+        if (b->du_list == 0) {
 		free(b);
-		return NULL;
+		return 0;
 	}
-	b->branches = NULL;
+	b->branches = 0;
 	b->to_count = 0;
 	b->parse_start = 0;
 	b->parse_end = 0;
@@ -234,13 +226,13 @@ int
 dug_startblk(dug, blk, parse_start)
 DUG	*dug;
 BLOCK	*blk;
-int	parse_start;
+struct tnode * parse_start;
 {
 #ifdef DEBUG
 	if (dug->magic != DUG_MAGIC)
 		internal_error(NULL, "dug_startblk: memory corrupted\n");
 #endif
-	if (blk == NULL) return 1;
+	if (blk == 0) return 1;
 #ifdef DEBUG
 	if (blk->magic != DUG_MAGIC)
 		internal_error(NULL, "dug_startblk 2: memory corrupted\n");
@@ -271,7 +263,7 @@ int
 dug_endblk(dug, blk, parse_end)
 DUG	*dug;
 BLOCK	*blk;
-int	parse_end;
+struct tnode * parse_end;
 {
 #ifdef DEBUG
 	if (dug->magic != DUG_MAGIC)
@@ -325,7 +317,7 @@ void		*node;
 	if (from->branches == NULL)
 		from->branches = (LIST *)list_create();
 	else
-	for (t = NULL; list_next(from->branches, &t, &r);) 
+	for (t = NULL; LIST_NEXT(from->branches, &t, &r);) 
 		if (r->to == bTo) return 1;
 
 	/*
@@ -357,9 +349,9 @@ DUG	*dug;
 SYM	*symbol;
 BLOCK	*block;
 int	ref_type;
-int	parse_pos;
+struct tnode * parse_pos;
 {
-	int	i;
+	LIST *	i;
 	DU	*du;
 
 #ifdef DEBUG
@@ -377,7 +369,7 @@ int	parse_pos;
 	* Omit C-USE if symbol previously defined at the same node (because
 	* this is not a "global" C-USE).
 	*/
-	for (i = 0; list_next(block->du_list, &i, &du);)
+	for (i = 0; LIST_NEXT(block->du_list, &i, &du);)
 		if ((du->symbol == symbol) &&
 			((du->ref_type & VAR_DREF) == (ref_type & VAR_DREF)))
 		{
@@ -420,7 +412,7 @@ BLOCK		*block;
 	BLOCK	*b;
 
 
-	for (t = NULL; list_next(dug->block_list, &t, &b);)
+	for (t = NULL; LIST_NEXT(dug->block_list, &t, &b);)
 		if (b == block) return 1;
 
 	return 0;
@@ -506,8 +498,8 @@ BLOCK	*b;
 		node_srcpos(b->parse_end, 0, stderr),
 		fprintf(stderr, ", to_count: %d\n", b->to_count);
 		if (b->branches)
-			list_dump(b->branches, branch_print, " branches");
-		list_dump(b->du_list, du_dump, " def-use");
+			LIST_DUMP(b->branches, branch_print, " branches");
+		LIST_DUMP(b->du_list, du_dump, " def-use");
 	}
 }
 
@@ -521,7 +513,7 @@ DUG		*dug;
 		internal_error(NULL, "dug_dump error: invalid Dug format");
 	else {
 		sprintf(label, " \"%s\" Dug Dump", dug->fname);
-		list_dump(dug->block_list, block_dump, label);
+		LIST_DUMP(dug->block_list, block_dump, label);
 	}
 }
 
@@ -534,7 +526,7 @@ BLOCK	*second;
 	LIST	*t;
 	DU	*du;
 
-	for (t = NULL; list_next(second->du_list, &t, &du);) {
+	for (t = NULL; LIST_NEXT(second->du_list, &t, &du);) {
 	    if (du->ref_type & VAR_DEF) {
 		dug_du(dug, du->symbol, first,
 		       du->ref_type & ~(VAR_CUSE | VAR_PUSE), du->defPos);
@@ -556,7 +548,7 @@ BLOCK	*second;
 	* Make sure second will get cleaned up.
 	*/
 	if (second->branches) {
-		list_free(second->branches, free_branch);
+		LIST_FREE(second->branches, free_branch);
 		second->branches = NULL;
 	}
 	second->parse_start = 0;
@@ -567,8 +559,8 @@ static void
 var_clean(dug)
 DUG	*dug;
 {
-	int	i;
-	int	j;
+	LIST *	i;
+	LIST *	j;
 	BLOCK	*node;
 	DU	*du;
 	int	var_count;
@@ -589,8 +581,8 @@ DUG	*dug;
 	var_id = (V_ID *)malloc(sizeof *var_id);
 	CHECK_MALLOC(var_id);
 	var_count = 0;
-	for (i = 0; list_next(dug->block_list, &i, &node);) {
-		for (j = 0; list_next(node->du_list, &j, &du);) {
+	for (i = 0; LIST_NEXT(dug->block_list, &i, &node);) {
+		for (j = 0; LIST_NEXT(node->du_list, &j, &du);) {
 			if ((du->ref_type & (VAR_CUSE | VAR_PUSE)) == 0)
 				continue;
 			var_id->symbol = du->symbol;
@@ -630,8 +622,8 @@ DUG	*dug;
 	/*
 	* At each du reference to variable, put var id.
 	*/
-	for (i = 0; list_next(dug->block_list, &i, &node);) {
-		for (j = 0; list_next(node->du_list, &j, &du);) {
+	for (i = 0; LIST_NEXT(dug->block_list, &i, &node);) {
+		for (j = 0; LIST_NEXT(node->du_list, &j, &du);) {
 			if (du->ref_type & VAR_DREF)
 				var_id = table_find(dref_list, du->symbol, 0,0);
 			else var_id = table_find(var_list, du->symbol, 0, 0);
@@ -659,8 +651,8 @@ DUG	*dug;
 	BLOCK	*block;
 	BRANCH	*r;
 	BLOCK	*b;
-	BLOCK	*i;
-	BLOCK	*j;
+	LIST	*i;
+	LIST	*j;
 	BRANCH	*rTo;
 	BRANCH	*new;
 	int	count;
@@ -682,23 +674,23 @@ DUG	*dug;
 	* marked as visited for block.  An empty block will not be removed
 	* if it has a branch to a block already visited.
 	*/
-	for (t = NULL; list_next(dug->block_list, &t, &block);)
+	for (t = NULL; LIST_NEXT(dug->block_list, &t, &block);)
 		block->visited = NULL;
-	for (t = NULL; list_next(dug->block_list, &t, &block);) {
+	for (t = NULL; LIST_NEXT(dug->block_list, &t, &block);) {
 		if (block->branches == NULL) continue;
 		block->visited = block;
-		for (j = NULL; list_next(block->branches, &j, &r);) {
+		for (j = 0; LIST_NEXT(block->branches, &j, &r);) {
 #ifdef DEBUG
 		    if (r->magic != BRANCH_MAGIC)
 		    	internal_error(NULL, "dug_clean: r memory corrupted\n");
 #endif
 		    if (r->to->parse_start && r->to->parse_end) continue;
-		    if (list_next(r->to->du_list, NULL, NULL)) {
-			int	i2;
+		    if (LIST_NEXT(r->to->du_list, NULL, NULL)) {
+			LIST *	i2;
 			DU	*du;
 			extern SYM decis_sym;
 			
-			for (i2 = 0; list_next(r->to->du_list, &i2, &du);) {
+			for (i2 = 0; LIST_NEXT(r->to->du_list, &i2, &du);) {
 			    if (du->symbol != &decis_sym)
 			        internal_error(NULL, "dug: unexpec du_list");
 			    list_put(block->du_list, du);
@@ -707,15 +699,15 @@ DUG	*dug;
 		    }
 
 		    if (r->to->branches) {
-			rTo = NULL;
+			rTo = 0;
 			/*
 			* Multiple branches from "empty" node possible as in
 			* "if (f()) ...".
 			*/
-			for (i = NULL; list_next(r->to->branches, &i, &rTo);)
+			for (i = 0; LIST_NEXT(r->to->branches, &i, &rTo);)
 			    if (rTo->to->visited == block) break;
 			if (rTo && rTo->to->visited == block) continue;
-			for (i = NULL; list_next(r->to->branches, &i, &rTo);) {
+			for (i = 0; LIST_NEXT(r->to->branches, &i, &rTo);) {
 			    new = (BRANCH *)malloc(sizeof *new);
 			    CHECK_MALLOC(new);
 			    if (r->condType == COND_UNCONDITIONAL)
@@ -739,12 +731,12 @@ DUG	*dug;
 	* Delete empty blocks and renumber.
 	*/
 	count = 0;
-	for (t = NULL; list_next(dug->block_list, &t, &b);) {
+	for (t = 0; LIST_NEXT(dug->block_list, &t, &b);) {
 		if ((b->to_count == 0) &&
 			(b->parse_end == 0 || b->parse_start == 0))
 		{
 			if (b->branches)
-				for (i = NULL; list_next(b->branches, &i, &r);)
+				for (i = 0; LIST_NEXT(b->branches, &i, &r);)
 					--r->to->to_count;
 			free_block(b);
 			list_delete(dug->block_list, &t);
@@ -764,8 +756,8 @@ char	*prefix;
 FILE	*f;
 {
 	static	first_call = 1;
-	int	i;
-	int	j;
+	LIST *	i;
+	LIST *	j;
 	BLOCK	*node;
 	DU	*du;
 	int	du_count;
@@ -777,8 +769,9 @@ FILE	*f;
 #endif
 
 	if (first_call) {
+		int i2;
 	        filename = srcfname(0);
-		if (filename == NULL) filename = "-";
+		if (filename == 0) filename = "-";
 	        fprintf(f, "static char %sIDENT[] = \"$Log: @(#)", prefix);
 		fprintf(f, "%.*s", (int) strlen(filename) - 2, filename + 1);
 		fprintf(f, " instrumented by ATAC release %s$\";\n",
@@ -791,8 +784,8 @@ FILE	*f;
 		*/
 		fprintf(f, "static struct %sfiles %sF[] = { /* FILE */\n",
 			prefix, prefix);
-		for (i = 0; (filename = srcfname(i)); ++i)
-			fprintf(f, "\t{ %s, %d },\n", filename, srcfstamp(i));
+		for (i2 = 0; (filename = srcfname(i2)); ++i2)
+			fprintf(f, "\t{ %s, %d },\n", filename, srcfstamp(i2));
 		fprintf(f, "\t{ 0, 0 }\n");
 		fprintf(f, "};\n");
 
@@ -805,8 +798,8 @@ FILE	*f;
 	fprintf(f, "static struct %spath %sU%s[] = { /* DU */\n",
 		prefix, prefix, dug->fname);
 	du_count = 0;
-	for (i = 0; list_next(dug->block_list, &i, &node);) {
-		for (j = 0; list_next(node->du_list, &j, &du);) {
+	for (i = 0; LIST_NEXT(dug->block_list, &i, &node);) {
+		for (j = 0; LIST_NEXT(node->du_list, &j, &du);) {
 			fprintf(f, "\t{%d, %d},",
 				du->var_id, du->ref_type & ~VAR_DREF);
 #ifndef NOCOMMENT
@@ -834,8 +827,8 @@ FILE	*f;
 #endif
 
 	fprintf(f, "\t&%sU%s[0],\n", prefix, dug->fname);
-	for (i = 0; list_next(dug->block_list, &i, &node);) {
-		for (j = 0; list_next(node->du_list, &j, &du);)
+	for (i = 0; LIST_NEXT(dug->block_list, &i, &node);) {
+		for (j = 0; LIST_NEXT(node->du_list, &j, &du);)
 			++du_count;
 		fprintf(f, "\t&%sU%s[%d],", prefix, dug->fname, du_count);
 #ifndef NOCOMMENT
@@ -905,12 +898,12 @@ FILE	*f;
 		internal_error(NULL, "dug_blocks: memory corrupted\n");
 #endif
 
-	if (dug->fname == NULL) return FALSE;
+	if (dug->fname == 0) return FALSE;
 
 	/*
 	* Function info.
 	*/
-	if (list_next(dug->block_list, NULL, &b)) {
+	if (LIST_NEXT(dug->block_list, NULL, &b)) {
 		fprintf(f, "F %s", dug->fname);
 		node_isrcpos(b->parse_end, 1, f),
 		fprintf(f, " ");
@@ -921,7 +914,7 @@ FILE	*f;
 	/*
 	* Block info.
 	*/
-	for (t = NULL; list_next(dug->block_list, &t, &b);) {
+	for (t = 0; LIST_NEXT(dug->block_list, &t, &b);) {
 		fprintf(f, "B");
 		node_isrcpos(b->parse_start, 1, f),
 		fprintf(f, " ");
@@ -949,14 +942,14 @@ DUG	*dug;
 	internal_error(NULL, "dug_blocks: memory corrupted\n");
 #endif
 
-    if (dug->fname == NULL) return FALSE;
+    if (dug->fname == 0) return FALSE;
 
     cyclomatic = 1;
-    for (t = NULL; list_next(dug->block_list, &t, &b);) {
+    for (t = 0; LIST_NEXT(dug->block_list, &t, &b);) {
 	if (b->branches) {
-	    j = NULL;
-	    list_next(b->branches, &j, NULL);
-	    while (list_next(b->branches, &j, NULL))
+	    j = 0;
+	    LIST_NEXT(b->branches, &j, NULL);
+	    while (LIST_NEXT(b->branches, &j, NULL))
 		++cyclomatic;
 	}
     }
@@ -968,41 +961,41 @@ DU *
 du_use(dug, node, n)
 DUG	*dug;
 BLOCK	*node;
-LIST	*n;
+LIST	**n;
 {
 	DU	*du;
 
-	if (node == NULL) return NULL;
-	if (node->du_list == NULL) return NULL;
+	if (node == 0) return 0;
+	if (node->du_list == 0) return 0;
 
-	if (!list_next(node->du_list, n, &du))
-		return NULL;
-	if (du == NULL) return NULL;
+	if (!LIST_NEXT(node->du_list, n, &du))
+		return 0;
+	if (du == 0) return 0;
 
 	return du;
 }
 
 DU *
 du_use_type(dug, node, symbol, mode)
-DUG	*dug;
-BLOCK	*node;
-int	symbol;
+DUG*	dug;
+BLOCK*	node;
+SYM*	symbol;
 int	mode;
 {
 	LIST	*i;
 	DU	*du;
 
-	if (node == NULL) return NULL;
-	if (node->du_list == NULL) return NULL;
+	if (node == 0) return 0;
+	if (node->du_list == 0) return 0;
 
-	for (i = 0; list_next(node->du_list, &i, &du);)
+	for (i = 0; LIST_NEXT(node->du_list, &i, &du);)
 		if ((du->var_id + 1 == symbol) &&
 			((du->ref_type & VAR_DREF) == (mode & VAR_DREF)))
 		{
 			return du;
 		}
 
-	return NULL;
+	return 0;
 }
 
 void

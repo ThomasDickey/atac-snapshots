@@ -1,3 +1,7 @@
+1997-05-11  Thomas E. Dickey  <dickey@clark.net>
+
+	* portable.h: correct sign in LURSHIFT
+
 1996-12-01  Thomas E. Dickey  <dickey@clark.net>
 
 	* configure: RCS_BASE

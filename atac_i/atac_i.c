@@ -23,12 +23,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char atac_i_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.8 1996/11/13 00:41:53 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.9 1997/05/11 23:59:50 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: atac_i.c,v $
+* Revision 3.9  1997/05/11 23:59:50  tom
+* add includes to get prototypes
+*
 * Revision 3.8  1996/11/13 00:41:53  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -88,10 +91,12 @@ static const char bellcoreCopyRight[] =
 */
 #include <stdio.h>
 #include "portable.h"
+#include "error.h"
+#include "flowgraph.h"
 
 /* forward declarations */
 static void usage P_(( char * ));
-void runErrorTests P_(( void *tree ));
+static void runErrorTests P_(( void *tree ));
 
 int dump_tables = 0;
 int all_paths = 0;
@@ -274,7 +279,7 @@ char	*argv[];
     status = parse(srcin, &tree, &prefix);
 
     if (status == 0) {
-	if (!supress_sym) sym(tree);
+	if (!supress_sym) do_sym(tree);
 	if (!supress_inst) flowgraph(tree, tablesout, fgout, prefix);
 	if (!supress_deparse) deparse(tree, srcout, "aTaC", prefix);
 
@@ -289,7 +294,7 @@ char	*argv[];
     return 0;
 }
 
-void
+static void
 runErrorTests(tree)
 void	*tree;
 {

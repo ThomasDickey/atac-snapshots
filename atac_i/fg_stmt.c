@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_stmt_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.5 1996/11/12 23:54:02 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.7 1997/05/11 19:57:16 tom Exp $";
 /*
 * $Log: fg_stmt.c,v $
+* Revision 3.7  1997/05/11 19:57:16  tom
+* split-out flowgraph.h, compile-clean
+*
+* Revision 3.6  1997/05/10 23:14:27  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.5  1996/11/12 23:54:02  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -70,47 +76,37 @@ static const char fg_stmt_c[] =
 #endif
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "tree.h"
 #include "sym.h"
 #include "dug.h"
+#include "flowgraph.h"
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
-
-typedef struct {
-	int	s;	/* start block */
-	int	e;	/* end block */
-} SUBGRAPH;
-
-typedef struct gotolist {
-	int		block;
-	struct gotolist *next;
-} GOTOLIST;
 
 extern SYM decis_sym;	/* from fg_module.c */
 
 /* forward declarations */
-static void fg_for P_(( DUG *dug, TNODE *expr1, TNODE *expr2, TNODE *expr3, TNODE *stmt, int sblk, int swblk, int *endblk, int *dblk ));
-static void fg_stmt_goto P_(( DUG *dug, GOTOLIST **gotolist, int sblk ));
-static void fg_stmt_label P_(( DUG *dug, GOTOLIST **gotolist, int sblk ));
-extern void fg_stmt P_(( TNODE *arg_n, DUG *dug, int arg_sblk, int bblk, int cblk, int swblk, int *endblk, int *dblk ));
+static void fg_for P_(( DUG *dug, TNODE *expr1, TNODE *expr2, TNODE *expr3, TNODE *stmt, BLOCK *sblk, BLOCK *swblk, BLOCK **endblk, BLOCK **dblk ));
+static void fg_stmt_goto P_(( DUG *dug, GOTOLIST **gotolist, BLOCK * sblk ));
+static void fg_stmt_label P_(( DUG *dug, GOTOLIST **gotolist, BLOCK * sblk ));
 
 void
 fg_stmt(arg_n, dug, arg_sblk, bblk, cblk, swblk, endblk, dblk)
 TNODE	*arg_n;
 DUG	*dug;
-int	arg_sblk;	/* block preceeding or containing stmt */
-int	bblk;	/* block reached by break stmt */
-int	cblk;	/* block reached by continue stmt */
-int	swblk;	/* block containing switch to case label */
-int	*endblk;	/* return block at end of stmt */
-int	*dblk;	/* return block with "default:" label */
+BLOCK *	arg_sblk;	/* block preceeding or containing stmt */
+BLOCK *	bblk;		/* block reached by break stmt */
+BLOCK *	cblk;		/* block reached by continue stmt */
+BLOCK *	swblk;		/* block containing switch to case label */
+BLOCK *	*endblk;	/* return block at end of stmt */
+BLOCK *	*dblk;		/* return block with "default:" label */
 {
-	int	sblk;
-	int	end;
-	TNODE	*n;
-	int	more;
+	BLOCK *		sblk;
+	BLOCK *		end;
+	TNODE *		n;
+	int		more;
 	CONST_VALUE	value;
 
 	sblk = arg_sblk;
@@ -204,9 +200,8 @@ int	*dblk;	/* return block with "default:" label */
 			SUBGRAPH	e1;	/* expr 1 */
 			SUBGRAPH	s1;	/* stmt 1 */
 			SUBGRAPH	s2;	/* stmt 2 */
-			int		Tsblk;
-			int		Fsblk;
-
+			BLOCK *		Tsblk;
+			BLOCK *		Fsblk;
 
 			dug_startblk(dug, sblk, n);
 			eNode = CHILD0(n);
@@ -245,8 +240,8 @@ int	*dblk;	/* return block with "default:" label */
 			TNODE		*p;
 			SUBGRAPH	e1;	/* expr 1 */
 			SUBGRAPH	s1;	/* stmt 1 */
-			int		Tend;
-			int		Fend;
+			BLOCK *		Tend;
+			BLOCK *		Fend;
 
 			p = CHILD0(n);
 			e1.s = dug_newblk(dug);
@@ -271,8 +266,8 @@ int	*dblk;	/* return block with "default:" label */
 			TNODE		*p;
 			SUBGRAPH	e1;	/* expr 1 */
 			SUBGRAPH	s1;	/* stmt 1 */
-			int		Tend;
-			int		Fend;
+			BLOCK *		Tend;
+			BLOCK *		Fend;
 
 			/*
 			* (Can't do startblk() here because first stmt of s1
@@ -358,7 +353,7 @@ int	*dblk;	/* return block with "default:" label */
 		break;
 	case STMT_SWITCH:
 		{
-			int		newdblk;
+			BLOCK *		newdblk;
 			SUBGRAPH	e1;	/* expr 1 */
 			SUBGRAPH	s1;	/* stmt 1 */
 
@@ -447,9 +442,9 @@ int	*dblk;	/* return block with "default:" label */
 
 static void
 fg_stmt_label(dug, gotolist, sblk)
-DUG		*dug;
-GOTOLIST	**gotolist;
-int		sblk;
+DUG *		dug;
+GOTOLIST **	gotolist;
+BLOCK *		sblk;
 {
 	GOTOLIST	*g;
 	GOTOLIST	*tmpg;
@@ -482,9 +477,9 @@ int		sblk;
 
 static void
 fg_stmt_goto(dug, gotolist, sblk)
-DUG		*dug;
-GOTOLIST	**gotolist;
-int		sblk;
+DUG *		dug;
+GOTOLIST **	gotolist;
+BLOCK *		sblk;
 {
 	GOTOLIST	*g;
 	GOTOLIST	*tmpg;
@@ -526,19 +521,19 @@ TNODE	*expr1;
 TNODE	*expr2;
 TNODE	*expr3;
 TNODE	*stmt;
-int	sblk; 
-int	swblk;
-int	*endblk;
-int	*dblk;
+BLOCK *	sblk; 
+BLOCK *	swblk;
+BLOCK **endblk;
+BLOCK **dblk;
 {
 	SUBGRAPH	e1;	/* expr 1 */
 	SUBGRAPH	e2;	/* expr 2 */
 	SUBGRAPH	e3;	/* expr 3 */
 	SUBGRAPH	s1;	/* stmt 1 */
-	int		end;	/* block following stmt */
-	int		cont;	/* target of continue */
-	int		Tend;
-	int		Fend;
+	BLOCK *		end;	/* block following stmt */
+	BLOCK *		cont;	/* target of continue */
+	BLOCK *		Tend;
+	BLOCK *		Fend;
 
 	/*
 	* ... sblk for (expr1; expr2; expr3) stmt; end ...

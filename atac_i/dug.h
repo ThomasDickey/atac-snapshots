@@ -15,9 +15,21 @@
 #ifndef dug_H
 #define dug_H
 static const char dug_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.3 1996/11/13 00:28:32 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.7 1997/05/11 23:49:33 tom Exp $";
 /*
 * $Log: dug.h,v $
+* Revision 3.7  1997/05/11 23:49:33  tom
+* add prototypes for mark.c, paths.c, alldu.c
+*
+* Revision 3.6  1997/05/11 21:25:52  tom
+* correct prototypes for du_use, du_use_type
+*
+* Revision 3.5  1997/05/11 19:01:29  tom
+* move prototypes for dug.c here (first cut)
+*
+* Revision 3.4  1997/05/11 16:47:18  tom
+* include list.h, to define LIST-type rather than dummy
+*
 * Revision 3.3  1996/11/13 00:28:32  tom
 * change ident to 'const' to quiet gcc
 *
@@ -50,7 +62,8 @@ static const char dug_h[] =
 * 
 *-----------------------------------------------end of log
 */
-typedef char LIST;
+#include "tnode.h"
+#include "list.h"
 
 typedef struct block {
 	int	magic;
@@ -76,8 +89,8 @@ typedef struct {
 	SYM	*symbol;
 	int	var_id;		/* available after var_clean() */
 	int	ref_type;
-	int	usePos;
-	int	defPos;
+	struct tnode * usePos;
+	struct tnode * defPos;
 } DU;
 
 typedef int COND_TYPE;
@@ -97,7 +110,7 @@ typedef int COND_TYPE;
 * for "false" and 1 for "true", and "node" is the GEN_EXPR for the
 * conditional.
 */
-typedef struct {
+typedef struct branch {
     	int		magic;
 	BLOCK		*to;
 	COND_TYPE	condType;
@@ -112,5 +125,33 @@ typedef struct {
 #define VAR_DREF	8	/* expression is dereferenced as a pointer */
 
 #define NULL_BLK	0
+
+/* alldu.c */
+void alldu P_(( DUG *dug ));
+
+/* dug.c */
+extern BLOCK *dug_newblk P_(( DUG *dug ));
+extern DU *du_use P_(( DUG *dug, BLOCK *node, LIST **n ));
+extern DU *du_use_type P_(( DUG *dug, BLOCK *node, SYM * symbol, int mode ));
+extern DUG *dug_create P_(( void ));
+extern int dug_blocks P_(( DUG *dug, FILE *f ));
+extern int dug_branch P_(( DUG *dug, BLOCK *from, BLOCK *bTo, COND_TYPE condType, long value, void *node ));
+extern int dug_cyclomatic P_(( DUG *dug ));
+extern int dug_du P_(( DUG *dug, SYM *symbol, BLOCK *block, int ref_type, struct tnode * parse_pos ));
+extern int dug_endblk P_(( DUG *dug, BLOCK *blk, struct tnode * parse_end ));
+extern int dug_fname P_(( DUG *dug, char *fname ));
+extern int dug_free P_(( DUG *dug ));
+extern int dug_startblk P_(( DUG *dug, BLOCK *blk, struct tnode * parse_start ));
+extern void dug_clean P_(( DUG *dug ));
+extern void dug_du_combine P_(( DUG *dug, BLOCK *first, BLOCK *second ));
+extern void dug_dump P_(( DUG *dug ));
+extern void dug_tables P_(( DUG *dug, int funcno, char *prefix, FILE *f ));
+extern void dug_var_table P_(( DUG *dug, FILE *f ));
+
+/* mark.c */
+extern void dug_mark P_(( DUG *dug ));
+
+/* paths.c */
+extern void paths P_(( DUG *dug, FILE *f, int feasableOnly ));
 
 #endif /* dug_H */

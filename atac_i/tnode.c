@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char tnode_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.4 1996/11/13 00:41:17 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.5 1997/05/10 23:20:26 tom Exp $";
 /*
 * $Log: tnode.c,v $
+* Revision 3.5  1997/05/10 23:20:26  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.4  1996/11/13 00:41:17  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -51,7 +54,7 @@ static const char tnode_c[] =
 */
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 
 /* forward declarations */

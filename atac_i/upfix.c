@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char upfix_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/upfix.c,v 3.5 1996/11/13 00:40:26 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/upfix.c,v 3.7 1997/05/11 23:14:24 tom Exp $";
 /*
 * $Log: upfix.c,v $
+* Revision 3.7  1997/05/11 23:14:24  tom
+* use size_t
+*
+* Revision 3.6  1997/05/10 22:03:12  tom
+* split-out upfix.h
+*
 * Revision 3.5  1996/11/13 00:40:26  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -61,6 +67,7 @@ static const char upfix_c[] =
 #include <string.h>
 #include <stdio.h>
 #include "portable.h"
+#include "upfix.h"
 
 #ifndef MVS
 #define UPCASE_COUNT	('Z' - 'A' + 1)
@@ -72,27 +79,9 @@ static const char upfix_c[] =
 #define DIGIT_COUNT	('9' - '0' + 1)
 #define USCORE_COUNT	1
 
-typedef struct {
-	int		charsleft;
-	unsigned long	upcase;
-	unsigned long	lowcase;
-	int 		uscore;
-	unsigned long	digit;
-	int		prefixlen;
-	int		unique;
-	int		maxlen;
-	char		*prefix;
-} PREFIX;
-
-/* forward declarations */
-extern char *upfix P_(( PREFIX *p ));
-extern void upfix_exclude P_(( PREFIX *p, char *name ));
-extern void upfix_free P_(( PREFIX *p ));
-extern PREFIX *upfix_init P_(( int maxlen, char *s ));
-
 PREFIX *
 upfix_init(maxlen, s)
-int	maxlen;
+size_t	maxlen;
 char	*s;
 {
 	PREFIX *p;

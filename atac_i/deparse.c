@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char deparse_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.6 1996/11/13 00:42:34 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.8 1997/05/12 00:22:26 tom Exp $";
 /*
 * $Log: deparse.c,v $
+* Revision 3.8  1997/05/12 00:22:26  tom
+* corrent sprintf-format
+*
+* Revision 3.7  1997/05/10 23:21:05  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.6  1996/11/13 00:42:34  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -75,8 +81,10 @@ static const char deparse_c[] =
 #endif
 #include <stdio.h>
 #include <ctype.h>
+
 #include "portable.h"
-#include "srcpos.h"
+
+#include "error.h"
 #include "tree.h"
 #include "tnode.h"
 #include "hook.h"
@@ -260,7 +268,7 @@ char	*prefix;
 				sprintf(string, "%d", n->sym.hook.tempno);
 				break;
 			case 'A':
-				sprintf(string, "%u", n->sym.sym);
+				sprintf(string, "%p", n->sym.sym);
 				break;
 			case 'C':
 				if (strlen((char *) n->sym.hook.type) >= sizeof stringBuf) 

@@ -25,9 +25,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char type_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/type.c,v 3.6 1996/11/13 00:41:44 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/type.c,v 3.8 1997/05/11 22:16:52 tom Exp $";
 /*
 * $Log: type.c,v $
+* Revision 3.8  1997/05/11 22:16:52  tom
+* moved prototypes to tnode.h
+*
+* Revision 3.7  1997/05/10 23:14:50  tom
+* absorb srcpos.h into error.h
+*
 * Revision 3.6  1996/11/13 00:41:44  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -72,17 +78,13 @@ static const char type_c[] =
 */
 #include <stdio.h>
 #include "portable.h"
-#include "srcpos.h"
+#include "error.h"
 #include "tnode.h"
 #include "sym.h"
 #include "tree.h"
 #include "hook.h"
 
 /* forward declarations */
-extern void clear_type P_(( VALTYPE *type ));
-extern void copy_type P_(( VALTYPE *from, VALTYPE *to ));
-extern void expr_type P_(( TNODE *n, VALTYPE *type ));
-extern void int_promote P_(( VALTYPE *type ));
 static void usual_arith_conv P_(( VALTYPE *op1, VALTYPE *op2, VALTYPE *type ));
 
 void

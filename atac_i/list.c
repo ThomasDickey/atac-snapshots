@@ -22,9 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char list_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/list.c,v 3.5 1996/11/13 00:58:59 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/list.c,v 3.8 1997/05/11 20:55:27 tom Exp $";
 /*
 * $Log: list.c,v $
+* Revision 3.8  1997/05/11 20:55:27  tom
+* rename DATA to LIST_DATATYPE
+*
+* Revision 3.7  1997/05/11 16:38:02  tom
+* rename type from LINK to LIST, for consistency
+*
 * Revision 3.5  1996/11/13 00:58:59  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -65,42 +71,18 @@ static const char list_c[] =
 #include <stdlib.h>
 #endif
 
-/*
-* List is implemented as a linked list with forward and backward links.
-* The head of the list is a sentinal; its data field is not used.
-* The backward list is circular.  New entries are added at the end.
-*/
+#include "list.h"
 
 #ifdef DEBUG
 static char MAGIC[1];	/* Guaranteed unique address */
 #endif
 
-typedef char DATA;
-
-typedef struct link {
-#ifdef DEBUG
-	char		*magic;
-#endif
-	DATA		*data;
-	struct link	*next;
-	struct link	*prev;
-} LINK;
-
-/* forward declarations */
-extern LINK *list_create P_(( void ));
-extern int list_delete P_(( LINK *head, LINK **old ));
-extern int list_free P_(( LINK *head, void (*datafree)(DATA *data) ));
-extern int list_next P_(( LINK *head, LINK **prev, DATA **data ));
-extern int list_prev P_(( LINK *head, LINK **prev, DATA **data ));
-extern int list_put P_(( LINK *head, DATA *data ));
-extern void list_dump P_(( LINK *head, char *(*datadump)(DATA *data), char *label ));
-
-LINK *
+LIST *
 list_create()
 {
-	LINK *head;	/* points to list pointer */
+	LIST *head;	/* points to list pointer */
 
-	head = (LINK *)malloc(sizeof *head);
+	head = (LIST *)malloc(sizeof *head);
 	if (head == NULL) return NULL;
 #ifdef DEBUG
 	head->magic = MAGIC;
@@ -113,11 +95,11 @@ list_create()
 
 int					/* return status */
 list_free(head, datafree)
-LINK	*head;
-void	(*datafree) P_((DATA *));
+LIST	*head;
+DataFree datafree;
 {
-	LINK	*link;
-	LINK	*next;
+	LIST	*link;
+	LIST	*next;
 
 #ifdef DEBUG
 	if (head->magic != MAGIC) return 0;
@@ -140,11 +122,11 @@ void	(*datafree) P_((DATA *));
 
 int					/* return status */
 list_delete(head, old)
-LINK	*head;
-LINK	**old;
+LIST	*head;
+LIST	**old;
 {
-	LINK *d;
-	LINK *p;
+	LIST *d;
+	LIST *p;
 
 #ifdef DEBUG
 	if (head->magic != MAGIC) return 0;
@@ -177,16 +159,16 @@ LINK	**old;
 
 int					/* return status */
 list_put(head, data)
-LINK	*head;
-DATA	*data;
+LIST	*head;
+LIST_DATATYPE	*data;
 {
-	LINK	*new;
+	LIST	*new;
 
 #ifdef DEBUG
 	if (head->magic != MAGIC) return 0;
 #endif
 
-	new = (LINK *)malloc(sizeof *new);
+	new = (LIST *)malloc(sizeof *new);
 	if (new == NULL) return 0;
 #ifdef DEBUG
 	new->magic = MAGIC;
@@ -201,11 +183,11 @@ DATA	*data;
 
 int					/* return status */
 list_next(head, prev, data)
-LINK	*head;
-LINK	**prev;
-DATA	**data;
+LIST	*head;
+LIST	**prev;
+LIST_DATATYPE	**data;
 {
-	LINK	*p;
+	LIST	*p;
 
 #ifdef DEBUG
 	if (head->magic != MAGIC) return 0;
@@ -228,11 +210,11 @@ DATA	**data;
 }
 int					/* return status */
 list_prev(head, prev, data)
-LINK	*head;
-LINK	**prev;
-DATA	**data;
+LIST	*head;
+LIST	**prev;
+LIST_DATATYPE	**data;
 {
-	LINK	*p;
+	LIST	*p;
 
 #ifdef DEBUG
 	if (head->magic != MAGIC) return 0;
@@ -256,12 +238,12 @@ DATA	**data;
 
 void
 list_dump(head, datadump, label)
-LINK	*head;
-char	*(*datadump) P_((DATA *));
+LIST	*head;
+char	*(*datadump) P_((LIST_DATATYPE *));
 char	*label;
 {
-	LINK *link;
-	DATA *data;
+	LIST *link;
+	LIST_DATATYPE *data;
 	int i;
 	int j;
 	static tab = -1;

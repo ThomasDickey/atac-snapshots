@@ -1,4 +1,4 @@
-MANIFEST for atac, version atac_970425
+MANIFEST for atac, version atac_970511
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
@@ -37,6 +37,7 @@ atac_i                          subdirectory
 atac_i/Pgram.y                  atac3.3.13
 atac_i/alldu.c                  atac3.3.13
 atac_i/allpaths.c               atac3.3.13
+atac_i/allpaths.h               interface of allpaths.c
 atac_i/atac_i.c                 atac3.3.13
 atac_i/bitvec.h                 atac3.3.13
 atac_i/const.c                  atac3.3.13
@@ -46,32 +47,39 @@ atac_i/descrip.mms              atac3.3.13
 atac_i/dug.c                    atac3.3.13
 atac_i/dug.h                    atac3.3.13
 atac_i/error.c                  atac3.3.13
+atac_i/error.h                  interface of error.c
 atac_i/fg_expr.c                atac3.3.13
 atac_i/fg_module.c              atac3.3.13
 atac_i/fg_stmt.c                atac3.3.13
 atac_i/filestamp.c              atac3.3.13
+atac_i/flowgraph.h              interface of fg_xxx modules (flowgraph)
 atac_i/hook.h                   atac3.3.13
 atac_i/list.c                   atac3.3.13
+atac_i/list.h                   interface of list.c
 atac_i/makefile.in              template for atac_i/makefile
 atac_i/mark.c                   atac3.3.13
 atac_i/parser.c                 atac3.3.13
 atac_i/paths.c                  atac3.3.13
 atac_i/print_sym.c              atac3.3.13
 atac_i/reglist.c                atac3.3.13
+atac_i/reglist.h                interface of reglist.c
 atac_i/scan.c                   atac3.3.13
 atac_i/scan.h                   atac3.3.13
 atac_i/srcpos.c                 atac3.3.13
 atac_i/srcpos.h                 atac3.3.13
 atac_i/strtab.c                 atac3.3.13
+atac_i/strtab.h                 interface of strtab.c
 atac_i/sym.c                    atac3.3.13
 atac_i/sym.h                    atac3.3.13
 atac_i/table.c                  atac3.3.13
+atac_i/table.h                  interface of table.c
 atac_i/tnode.c                  atac3.3.13
 atac_i/tnode.h                  atac3.3.13
 atac_i/tree.c                   atac3.3.13
 atac_i/tree.h                   atac3.3.13
 atac_i/type.c                   atac3.3.13
 atac_i/upfix.c                  atac3.3.13
+atac_i/upfix.h                  interface of upfix.c
 atacysis                        subdirectory
 atacysis/atac_to_bin.c          atac3.3.13
 atacysis/atactm.c               atac3.3.13
@@ -118,6 +126,7 @@ atacysis/vms_disp.c             atac3.3.13
 changes                         subdirectory
 changes/atac_19951230.txt       summary of changes for atac_961230 version.
 changes/atac_19961112.txt       changes for 961112
+changes/atac_19970511.txt       changes for 970511
 tools                           subdirectory
 tools/atac                      atac3.3.13
 tools/atacCC                    atac3.3.13

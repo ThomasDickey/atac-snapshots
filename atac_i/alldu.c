@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char alldu_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.5 1996/11/12 23:45:51 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.6 1997/05/11 23:28:56 tom Exp $";
 /*
 * $Log: alldu.c,v $
+* Revision 3.6  1997/05/11 23:28:56  tom
+* remove redundant prototypes, fix compiler warnings for list.c interface
+*
 * Revision 3.5  1996/11/12 23:45:51  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -75,14 +78,10 @@ static const char alldu_c[] =
 /* forward declarations */
 static void u_traverse P_(( BLOCK *node ));
 static void paths_from P_(( DUG *dug, BLOCK *node ));
-void alldu P_(( DUG *dug ));
 
 #ifndef GIVE_UP
 #define GIVE_UP	(10*1000*1000)
 #endif
-
-extern DU *du_use P_(( DUG *dug, BLOCK *node, LIST *n ));
-extern DU *du_use_type P_(( DUG *dug, BLOCK *node, int symbol, int mode ));
 
 typedef struct definfo {
 	DUG	*dug;			/* flow graph */
@@ -101,7 +100,7 @@ void
 alldu(dug)
 DUG	*dug;
 { 
-	DUG	*t;
+	LIST	*t;
 	BLOCK	*node;
 	
 	adu_count = 0;
@@ -110,7 +109,7 @@ DUG	*dug;
 	* Find DU paths from each node in flow graph.
 	*/
 	if (dug->block_list)
-		for (t = NULL; list_next(dug->block_list, &t, &node);)
+		for (t = 0; LIST_NEXT(dug->block_list, &t, &node);)
 			paths_from(dug, node);
 
 	fprintf(stderr, "%s blocks: %d\t\tAll_du_paths: %lu\n",
@@ -141,7 +140,7 @@ BLOCK	*node;
 		definfo.star = du->ref_type & VAR_DREF;
 		definfo.list = BVALLOC(dug->count);
 		definfo.fruitless = BVALLOC(dug->count);
-		for (j = NULL; list_next(node->branches, &j, &f);)
+		for (j = 0; LIST_NEXT(node->branches, &j, &f);)
 			u_traverse(f);
 		free(definfo.list);
 		free(definfo.fruitless);
@@ -152,20 +151,20 @@ static void
 u_traverse(node)
 BLOCK	*node;			/* possible use node */
 {
-	int	i;
-	int	f;
-	DU	*du;
+	LIST*	i;
+	BLOCK*	f;
+	DU*	du;
 	int	prev_adu_count;
 
-if (node->block_id == 0) return;
-/*
-* ?unknown? Block 0 is the start block.  But, branch back to block 0 means return.
-* This should be a valid P-USE but the runtime won't catch it so we don't
-* report it.  Since block 0 always has exactly one branch, to block 1,
-* and block 1 is on the visited list, and there are never any Uses at block 0,
-* we could just remove the line above this comment to have the "P-USE at
-* return" print.
-*/
+	if (node->block_id == 0) return;
+	/*
+	* ?unknown?  Block 0 is the start block.  But, branch back to block 0
+	* means return.  This should be a valid P-USE but the runtime won't
+	* catch it so we don't report it.  Since block 0 always has exactly one
+	* branch, to block 1, and block 1 is on the visited list, and there are
+	* never any Uses at block 0, we could just remove the line above this
+	* comment to have the "P-USE at return" print.
+	*/
 	if (BVTEST(definfo.fruitless, node->block_id))
 		return;					/* already visited */
 
@@ -188,7 +187,7 @@ if (node->block_id == 0) return;
 	* If P-USE at node, count them with all following nodes.
 	*/
 	if ((du->ref_type & VAR_PUSE) && node->branches)
-		for (i = 0; list_next(node->branches, &i, &f);)
+		for (i = 0; LIST_NEXT(node->branches, &i, &f);)
 			++adu_count;
 	
 	/*
@@ -197,7 +196,7 @@ if (node->block_id == 0) return;
 	if (!(du->ref_type & VAR_DEF)) {
 		BVSET(definfo.list, node->block_id);
 		if (node->branches)
-			for (i = 0; list_next(node->branches, &i, &f);)
+			for (i = 0; LIST_NEXT(node->branches, &i, &f);)
 				u_traverse(f);
 		BVCLR(definfo.list, node->block_id);
 	}

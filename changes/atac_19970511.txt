@@ -1,0 +1,50 @@
+atac-970111 - summary of changes made 1997/5/11
+	Thomas Dickey (dickey@clark.net)
+--------------------------------------------------------------------------------
+
+I made several passes through the source to make it use ANSI prototypes (though
+it is still extended-C), varargs, and pointer types where 'int' was used.
+
+# ------------------------------------------------------------------------------
+#  atac_970511/atac_i/allpaths.h  |   14 ++
+#  atac_970511/atac_i/error.h     |   25 ++++
+#  atac_970511/atac_i/flowgraph.h |   28 ++++
+#  atac_970511/atac_i/list.h      |   42 +++++++
+#  atac_970511/atac_i/reglist.h   |   22 +++
+#  atac_970511/atac_i/strtab.h    |   32 +++++
+#  atac_970511/atac_i/table.h     |   30 +++++
+#  atac_970511/atac_i/upfix.h     |   24 ++++
+#  atac_i/Pgram.y                 |    7 -
+#  atac_i/alldu.c                 |   43 +++----
+#  atac_i/allpaths.c              |   41 +++---
+#  atac_i/atac_i.c                |   13 +-
+#  atac_i/const.c                 |   11 -
+#  atac_i/deparse.c               |   14 +-
+#  atac_i/dug.c                   |  175 ++++++++++++++---------------
+#  atac_i/dug.h                   |   51 +++++++-
+#  atac_i/error.c                 |   69 +++++------
+#  atac_i/fg_expr.c               |   60 ++++------
+#  atac_i/fg_module.c             |   62 ++++++----
+#  atac_i/fg_stmt.c               |   91 +++++++--------
+#  atac_i/list.c                  |   88 +++++---------
+#  atac_i/makefile.in             |  233 ++++++++++++++++++++++++++++-----------
+#  atac_i/mark.c                  |   17 +-
+#  atac_i/parser.c                |   25 ++--
+#  atac_i/paths.c                 |  105 +++++++++--------
+#  atac_i/print_sym.c             |   20 ++-
+#  atac_i/reglist.c               |   31 +----
+#  atac_i/scan.c                  |   39 +++---
+#  atac_i/scan.h                  |   13 ++
+#  atac_i/srcpos.c                |   17 +-
+#  atac_i/strtab.c                |   41 ++----
+#  atac_i/sym.c                   |   22 ++-
+#  atac_i/sym.h                   |   23 +++
+#  atac_i/table.c                 |   49 ++------
+#  atac_i/tnode.c                 |    7 -
+#  atac_i/tnode.h                 |   47 ++++++-
+#  atac_i/tree.c                  |   18 +--
+#  atac_i/type.c                  |   14 +-
+#  atac_i/upfix.c                 |   29 +---
+#  portable.h                     |    7 -
+#  40 files changed, 1051 insertions, 648 deletions
+# ------------------------------------------------------------------------------

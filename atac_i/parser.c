@@ -17,16 +17,19 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char parser_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/parser.c,v 3.4 1994/04/04 13:36:30 saul Exp $";
-static char bellcoreCopyRight[] =
+static const char parser_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/parser.c,v 3.5 1997/05/12 00:11:47 tom Exp $";
+static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*-----------------------------------------------$Log: parser.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 13:36:30  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: parser.c,v $
+* Revision 3.5  1997/05/12 00:11:47  tom
+* add includes to get prototypes
+*
+* Revision 3.4  1994/04/04 13:36:30  saul
+* FROM_KEYS
+*
 * Revision 3.4  94/04/04  13:36:30  saul
 * Fix binary copyright.
 * 
@@ -70,10 +73,12 @@ static char bellcoreCopyRight[] =
 */
 #include <stdio.h>
 #include "portable.h"
+#include "error.h"
+#include "tnode.h"
 
 /* forward declarations */
-int main();
-static void usage();
+int main P_((int argc, char *argv[]));
+static void usage P_((char *cmd));
 
 static void
 usage(cmd)
@@ -158,7 +163,7 @@ char	*argv[];
 	status = parse(srcin, &tree, &prefix);
 
 	if (status == 0) {
-		if (!supress_sym) sym(tree);
+		if (!supress_sym) do_sym(tree);
 		if (dump_tree) print_tree(tree, 1, 0, 0);
 		if (dump_sym_flag) dump_sym(tree, prefix);
 		if (do_deparse) deparse(tree, stdout, "HOOK", prefix);
