@@ -17,16 +17,32 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char main_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/main.c,v 3.12 1994/04/04 13:51:25 saul Exp $";
-static char bellcoreCopyRight[] =
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const main_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/main.c,v 3.13 1995/12/29 21:24:41 tom Exp $";
+static char const bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*-----------------------------------------------$Log: main.c,v $
-*-----------------------------------------------Revision 3.12  1994/04/04 13:51:25  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: main.c,v $
+* Revision 3.13  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+* corrected gcc warnings (wrong # of params for print_mod)
+*
 * Revision 3.12  94/04/04  13:51:25  saul
 * Fix binary copyright.
 * 
@@ -113,16 +129,12 @@ static char bellcoreCopyRight[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include <ctype.h>
-#include "portable.h"
-#include "atacysis.h"
 
 /* forward declarations */
-void covWeaker();
-static void covReverse();
-void covThreshold();
-static void usage();
+static void covReverse
+	P_((int *cov, int covCount));
+static void usage
+	P_((char *cmd));
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
@@ -286,7 +298,6 @@ int	argc;
 char	*argv[];
 {
     T_MODULE	 *mod;
-    T_MODULE	 *static_data();
     int		i;
     int		j;
     char	*p;
@@ -691,7 +702,7 @@ char	*argv[];
     */
     mod = static_data(n_static, static_v, funcSelect, options, &covCount);
     if (staticDump) for (i = 0; i < n_static; ++i) {
-	    print_mod(mod + i, NULL, 1);
+	    print_mod(mod + i, NULL);
     }
     if (covCount == 0) {
 	fprintf(stderr, "no functions selected\n");

@@ -16,17 +16,25 @@
  #pragma csect (CODE, "sym$")
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
-#include <string.h>
-#include <stdlib.h>
 #endif /* MVS */
 
-static char sym_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.c,v 3.7 1994/06/01 09:02:45 saul Exp $";
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "portable.h"
+#include "srcpos.h"
+#include "tnode.h"
+#include "sym.h"
+#include "tree.h"
+
+static char const sym_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.c,v 3.8 1995/12/27 23:08:44 tom Exp $";
 /*
-*-----------------------------------------------$Log: sym.c,v $
-*-----------------------------------------------Revision 3.7  1994/06/01 09:02:45  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: sym.c,v $
+* Revision 3.8  1995/12/27 23:08:44  tom
+* handle SCB_INLINE, CLASSTYPE_INLINE
+*
 * Revision 3.7  94/06/01  09:02:45  saul
 * fix for ANSI f(...) 
 * 
@@ -93,12 +101,6 @@ static char sym_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "srcpos.h"
-#include "tnode.h"
-#include "sym.h"
-#include "tree.h"
 
 /* forward declarations */
 void dump_sym();
@@ -1102,6 +1104,10 @@ SRCPOS		*srcpos;
 	case SCB_PARAM | SCB_REG:
 	case SCB_PARAM | SCB_AUTO | SCB_REG:
 		return SCB_PARAM | SCB_REG | constVolatile;	/* reg param */
+	case SCB_EXTERN_REF | SCB_GLOBAL | SCB_INLINE:
+	case SCB_STATIC | SCB_GLOBAL | SCB_INLINE:
+	case SCB_INLINE:
+		return SCB_INLINE | constVolatile;	/* static local */
 	case SCB_AUTO:
 	case 0:
 		return constVolatile;				/* local */
@@ -1123,6 +1129,7 @@ SRCPOS		*srcpos;
 	case SCB_TYPENAME | SCB_GLOBAL | SCB_STATIC:
 		return SCB_TYPENAME | constVolatile;	/* typedef */
 	default:
+		fprintf(stderr, "Did not find storage-class %d (%#x)\n", sc, sc);
 		semantic_error(srcpos, "Warning: conflicting storage classes");
 		return 0;
 	}
@@ -1195,6 +1202,9 @@ SYMTABLIST	*symtablist;
 			break;
 		case CLASSTYPE_STATIC:
 			type->sclass |= SCB_STATIC;
+			break;
+		case CLASSTYPE_INLINE:
+			type->sclass |= SCB_INLINE;
 			break;
 		case CLASSTYPE_EXTERN:
 			type->sclass |= SCB_EXTERN_REF;

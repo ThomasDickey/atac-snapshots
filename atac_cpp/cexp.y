@@ -1,46 +1,9 @@
-/*
-*-----------------------------------------------$Log: cexp.y,v $
-*-----------------------------------------------Revision 3.2  1994/04/04 10:21:12  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-* Revision 3.2  94/04/04  10:21:12  jrh
-* Add Release Copyright
-* 
-* Revision 3.1  93/08/04  15:38:13  ewk
-* Added MVS and solaris support.  Squelched some ANSI warnings.
-* 
-* Revision 3.0  92/11/06  07:46:47  saul
-* propagate to version 3.0
-* 
-* Revision 2.5  92/11/02  15:47:20  saul
-* changed CHAR to CHAR_KW to make room for CHAR() in portable.h
-* 
-* Revision 2.4  92/10/30  09:51:56  saul
-* include portable.h
-* 
-* Revision 2.3  92/04/07  12:12:54  saul
-* add rcs header
-* 
-* Revision 2.2  92/04/06  12:48:37  saul
-* GNU version 1.40 + ATAC_EXPAND + ATAC_LINENO
-* 
-* Revision 2.1  91/06/19  13:45:38  saul
-* Propagte to version 2.0
-* 
-* Revision 1.2  91/06/12  20:48:30  saul
-* Move rcs id inside %{ %}
-* 
-* Revision 1.1  91/06/12  20:38:05  saul
-* Aug 1990 baseline
-* 
-*-----------------------------------------------end of log
-*/
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987 Free Software Foundation.
+   Copyright (C) 1987, 1992, 1994, 1995 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 1, or (at your option) any
+Free Software Foundation; either version 2, or (at your option) any
 later version.
 
 This program is distributed in the hope that it will be useful,
@@ -50,60 +13,146 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
  In other words, you are welcome to use, share and improve this program.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!
 
- Adapted from expread.y of GDB by Paul Rubin, July 1986.
+ Adapted from expread.y of GDB by Paul Rubin, July 1986.  */
 
 /* Parse a C expression from text in a string  */
    
 %{
-#ifdef MVS
-#include <mvapts.h>
-MODULEID(%M%,%J%/%D%/%T%)
-#endif /* MVS */
-
-static char cexp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_cpp/RCS/cexp.y,v 3.2 1994/04/04 10:21:12 jrh Exp $";
-
 #include "config.h"
 #include <setjmp.h>
-#include "portable.h"
 /* #define YYDEBUG 1 */
+
+#ifdef MULTIBYTE_CHARS
+#include <stdlib.h>
+#include <locale.h>
+#endif
+
+#include <stdio.h>
+
+typedef unsigned char U_CHAR;
+
+/* This is used for communicating lists of keywords with cccp.c.  */
+struct arglist {
+  struct arglist *next;
+  U_CHAR *name;
+  int length;
+  int argno;
+};
+
+/* Define a generic NULL if one hasn't already been defined.  */
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef GENERIC_PTR
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define GENERIC_PTR void *
+#else
+#define GENERIC_PTR char *
+#endif
+#endif
+
+/* Find the largest host integer type and set its size and type.  */
+
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
+
+#ifndef NULL_PTR
+#define NULL_PTR ((GENERIC_PTR)0)
+#endif
 
 int yylex ();
 void yyerror ();
-int expression_value;
-
-extern int strncmp ();
-int parse_escape ();
-int yyparse ();
-int error ();
-int warning ();
-struct hashnode * lookup ();
+HOST_WIDE_INT expression_value;
 
 static jmp_buf parse_return_error;
 
+/* Nonzero means count most punctuation as part of a name.  */
+static int keyword_parsing = 0;
+
+/* Nonzero means do not evaluate this expression.
+   This is a count, since unevaluated expressions can nest.  */
+static int skip_evaluation;
+
 /* some external tables of character types */
-extern unsigned char is_idstart[], is_idchar[];
+extern unsigned char is_idstart[], is_idchar[], is_hor_space[];
+
+extern char *xmalloc ();
+
+/* Flag for -pedantic.  */
+extern int pedantic;
+
+/* Flag for -traditional.  */
+extern int traditional;
 
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
+
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef LONG_TYPE_SIZE
+#define LONG_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE INT_TYPE_SIZE
+#endif
+
+#ifndef MAX_CHAR_TYPE_SIZE
+#define MAX_CHAR_TYPE_SIZE CHAR_TYPE_SIZE
+#endif
+
+#ifndef MAX_INT_TYPE_SIZE
+#define MAX_INT_TYPE_SIZE INT_TYPE_SIZE
+#endif
+
+#ifndef MAX_LONG_TYPE_SIZE
+#define MAX_LONG_TYPE_SIZE LONG_TYPE_SIZE
+#endif
+
+#ifndef MAX_WCHAR_TYPE_SIZE
+#define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
+#endif
+
+/* Yield nonzero if adding two numbers with A's and B's signs can yield a
+   number with SUM's sign, where A, B, and SUM are all C integers.  */
+#define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
+
+static void integer_overflow ();
+static long left_shift ();
+static long right_shift ();
 %}
 
 %union {
   struct constant {long value; int unsignedp;} integer;
-  int voidval;
-  char *sval;
+  struct name {U_CHAR *address; int length;} name;
+  struct arglist *keywords;
 }
 
 %type <integer> exp exp1 start
-%token <integer> INT CHARTYPE
-%token <sval> NAME
+%type <keywords> keywords
+%token <integer> INT CHAR
+%token <name> NAME
 %token <integer> ERROR
 
 %right '?' ':'
@@ -131,12 +180,16 @@ start   :	exp1
 /* Expressions, including the comma operator.  */
 exp1	:	exp
 	|	exp1 ',' exp
-			{ $$ = $3; }
+			{ if (pedantic)
+			    pedwarn ("comma operator in operand of `#if'");
+			  $$ = $3; }
 	;
 
 /* Expressions, not including the comma operator.  */
 exp	:	'-' exp    %prec UNARY
 			{ $$.value = - $2.value;
+			  if (($$.value & $2.value) < 0 && ! $2.unsignedp)
+			    integer_overflow ();
 			  $$.unsignedp = $2.unsignedp; }
 	|	'!' exp    %prec UNARY
 			{ $$.value = ! $2.value;
@@ -146,6 +199,17 @@ exp	:	'-' exp    %prec UNARY
 	|	'~' exp    %prec UNARY
 			{ $$.value = ~ $2.value;
 			  $$.unsignedp = $2.unsignedp; }
+	|	'#' NAME
+  			{ $$.value = check_assertion ($2.address, $2.length,
+						      0, NULL_PTR);
+			  $$.unsignedp = 0; }
+	|	'#' NAME
+			{ keyword_parsing = 1; }
+		'(' keywords ')'
+  			{ $$.value = check_assertion ($2.address, $2.length,
+						      1, $5);
+			  keyword_parsing = 0;
+			  $$.unsignedp = 0; }
 	|	'(' exp1 ')'
 			{ $$ = $2; }
 	;
@@ -154,49 +218,69 @@ exp	:	'-' exp    %prec UNARY
 exp	:	exp '*' exp
 			{ $$.unsignedp = $1.unsignedp || $3.unsignedp;
 			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value * $3.value;
+			    $$.value = (unsigned long) $1.value * $3.value;
 			  else
-			    $$.value = $1.value * $3.value; }
+			    {
+			      $$.value = $1.value * $3.value;
+			      if ($1.value
+				  && ($$.value / $1.value != $3.value
+				      || ($$.value & $1.value & $3.value) < 0))
+				integer_overflow ();
+			    } }
 	|	exp '/' exp
 			{ if ($3.value == 0)
 			    {
-			      error ("division by zero in #if");
+			      if (!skip_evaluation)
+				error ("division by zero in #if");
 			      $3.value = 1;
 			    }
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
 			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value / $3.value;
+			    $$.value = (unsigned long) $1.value / $3.value;
 			  else
-			    $$.value = $1.value / $3.value; }
+			    {
+			      $$.value = $1.value / $3.value;
+			      if (($$.value & $1.value & $3.value) < 0)
+				integer_overflow ();
+			    } }
 	|	exp '%' exp
 			{ if ($3.value == 0)
 			    {
-			      error ("division by zero in #if");
+			      if (!skip_evaluation)
+				error ("division by zero in #if");
 			      $3.value = 1;
 			    }
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
 			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value % $3.value;
+			    $$.value = (unsigned long) $1.value % $3.value;
 			  else
 			    $$.value = $1.value % $3.value; }
 	|	exp '+' exp
 			{ $$.value = $1.value + $3.value;
-			  $$.unsignedp = $1.unsignedp || $3.unsignedp; }
+			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
+			  if (! $$.unsignedp
+			      && ! possible_sum_sign ($1.value, $3.value,
+						      $$.value))
+			    integer_overflow (); }
 	|	exp '-' exp
 			{ $$.value = $1.value - $3.value;
-			  $$.unsignedp = $1.unsignedp || $3.unsignedp; }
+			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
+			  if (! $$.unsignedp
+			      && ! possible_sum_sign ($$.value, $3.value,
+						      $1.value))
+			    integer_overflow (); }
 	|	exp LSH exp
 			{ $$.unsignedp = $1.unsignedp;
-			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value << $3.value;
+			  if ($3.value < 0 && ! $3.unsignedp)
+			    $$.value = right_shift (&$1, -$3.value);
 			  else
-			    $$.value = $1.value << $3.value; }
+			    $$.value = left_shift (&$1, $3.value); }
 	|	exp RSH exp
 			{ $$.unsignedp = $1.unsignedp;
-			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value >> $3.value;
+			  if ($3.value < 0 && ! $3.unsignedp)
+			    $$.value = left_shift (&$1, -$3.value);
 			  else
-			    $$.value = $1.value >> $3.value; }
+			    $$.value = right_shift (&$1, $3.value); }
 	|	exp EQUAL exp
 			{ $$.value = ($1.value == $3.value);
 			  $$.unsignedp = 0; }
@@ -206,25 +290,25 @@ exp	:	exp '*' exp
 	|	exp LEQ exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value <= $3.value;
+			    $$.value = (unsigned long) $1.value <= $3.value;
 			  else
 			    $$.value = $1.value <= $3.value; }
 	|	exp GEQ exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value >= $3.value;
+			    $$.value = (unsigned long) $1.value >= $3.value;
 			  else
 			    $$.value = $1.value >= $3.value; }
 	|	exp '<' exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value < $3.value;
+			    $$.value = (unsigned long) $1.value < $3.value;
 			  else
 			    $$.value = $1.value < $3.value; }
 	|	exp '>' exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value > $3.value;
+			    $$.value = (unsigned long) $1.value > $3.value;
 			  else
 			    $$.value = $1.value > $3.value; }
 	|	exp '&' exp
@@ -236,22 +320,55 @@ exp	:	exp '*' exp
 	|	exp '|' exp
 			{ $$.value = $1.value | $3.value;
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp; }
-	|	exp AND exp
-			{ $$.value = ($1.value && $3.value);
+	|	exp AND
+			{ skip_evaluation += !$1.value; }
+		exp
+			{ skip_evaluation -= !$1.value;
+			  $$.value = ($1.value && $4.value);
 			  $$.unsignedp = 0; }
-	|	exp OR exp
-			{ $$.value = ($1.value || $3.value);
+	|	exp OR
+			{ skip_evaluation += !!$1.value; }
+		exp
+			{ skip_evaluation -= !!$1.value;
+			  $$.value = ($1.value || $4.value);
 			  $$.unsignedp = 0; }
-	|	exp '?' exp ':' exp
-			{ $$.value = $1.value ? $3.value : $5.value;
-			  $$.unsignedp = $3.unsignedp || $5.unsignedp; }
+	|	exp '?'
+			{ skip_evaluation += !$1.value; }
+	        exp ':'
+			{ skip_evaluation += !!$1.value - !$1.value; }
+		exp
+			{ skip_evaluation -= !!$1.value;
+			  $$.value = $1.value ? $4.value : $7.value;
+			  $$.unsignedp = $4.unsignedp || $7.unsignedp; }
 	|	INT
 			{ $$ = yylval.integer; }
-	|	CHARTYPE
+	|	CHAR
 			{ $$ = yylval.integer; }
 	|	NAME
 			{ $$.value = 0;
 			  $$.unsignedp = 0; }
+	;
+
+keywords :
+			{ $$ = 0; } 
+	|	'(' keywords ')' keywords
+			{ struct arglist *temp;
+			  $$ = (struct arglist *) xmalloc (sizeof (struct arglist));
+			  $$->next = $2;
+			  $$->name = (U_CHAR *) "(";
+			  $$->length = 1;
+			  temp = $$;
+			  while (temp != 0 && temp->next != 0)
+			    temp = temp->next;
+			  temp->next = (struct arglist *) xmalloc (sizeof (struct arglist));
+			  temp->next->next = $4;
+			  temp->next->name = (U_CHAR *) ")";
+			  temp->next->length = 1; }
+	|	NAME keywords
+			{ $$ = (struct arglist *) xmalloc (sizeof (struct arglist));
+			  $$->name = $1.address;
+			  $$->length = $1.length;
+			  $$->next = $2; } 
 	;
 %%
 
@@ -271,10 +388,13 @@ parse_number (olen)
      int olen;
 {
   register char *p = lexptr;
-  register long n = 0;
   register int c;
+  register unsigned long n = 0, nd, ULONG_MAX_over_base;
   register int base = 10;
   register int len = olen;
+  register int overflow = 0;
+  register int digit, largest_digit = 0;
+  int spec_long = 0;
 
   for (c = 0; c < len; c++)
     if (p[c] == '.') {
@@ -293,35 +413,47 @@ parse_number (olen)
   else if (*p == '0')
     base = 8;
 
-  while (len > 0) {
-    c = *p++;
-    len--;
-    if (c >= 'A' && c <= 'Z') c += 'a' - 'A';
+  ULONG_MAX_over_base = (unsigned long) -1 / base;
 
-    if (c >= '0' && c <= '9') {
-      n *= base;
-      n += c - '0';
-    } else if (base == 16 && c >= 'a' && c <= 'f') {
-      n *= base;
-      n += c - 'a' + 10;
-    } else {
+  for (; len > 0; len--) {
+    c = *p++;
+
+    if (c >= '0' && c <= '9')
+      digit = c - '0';
+    else if (base == 16 && c >= 'a' && c <= 'f')
+      digit = c - 'a' + 10;
+    else if (base == 16 && c >= 'A' && c <= 'F')
+      digit = c - 'A' + 10;
+    else {
       /* `l' means long, and `u' means unsigned.  */
       while (1) {
 	if (c == 'l' || c == 'L')
-	  ;
+	  {
+	    if (spec_long)
+	      yyerror ("two `l's in integer constant");
+	    spec_long = 1;
+	  }
 	else if (c == 'u' || c == 'U')
-	  yylval.integer.unsignedp = 1;
+	  {
+	    if (yylval.integer.unsignedp)
+	      yyerror ("two `u's in integer constant");
+	    yylval.integer.unsignedp = 1;
+	  }
 	else
 	  break;
 
-	if (len == 0)
+	if (--len == 0)
 	  break;
 	c = *p++;
-	len--;
       }
       /* Don't look for any more digits after the suffixes.  */
       break;
     }
+    if (largest_digit < digit)
+      largest_digit = digit;
+    nd = n * base + digit;
+    overflow |= ULONG_MAX_over_base < n | nd < n;
+    n = nd;
   }
 
   if (len != 0) {
@@ -329,9 +461,19 @@ parse_number (olen)
     return ERROR;
   }
 
+  if (base <= largest_digit)
+    warning ("integer constant contains digits beyond the radix");
+
+  if (overflow)
+    warning ("integer constant out of range");
+
   /* If too big to be signed, consider it unsigned.  */
-  if (n < 0)
-    yylval.integer.unsignedp = 1;
+  if ((long) n < 0 && ! yylval.integer.unsignedp)
+    {
+      if (base == 10)
+	warning ("integer constant is so large that it is unsigned");
+      yylval.integer.unsignedp = 1;
+    }
 
   lexptr = p;
   yylval.integer.value = n;
@@ -343,10 +485,6 @@ struct token {
   int token;
 };
 
-#ifndef NULL
-#define NULL 0
-#endif
-
 static struct token tokentab2[] = {
   {"&&", AND},
   {"||", OR},
@@ -356,6 +494,8 @@ static struct token tokentab2[] = {
   {"!=", NOTEQUAL},
   {"<=", LEQ},
   {">=", GEQ},
+  {"++", ERROR},
+  {"--", ERROR},
   {NULL, ERROR}
 };
 
@@ -366,19 +506,27 @@ yylex ()
 {
   register int c;
   register int namelen;
-  register char *tokstart;
+  register unsigned char *tokstart;
   register struct token *toktab;
+  int wide_flag;
 
  retry:
 
-  tokstart = lexptr;
+  tokstart = (unsigned char *) lexptr;
   c = *tokstart;
   /* See if it is a special token of length 2.  */
-  for (toktab = tokentab2; toktab->operator != NULL; toktab++)
-    if (c == *toktab->operator && tokstart[1] == toktab->operator[1]) {
-      lexptr += 2;
-      return toktab->token;
-    }
+  if (! keyword_parsing)
+    for (toktab = tokentab2; toktab->operator != NULL; toktab++)
+      if (c == *toktab->operator && tokstart[1] == toktab->operator[1]) {
+	lexptr += 2;
+	if (toktab->token == ERROR)
+	  {
+	    char *buf = (char *) alloca (40);
+	    sprintf (buf, "`%s' not allowed in operand of `#if'", toktab->operator);
+	    yyerror (buf);
+	  }
+	return toktab->token;
+      }
 
   switch (c) {
   case 0:
@@ -391,29 +539,145 @@ yylex ()
     lexptr++;
     goto retry;
     
+  case 'L':
+    /* Capital L may start a wide-string or wide-character constant.  */
+    if (lexptr[1] == '\'')
+      {
+	lexptr++;
+	wide_flag = 1;
+	goto char_constant;
+      }
+    if (lexptr[1] == '"')
+      {
+	lexptr++;
+	wide_flag = 1;
+	goto string_constant;
+      }
+    break;
+
   case '\'':
+    wide_flag = 0;
+  char_constant:
     lexptr++;
-    c = *lexptr++;
-    if (c == '\\')
-      c = parse_escape (&lexptr);
+    if (keyword_parsing) {
+      char *start_ptr = lexptr - 1;
+      while (1) {
+	c = *lexptr++;
+	if (c == '\\')
+	  c = parse_escape (&lexptr);
+	else if (c == '\'')
+	  break;
+      }
+      yylval.name.address = tokstart;
+      yylval.name.length = lexptr - start_ptr;
+      return NAME;
+    }
 
-    /* Sign-extend the constant if chars are signed on target machine.  */
+    /* This code for reading a character constant
+       handles multicharacter constants and wide characters.
+       It is mostly copied from c-lex.c.  */
     {
-      if (lookup ("__CHAR_UNSIGNED__", sizeof ("__CHAR_UNSIGNED__")-1, -1)
-	  || ((c >> (CHAR_TYPE_SIZE - 1)) & 1) == 0)
-	yylval.integer.value = c & ((1 << CHAR_TYPE_SIZE) - 1);
+      register int result = 0;
+      register num_chars = 0;
+      unsigned width = MAX_CHAR_TYPE_SIZE;
+      int max_chars;
+      char *token_buffer;
+
+      if (wide_flag)
+	{
+	  width = MAX_WCHAR_TYPE_SIZE;
+#ifdef MULTIBYTE_CHARS
+	  max_chars = MB_CUR_MAX;
+#else
+	  max_chars = 1;
+#endif
+	}
       else
-	yylval.integer.value = c | ~((1 << CHAR_TYPE_SIZE) - 1);
+	max_chars = MAX_LONG_TYPE_SIZE / width;
+
+      token_buffer = (char *) alloca (max_chars + 1);
+
+      while (1)
+	{
+	  c = *lexptr++;
+
+	  if (c == '\'' || c == EOF)
+	    break;
+
+	  if (c == '\\')
+	    {
+	      c = parse_escape (&lexptr);
+	      if (width < HOST_BITS_PER_INT
+		  && (unsigned) c >= (1 << width))
+		pedwarn ("escape sequence out of range for character");
+	    }
+
+	  num_chars++;
+
+	  /* Merge character into result; ignore excess chars.  */
+	  if (num_chars < max_chars + 1)
+	    {
+	      if (width < HOST_BITS_PER_INT)
+		result = (result << width) | (c & ((1 << width) - 1));
+	      else
+		result = c;
+	      token_buffer[num_chars - 1] = c;
+	    }
+	}
+
+      token_buffer[num_chars] = 0;
+
+      if (c != '\'')
+	error ("malformatted character constant");
+      else if (num_chars == 0)
+	error ("empty character constant");
+      else if (num_chars > max_chars)
+	{
+	  num_chars = max_chars;
+	  error ("character constant too long");
+	}
+      else if (num_chars != 1 && ! traditional)
+	warning ("multi-character character constant");
+
+      /* If char type is signed, sign-extend the constant.  */
+      if (! wide_flag)
+	{
+	  int num_bits = num_chars * width;
+
+	  if (lookup ("__CHAR_UNSIGNED__", sizeof ("__CHAR_UNSIGNED__")-1, -1)
+	      || ((result >> (num_bits - 1)) & 1) == 0)
+	    yylval.integer.value
+	      = result & ((unsigned long) ~0 >> (HOST_BITS_PER_LONG - num_bits));
+	  else
+	    yylval.integer.value
+	      = result | ~((unsigned long) ~0 >> (HOST_BITS_PER_LONG - num_bits));
+	}
+      else
+	{
+#ifdef MULTIBYTE_CHARS
+	  /* Set the initial shift state and convert the next sequence.  */
+	  result = 0;
+	  /* In all locales L'\0' is zero and mbtowc will return zero,
+	     so don't use it.  */
+	  if (num_chars > 1
+	      || (num_chars == 1 && token_buffer[0] != '\0'))
+	    {
+	      wchar_t wc;
+	      (void) mbtowc (NULL_PTR, NULL_PTR, 0);
+	      if (mbtowc (& wc, token_buffer, num_chars) == num_chars)
+		result = wc;
+	      else
+		warning ("Ignoring invalid multibyte character");
+	    }
+#endif
+	  yylval.integer.value = result;
+	}
     }
 
+    /* This is always a signed type.  */
     yylval.integer.unsignedp = 0;
-    c = *lexptr++;
-    if (c != '\'') {
-      yyerror ("Invalid character constant in #if");
-      return ERROR;
-    }
     
-    return CHARTYPE;
+    return CHAR;
 
     /* some of these chars are invalid in constant expressions;
        maybe do something about them later */
@@ -430,8 +694,6 @@ yylex ()
   case '@':
   case '<':
   case '>':
-  case '(':
-  case ')':
   case '[':
   case ']':
   case '.':
@@ -441,14 +703,35 @@ yylex ()
   case '{':
   case '}':
   case ',':
+  case '#':
+    if (keyword_parsing)
+      break;
+  case '(':
+  case ')':
     lexptr++;
     return c;
-    
+
   case '"':
-    yyerror ("double quoted strings not allowed in #if expressions");
+  string_constant:
+    if (keyword_parsing) {
+      char *start_ptr = lexptr;
+      lexptr++;
+      while (1) {
+	c = *lexptr++;
+	if (c == '\\')
+	  c = parse_escape (&lexptr);
+	else if (c == '"')
+	  break;
+      }
+      yylval.name.address = tokstart;
+      yylval.name.length = lexptr - start_ptr;
+      return NAME;
+    }
+    yyerror ("string constants not allowed in #if expressions");
     return ERROR;
   }
-  if (c >= '0' && c <= '9') {
+
+  if (c >= '0' && c <= '9' && !keyword_parsing) {
     /* It's a number */
     for (namelen = 0;
 	 c = tokstart[namelen], is_idchar[c] || c == '.'; 
@@ -456,18 +739,31 @@ yylex ()
       ;
     return parse_number (namelen);
   }
-  
-  if (!is_idstart[c]) {
-    yyerror ("Invalid token in expression");
-    return ERROR;
+
+  /* It is a name.  See how long it is.  */
+
+  if (keyword_parsing) {
+    for (namelen = 0;; namelen++) {
+      if (is_hor_space[tokstart[namelen]])
+	break;
+      if (tokstart[namelen] == '(' || tokstart[namelen] == ')')
+	break;
+      if (tokstart[namelen] == '"' || tokstart[namelen] == '\'')
+	break;
+    }
+  } else {
+    if (!is_idstart[c]) {
+      yyerror ("Invalid token in expression");
+      return ERROR;
+    }
+
+    for (namelen = 0; is_idchar[tokstart[namelen]]; namelen++)
+      ;
   }
   
-  /* It is a name.  See how long it is.  */
-  
-  for (namelen = 0; is_idchar[tokstart[namelen]]; namelen++)
-    ;
-  
   lexptr += namelen;
+  yylval.name.address = tokstart;
+  yylval.name.length = namelen;
   return NAME;
 }
 
@@ -498,6 +794,9 @@ parse_escape (string_ptr)
     case 'b':
       return TARGET_BS;
     case 'e':
+    case 'E':
+      if (pedantic)
+	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
       return 033;
     case 'f':
       return TARGET_FF;
@@ -514,13 +813,6 @@ parse_escape (string_ptr)
     case 0:
       (*string_ptr)--;
       return 0;
-    case '^':
-      c = *(*string_ptr)++;
-      if (c == '\\')
-	c = parse_escape (string_ptr);
-      if (c == '?')
-	return 0177;
-      return (c & 0200) | (c & 037);
       
     case '0':
     case '1':
@@ -544,33 +836,37 @@ parse_escape (string_ptr)
 		break;
 	      }
 	  }
-	if ((i & ~((1 << CHAR_TYPE_SIZE) - 1)) != 0)
+	if ((i & ~((1 << MAX_CHAR_TYPE_SIZE) - 1)) != 0)
 	  {
-	    i &= (1 << CHAR_TYPE_SIZE) - 1;
+	    i &= (1 << MAX_CHAR_TYPE_SIZE) - 1;
 	    warning ("octal character constant does not fit in a byte");
 	  }
 	return i;
       }
     case 'x':
       {
-	register int i = 0;
-	register int count = 0;
+	register unsigned i = 0, overflow = 0, digits_found = 0, digit;
 	for (;;)
 	  {
 	    c = *(*string_ptr)++;
 	    if (c >= '0' && c <= '9')
-	      i = (i << 4) + c - '0';
+	      digit = c - '0';
 	    else if (c >= 'a' && c <= 'f')
-	      i = (i << 4) + c - 'a' + 10;
+	      digit = c - 'a' + 10;
 	    else if (c >= 'A' && c <= 'F')
-	      i = (i << 4) + c - 'A' + 10;
+	      digit = c - 'A' + 10;
 	    else
 	      {
 		(*string_ptr)--;
 		break;
 	      }
+	    overflow |= i ^ (i << 4 >> 4);
+	    i = (i << 4) + digit;
+	    digits_found = 1;
 	  }
-	if ((i & ~((1 << BITS_PER_UNIT) - 1)) != 0)
+	if (!digits_found)
+	  yyerror ("\\x used with no following hex digits");
+	if (overflow | (i & ~((1 << BITS_PER_UNIT) - 1)))
 	  {
 	    i &= (1 << BITS_PER_UNIT) - 1;
 	    warning ("hex character constant does not fit in a byte");
@@ -587,7 +883,44 @@ yyerror (s)
      char *s;
 {
   error (s);
+  skip_evaluation = 0;
   longjmp (parse_return_error, 1);
+}
+
+static void
+integer_overflow ()
+{
+  if (!skip_evaluation && pedantic)
+    pedwarn ("integer overflow in preprocessor expression");
+}
+
+static long
+left_shift (a, b)
+     struct constant *a;
+     unsigned long b;
+{
+   /* It's unclear from the C standard whether shifts can overflow.
+      The following code ignores overflow; perhaps a C standard
+      interpretation ruling is needed.  */
+  if (b >= HOST_BITS_PER_LONG)
+    return 0;
+  else if (a->unsignedp)
+    return (unsigned long) a->value << b;
+  else
+    return a->value << b;
+}
+
+static long
+right_shift (a, b)
+     struct constant *a;
+     unsigned long b;
+{
+  if (b >= HOST_BITS_PER_LONG)
+    return a->unsignedp ? 0 : a->value >> (HOST_BITS_PER_LONG - 1);
+  else if (a->unsignedp)
+    return (unsigned long) a->value >> b;
+  else
+    return a->value >> b;
 }
 
 /* This page contains the entry point to this file.  */
@@ -597,7 +930,7 @@ yyerror (s)
 /* We do not support C comments.  They should be removed before
    this function is called.  */
 
-int
+HOST_WIDE_INT
 parse_c_expression (string)
      char *string;
 {
@@ -624,12 +957,15 @@ parse_c_expression (string)
 }
 
 #ifdef TEST_EXP_READER
-/* main program, for testing purposes. */
+extern int yydebug;
+
+/* Main program for testing purposes.  */
+int
 main ()
 {
   int n, c;
   char buf[1024];
-  extern int yydebug;
+
 /*
   yydebug = 1;
 */
@@ -643,8 +979,10 @@ main ()
     if (buf[n] == EOF)
       break;
     buf[n] = '\0';
-    printf ("parser returned %d\n", parse_c_expression (buf));
+    printf ("parser returned %ld\n", parse_c_expression (buf));
   }
+
+  return 0;
 }
 
 /* table to tell if char can be part of a C identifier. */

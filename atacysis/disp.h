@@ -14,12 +14,13 @@
 ****************************************************************/
 #ifndef disp_H
 #define disp_H
-static char disp_h[] = "$Header: /users/source/archives/atac.vcs/atacysis/RCS/disp.h,v 3.1 1994/04/04 10:25:06 jrh Exp $";
+static char const disp_h[] =
+"$Header: /users/source/archives/atac.vcs/atacysis/RCS/disp.h,v 3.2 1995/12/27 19:32:48 tom Exp $";
 /*
-*-----------------------------------------------$Log: disp.h,v $
-*-----------------------------------------------Revision 3.1  1994/04/04 10:25:06  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: disp.h,v $
+* Revision 3.2  1995/12/27 19:32:48  tom
+* adjust headers, prototyped for autoconfig
+*
 * Revision 3.1  94/04/04  10:25:06  jrh
 * Add Release Copyright
 * 
@@ -51,6 +52,18 @@ static char disp_h[] = "$Header: /users/source/archives/atac.vcs/atacysis/RCS/di
 #define DISP_INDENT	8
 #define DISP_UNINDENT	16
 
-char *srcfile_name();
+/* interface of 'disp.c' */
+extern void disp_str P_((char *str, int attributes));
+extern void disp_file
+	P_((char *filename, int f_line, int f_col, int t_line, int t_col, int
+	attributes));
+extern void disp_end P_((void));
+extern void disp_elipsis P_((int nSkipped));
+extern void disp_title P_((char *title, int startLine, int endLine));
+extern int disp_windowSize P_((void));
+
+/* interface of 'srcfile_name.c' */
+extern char *srcfile_name P_((char *srcfile, time_t *chgtime, char *atacfile));
+
 
 #endif /* disp_H */

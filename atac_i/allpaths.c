@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char allpaths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.3 1994/04/04 10:11:46 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/allpaths.c,v 3.4 1995/12/27 23:32:26 tom Exp $";
 /*
-*-----------------------------------------------$Log: allpaths.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:11:46  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: allpaths.c,v $
+* Revision 3.4  1995/12/27 23:32:26  tom
+* don't use NULL for int value!
+*
 * Revision 3.3  94/04/04  10:11:46  jrh
 * Add Release Copyright
 * 
@@ -143,7 +143,7 @@ int		setsize;
 		return mkpath(node_id, NULL, setsize, NULL);
 
 	if (node->branches == NULL ||
-		list_next(node->branches, NULL, NULL) == NULL)
+		list_next(node->branches, NULL, NULL) == 0)
 	{
 		/*
 		* No branches: must be a return node.

@@ -1,41 +1,9 @@
-#ifdef MVS
-#include <mvapts.h>
-MODULEID(%M%,%J%/%D%/%T%)
-#endif /* MVS */
-
-static char obstack_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_cpp/RCS/obstack.c,v 3.1 1993/08/04 15:40:10 ewk Exp $";
-/*
-*-----------------------------------------------$Log: obstack.c,v $
-*-----------------------------------------------Revision 3.1  1993/08/04 15:40:10  ewk
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-* Revision 3.1  93/08/04  15:40:10  ewk
-* Added MVS and solaris support.  Squelched some ANSI warnings.
-* 
-* Revision 3.0  92/11/06  07:46:53  saul
-* propagate to version 3.0
-* 
-* Revision 2.3  92/10/30  09:52:00  saul
-* include portable.h
-* 
-* Revision 2.2  92/04/06  12:48:35  saul
-* GNU version 1.40 + ATAC_EXPAND + ATAC_LINENO
-* 
-* Revision 2.1  91/06/19  13:45:41  saul
-* Propagte to version 2.0
-* 
-* Revision 1.1  91/06/12  20:38:06  saul
-* Aug 1990 baseline
-* 
-*-----------------------------------------------end of log
-*/
 /* obstack.c - subroutines used implicitly by object stack macros
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 90, 91, 92, 93, 94 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 1, or (at your option) any
+Free Software Foundation; either version 2, or (at your option) any
 later version.
 
 This program is distributed in the hope that it will be useful,
@@ -45,18 +13,25 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-
-In other words, you are welcome to use, share and improve this program.
-You are forbidden to forbid anyone else to use, share and improve
-what you give them.   Help stamp out software-hoarding!  */
-
-
-#include "portable.h"
 #include "obstack.h"
 
-#ifdef __STDC__
+/* This is just to get __GNU_LIBRARY__ defined.  */
+#include <stdio.h>
+
+/* Comment out all this code if we are using the GNU C Library, and are not
+   actually compiling the library itself.  This code is part of the GNU C
+   Library, but also included in many other GNU distributions.  Compiling
+   and linking in this code is a waste when using the GNU C library
+   (especially if it is a shared library).  Rather than having every GNU
+   program understand `configure --with-gnu-libc' and omit the object files,
+   it is simpler to just do this in the source for each such file.  */
+
+#if defined (_LIBC) || !defined (__GNU_LIBRARY__)
+
+
+#if defined (__STDC__) && __STDC__
 #define POINTER void *
 #else
 #define POINTER char *
@@ -64,7 +39,8 @@ what you give them.   Help stamp out software-hoarding!  */
 
 /* Determine default alignment.  */
 struct fooalign {char x; double d;};
-#define DEFAULT_ALIGNMENT ((char *)&((struct fooalign *) 0)->d - (char *)0)
+#define DEFAULT_ALIGNMENT  \
+  ((PTR_INT_TYPE) ((char *)&((struct fooalign *) 0)->d - (char *)0))
 /* If malloc were really smart, it would round addresses to DEFAULT_ALIGNMENT.
    But in fact it might be less smart and round addresses to as much as
    DEFAULT_ROUNDING.  So we prepare for it to do that.  */
@@ -83,13 +59,37 @@ union fooround {long x; double d;};
    to avoid multiple evaluation.  */
 
 struct obstack *_obstack;
+
+/* Define a macro that either calls functions with the traditional malloc/free
+   calling interface, or calls functions with the mmalloc/mfree interface
+   (that adds an extra first argument), based on the state of use_extra_arg.
+   For free, do not use ?:, since some compilers, like the MIPS compilers,
+   do not allow (expr) ? void : void.  */
+
+#define CALL_CHUNKFUN(h, size) \
+  (((h) -> use_extra_arg) \
+   ? (*(h)->chunkfun) ((h)->extra_arg, (size)) \
+   : (*(h)->chunkfun) ((size)))
+
+#define CALL_FREEFUN(h, old_chunk) \
+  do { \
+    if ((h) -> use_extra_arg) \
+      (*(h)->freefun) ((h)->extra_arg, (old_chunk)); \
+    else \
+      (*(h)->freefun) ((old_chunk)); \
+  } while (0)
+
 
 /* Initialize an obstack H for use.  Specify chunk size SIZE (0 means default).
    Objects start on multiples of ALIGNMENT (0 means use default).
    CHUNKFUN is the function to use to allocate chunks,
-   and FREEFUN the function to free them.  */
+   and FREEFUN the function to free them.
 
-void
+   Return nonzero if successful, zero if out of memory.
+   To recover from an out of memory error,
+   free up some memory, then call this again.  */
+
+int
 _obstack_begin (h, size, alignment, chunkfun, freefun)
      struct obstack *h;
      int size;
@@ -102,13 +102,19 @@ _obstack_begin (h, size, alignment, chunkfun, freefun)
   if (alignment == 0)
     alignment = DEFAULT_ALIGNMENT;
   if (size == 0)
-    /* Default size is what GNU malloc can fit in a 4096-byte block.
-       Pick a number small enough that when rounded up to DEFAULT_ROUNDING
-       it is still smaller than 4096 - 4.  */
+    /* Default size is what GNU malloc can fit in a 4096-byte block.  */
     {
-      int extra = 4;
-      if (extra < DEFAULT_ROUNDING)
-	extra = DEFAULT_ROUNDING;
+      /* 12 is sizeof (mhead) and 4 is EXTRA from GNU malloc.
+	 Use the values for range checking, because if range checking is off,
+	 the extra bytes won't be missed terribly, but if range checking is on
+	 and we used a larger request, a whole extra 4096 bytes would be
+	 allocated.
+
+	 These number are irrelevant to the new GNU malloc.  I suspect it is
+	 less sensitive to the size of the request.  */
+      int extra = ((((12 + DEFAULT_ROUNDING - 1) & ~(DEFAULT_ROUNDING - 1))
+		    + 4 + DEFAULT_ROUNDING - 1)
+		   & ~(DEFAULT_ROUNDING - 1));
       size = 4096 - extra;
     }
 
@@ -116,12 +122,75 @@ _obstack_begin (h, size, alignment, chunkfun, freefun)
   h->freefun = freefun;
   h->chunk_size = size;
   h->alignment_mask = alignment - 1;
+  h->use_extra_arg = 0;
 
-  chunk	= h->chunk = (*h->chunkfun) (h->chunk_size);
+  chunk = h->chunk = CALL_CHUNKFUN (h, h -> chunk_size);
+  if (!chunk)
+    {
+      h->alloc_failed = 1;
+      return 0;
+    }
+  h->alloc_failed = 0;
   h->next_free = h->object_base = chunk->contents;
   h->chunk_limit = chunk->limit
-   = (char *) chunk + h->chunk_size;
+    = (char *) chunk + h->chunk_size;
   chunk->prev = 0;
+  /* The initial chunk now contains no empty object.  */
+  h->maybe_empty_object = 0;
+  return 1;
+}
+
+int
+_obstack_begin_1 (h, size, alignment, chunkfun, freefun, arg)
+     struct obstack *h;
+     int size;
+     int alignment;
+     POINTER (*chunkfun) ();
+     void (*freefun) ();
+     POINTER arg;
+{
+  register struct _obstack_chunk* chunk; /* points to new chunk */
+
+  if (alignment == 0)
+    alignment = DEFAULT_ALIGNMENT;
+  if (size == 0)
+    /* Default size is what GNU malloc can fit in a 4096-byte block.  */
+    {
+      /* 12 is sizeof (mhead) and 4 is EXTRA from GNU malloc.
+	 Use the values for range checking, because if range checking is off,
+	 the extra bytes won't be missed terribly, but if range checking is on
+	 and we used a larger request, a whole extra 4096 bytes would be
+	 allocated.
+
+	 These number are irrelevant to the new GNU malloc.  I suspect it is
+	 less sensitive to the size of the request.  */
+      int extra = ((((12 + DEFAULT_ROUNDING - 1) & ~(DEFAULT_ROUNDING - 1))
+		    + 4 + DEFAULT_ROUNDING - 1)
+		   & ~(DEFAULT_ROUNDING - 1));
+      size = 4096 - extra;
+    }
+
+  h->chunkfun = (struct _obstack_chunk * (*)()) chunkfun;
+  h->freefun = freefun;
+  h->chunk_size = size;
+  h->alignment_mask = alignment - 1;
+  h->extra_arg = arg;
+  h->use_extra_arg = 1;
+
+  chunk = h->chunk = CALL_CHUNKFUN (h, h -> chunk_size);
+  if (!chunk)
+    {
+      h->alloc_failed = 1;
+      return 0;
+    }
+  h->alloc_failed = 0;
+  h->next_free = h->object_base = chunk->contents;
+  h->chunk_limit = chunk->limit
+    = (char *) chunk + h->chunk_size;
+  chunk->prev = 0;
+  /* The initial chunk now contains no empty object.  */
+  h->maybe_empty_object = 0;
+  return 1;
 }
 
 /* Allocate a new current chunk for the obstack *H
@@ -148,7 +217,14 @@ _obstack_newchunk (h, length)
     new_size = h->chunk_size;
 
   /* Allocate and initialize the new chunk.  */
-  new_chunk = h->chunk = (*h->chunkfun) (new_size);
+  new_chunk = CALL_CHUNKFUN (h, new_size);
+  if (!new_chunk)
+    {
+      h->alloc_failed = 1;
+      return;
+    }
+  h->alloc_failed = 0;
+  h->chunk = new_chunk;
   new_chunk->prev = old_chunk;
   new_chunk->limit = h->chunk_limit = (char *) new_chunk + new_size;
 
@@ -172,13 +248,30 @@ _obstack_newchunk (h, length)
   for (i = already; i < obj_size; i++)
     new_chunk->contents[i] = h->object_base[i];
 
+  /* If the object just copied was the only data in OLD_CHUNK,
+     free that chunk and remove it from the chain.
+     But not if that chunk might contain an empty object.  */
+  if (h->object_base == old_chunk->contents && ! h->maybe_empty_object)
+    {
+      new_chunk->prev = old_chunk->prev;
+      CALL_FREEFUN (h, old_chunk);
+    }
+
   h->object_base = new_chunk->contents;
   h->next_free = h->object_base + obj_size;
+  /* The new chunk certainly contains no empty object yet.  */
+  h->maybe_empty_object = 0;
 }
 
 /* Return nonzero if object OBJ has been allocated from obstack H.
    This is here for debugging.
    If you use it in a program, you are probably losing.  */
+
+#if defined (__STDC__) && __STDC__
+/* Suppress -Wmissing-prototypes warning.  We don't want to declare this in
+   obstack.h because it is just for debugging.  */
+int _obstack_allocated_p (struct obstack *h, POINTER obj);
+#endif
 
 int
 _obstack_allocated_p (h, obj)
@@ -189,59 +282,90 @@ _obstack_allocated_p (h, obj)
   register struct _obstack_chunk*  plp;	/* point to previous chunk if any */
 
   lp = (h)->chunk;
-  while (lp != 0 && ((POINTER)lp > obj || (POINTER)(lp)->limit < obj))
+  /* We use >= rather than > since the object cannot be exactly at
+     the beginning of the chunk but might be an empty object exactly
+     at the end of an adjacent chunk. */
+  while (lp != 0 && ((POINTER)lp >= obj || (POINTER)(lp)->limit < obj))
     {
-      plp = lp -> prev;
+      plp = lp->prev;
       lp = plp;
     }
   return lp != 0;
 }
-
+
 /* Free objects in obstack H, including OBJ and everything allocate
    more recently than OBJ.  If OBJ is zero, free everything in H.  */
 
-void
-#ifdef __STDC__
 #undef obstack_free
-obstack_free (struct obstack *h, POINTER obj)
-#else
+
+/* This function has two names with identical definitions.
+   This is the first one, called from non-ANSI code.  */
+
+void
 _obstack_free (h, obj)
      struct obstack *h;
      POINTER obj;
-#endif
 {
   register struct _obstack_chunk*  lp;	/* below addr of any objects in this chunk */
   register struct _obstack_chunk*  plp;	/* point to previous chunk if any */
 
-  lp = (h)->chunk;
-  while (lp != 0 && ((POINTER)lp > obj || (POINTER)(lp)->limit < obj))
+  lp = h->chunk;
+  /* We use >= because there cannot be an object at the beginning of a chunk.
+     But there can be an empty object at that address
+     at the end of another chunk.  */
+  while (lp != 0 && ((POINTER)lp >= obj || (POINTER)(lp)->limit < obj))
     {
-      plp = lp -> prev;
-      (*h->freefun) (lp);
+      plp = lp->prev;
+      CALL_FREEFUN (h, lp);
       lp = plp;
+      /* If we switch chunks, we can't tell whether the new current
+	 chunk contains an empty object, so assume that it may.  */
+      h->maybe_empty_object = 1;
     }
   if (lp)
     {
-      (h)->object_base = (h)->next_free = (char *)(obj);
-      (h)->chunk_limit = lp->limit;
-      (h)->chunk = lp;
+      h->object_base = h->next_free = (char *)(obj);
+      h->chunk_limit = lp->limit;
+      h->chunk = lp;
     }
   else if (obj != 0)
     /* obj is not in any of the chunks! */
     abort ();
 }
 
-/* Let same .o link with output of gcc and other compilers.  */
+/* This function is used from ANSI code.  */
 
-#ifdef __STDC__
 void
-_obstack_free (h, obj)
+obstack_free (h, obj)
      struct obstack *h;
      POINTER obj;
 {
-  obstack_free (h, obj);
+  register struct _obstack_chunk*  lp;	/* below addr of any objects in this chunk */
+  register struct _obstack_chunk*  plp;	/* point to previous chunk if any */
+
+  lp = h->chunk;
+  /* We use >= because there cannot be an object at the beginning of a chunk.
+     But there can be an empty object at that address
+     at the end of another chunk.  */
+  while (lp != 0 && ((POINTER)lp >= obj || (POINTER)(lp)->limit < obj))
+    {
+      plp = lp->prev;
+      CALL_FREEFUN (h, lp);
+      lp = plp;
+      /* If we switch chunks, we can't tell whether the new current
+	 chunk contains an empty object, so assume that it may.  */
+      h->maybe_empty_object = 1;
+    }
+  if (lp)
+    {
+      h->object_base = h->next_free = (char *)(obj);
+      h->chunk_limit = lp->limit;
+      h->chunk = lp;
+    }
+  else if (obj != 0)
+    /* obj is not in any of the chunks! */
+    abort ();
 }
-#endif
 
 #if 0
 /* These are now turned off because the applications do not use it
@@ -250,7 +374,7 @@ _obstack_free (h, obj)
 /* Now define the functional versions of the obstack macros.
    Define them to simply use the corresponding macros to do the job.  */
 
-#ifdef __STDC__
+#if defined (__STDC__) && __STDC__
 /* These function definitions do not work with non-ANSI preprocessors;
    they won't pass through the macro names in parentheses.  */
 
@@ -357,3 +481,5 @@ POINTER (obstack_copy0) (obstack, pointer, length)
 #endif /* __STDC__ */
 
 #endif /* 0 */
+
+#endif	/* _LIBC or not __GNU_LIBRARY__.  */

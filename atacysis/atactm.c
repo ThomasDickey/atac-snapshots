@@ -17,16 +17,46 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char atactm_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atactm.c,v 3.6 1994/04/04 13:51:21 saul Exp $";
-static char bellcoreCopyRight[] =
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "pack.h"
+#include "ramfile.h"
+#ifdef vms
+#include <stat.h>
+#else
+#ifndef MVS
+#include <sys/stat.h>	/* for portability must be below "ramfile.h" */
+#endif /* MVS */
+#endif /* vms */
+#include "man.h"
+
+static char const atactm_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atactm.c,v 3.7 1995/12/29 21:25:35 tom Exp $";
+static char const bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*-----------------------------------------------$Log: atactm.c,v $
-*-----------------------------------------------Revision 3.6  1994/04/04 13:51:21  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: atactm.c,v $
+* Revision 3.7  1995/12/29 21:25:35  tom
+* adjust headers, prototyped for autoconfig
+* correct gcc warnings (shadowed variables).
+*
 *Revision 3.6  94/04/04  13:51:21  saul
 *Fix binary copyright.
 *
@@ -82,36 +112,20 @@ actm.c
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include <ctype.h>
-#include "portable.h"
-#include "ramfile.h"
-#ifdef vms
-#include <stat.h>
-#else
-#ifndef MVS
-#include <sys/stat.h>	/* for portability must be below "ramfile.h" */
-#endif /* MVS */
-#endif /* vms */
-#include "man.h"
 
 /* forward declarations */
 #ifndef RENAME_SUPPORT
 static int rename();
 #endif /* RENAME_SUPPORT */
-static int exists();
-int main();
-static char *prefixFileName();
-tablestype *tableptr();
-static void usage();
+static int exists P_((char *path));
+static char *prefixFileName P_((char *filename, char *prefix));
+static void usage P_((char *cmd));
 
 #define CHECK_MALLOC(p) if((p)==NULL)memoryError("Out of memory"),exit(1)
 
 #ifndef MVS
 #define DEFAULT_TRACEFILE "a.out.trace"
 #endif /* MVS */
-
-extern void init();
 
 int iTestCase;
 
@@ -141,13 +155,6 @@ fprintf(stderr,"\t-o output trace file; defaults to input trace\n");
 fprintf(stderr,"\t-x excluded tests specified with -n\n");
 }
 
-
-tablestype *
-tableptr()
-{
-    return &tables;
-}
-
 /*
 * prefixFileName: Allocate a variant filename string by prefixing the
 * non-directory part of filename with the string prefix.
@@ -160,8 +167,8 @@ char	*prefix;
     char	*f;
     char	*p;
     char	*new;
-    int		fLen;
-    int		pLen;
+    size_t	fLen;
+    size_t	pLen;
 
     /*
     * Allocate new string.
@@ -218,7 +225,6 @@ char	*argv[];
     char	*names;
     int		nMatch;
     int		deselect;
-    char	*getenv();
     int		indexOnly;
 
     function = ' ';
@@ -523,24 +529,24 @@ char	*argv[];
 	return 0;
     case 'r':
 	{
-	    int		nMatch;
+	    int		nMatch2;
 	    int		nextN;
 	    char	**oldname;
-	    int		i;
+	    int		i2;
 
-	    nMatch = 0;
+	    nMatch2 = 0;
 	    nextN = testNo(&tables.mems, newName);
-	    for (i = 0; i < tables.mems.iMemberCount; ++i) {
-		oldname = &tables.mems.members[i].pName;
+	    for (i2 = 0; i2 < tables.mems.iMemberCount; ++i2) {
+		oldname = &tables.mems.members[i2].pName;
 		if (patMatch(names, *oldname, deselect)) {
-		    ++nMatch;
+		    ++nMatch2;
 		    free(*oldname);
 		    *oldname = (char *)malloc(strlen(newName) + 11);
 		    CHECK_MALLOC(oldname);
 		    sprintf(*oldname, "%s.%d", newName, nextN++);
 		}
 	    }
-	    if (nMatch == 0) {
+	    if (nMatch2 == 0) {
 		fprintf(stderr, "%s: no matches\n", names);
 		exit(1);
 	    }

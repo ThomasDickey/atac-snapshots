@@ -15,12 +15,12 @@
 #ifndef tree_H
 #define tree_H
 static char tree_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.h,v 3.4 1994/06/01 09:02:25 saul Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.h,v 3.5 1995/12/27 23:04:00 tom Exp $";
 /*
-*-----------------------------------------------$Log: tree.h,v $
-*-----------------------------------------------Revision 3.4  1994/06/01 09:02:25  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: tree.h,v $
+* Revision 3.5  1995/12/27 23:04:00  tom
+* declare CLASSTYPE_INLINE
+*
 * Revision 3.4  94/06/01  09:02:25  saul
 * fix for ANSI f(...) 
 * 
@@ -125,6 +125,7 @@ static char tree_h[] =
 #define		CLASSTYPE_ENUM_D	18	/* ENUM_DCL					*/
 #define		CLASSTYPE_STRUCT_R	19	/* STRUCT_REF					*/
 #define		CLASSTYPE_ENUM_R	20	/* ENUM_REF					*/
+#define		CLASSTYPE_INLINE	21	/* inline					*/
 #define GEN_PARAM_DCLS	6			/* PARAM_DCL*					*/
 #define GEN_PARAM_DCL	7			/* CLASSTYPES PARAM_DEFS ;			*/
 #define GEN_PARAM_DEFS	8			/* DATA_ITEM*					*/
@@ -197,7 +198,7 @@ static char tree_h[] =
 #define GEN_INITIALIZER	32
 #define		INITIALIZER_EXPR	0	/* = EXPR					*/
 #define		INITIALIZER_LIST	1	/* = { INIT_LIST }				*/
-/*		INITIALIZER_LIST	1	/* = { INIT_LIST , }				*/
+/*		INITIALIZER_LIST	1	** = { INIT_LIST , }				*/
 #define GEN_COMPSTMT	33
 #define		COMPSTMT_DCL_STMTS	0	/* { INDATA_DCLS STMT_LIST }			*/
 #define		COMPSTMT_STMTS		1	/* { STMT_LIST }				*/

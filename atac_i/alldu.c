@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char alldu_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.3 1994/04/04 10:11:40 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.4 1995/12/27 23:32:23 tom Exp $";
 /*
-*-----------------------------------------------$Log: alldu.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:11:40  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: alldu.c,v $
+* Revision 3.4  1995/12/27 23:32:23  tom
+* don't use NULL for int value!
+*
 * Revision 3.3  94/04/04  10:11:40  jrh
 * Add Release Copyright
 * 
@@ -176,7 +176,7 @@ if (node->block_id == 0) return;
 	* If P-USE at node, count them with all following nodes.
 	*/
 	if ((du->ref_type & VAR_PUSE) && node->branches)
-		for (i = NULL; list_next(node->branches, &i, &f);)
+		for (i = 0; list_next(node->branches, &i, &f);)
 			++adu_count;
 	
 	/*
@@ -185,7 +185,7 @@ if (node->block_id == 0) return;
 	if (!(du->ref_type & VAR_DEF)) {
 		BVSET(definfo.list, node->block_id);
 		if (node->branches)
-			for (i = NULL; list_next(node->branches, &i, &f);)
+			for (i = 0; list_next(node->branches, &i, &f);)
 				u_traverse(f);
 		BVCLR(definfo.list, node->block_id);
 	}

@@ -13,15 +13,15 @@
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
 static char hili_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.5 1994/07/11 14:26:05 saul Exp $";
+"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.6 1995/12/27 23:34:47 tom Exp $";
 static char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*-----------------------------------------------$Log: hili.c,v $
-*-----------------------------------------------Revision 3.5  1994/07/11 14:26:05  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+*$Log: hili.c,v $
+*Revision 3.6  1995/12/27 23:34:47  tom
+*fix gcc warnings (missing prototypes)
+*
 * Revision 3.5  94/07/11  14:26:05  saul
 * Enlarge header buffer.  (Overflow causes display of raw hili input.)
 * 
@@ -92,6 +92,9 @@ char	*pgmname = "";
 
 static char *reverse_code;
 static char *normal_code;
+
+static mode_normal P_((void));
+static mode_reverse P_((void));
 
 static void
 uputs(s)

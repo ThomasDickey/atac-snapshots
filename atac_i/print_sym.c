@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char print_sym_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/print_sym.c,v 3.3 1994/04/04 10:13:46 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/print_sym.c,v 3.4 1995/12/13 00:58:34 tom Exp $";
 /*
-*-----------------------------------------------$Log: print_sym.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:13:46  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: print_sym.c,v $
+* Revision 3.4  1995/12/13 00:58:34  tom
+* handle SCB_INLINE
+*
 * Revision 3.3  94/04/04  10:13:46  jrh
 * Add Release Copyright
 * 
@@ -130,6 +130,8 @@ int	sclass;
 		fputs("/* param */ ", f);
 	if (sclass & SCB_STATIC)
 		fputs("static /* local */", f);
+	if (sclass & SCB_INLINE)
+		fputs("inline /* extended */", f);
 	if (sclass & SCB_GLOBAL)
 		fputs("/* global */ ", f);
 	if (sclass & SCB_FILEGLOBAL)

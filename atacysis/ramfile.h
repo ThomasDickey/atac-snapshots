@@ -14,13 +14,13 @@
 ****************************************************************/
 #ifndef ramfile_H
 #define ramfile_H
-static char ramfile_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ramfile.h,v 3.4 1994/04/04 10:26:08 jrh Exp $";
+static char const ramfile_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ramfile.h,v 3.5 1995/12/27 20:55:44 tom Exp $";
 /*
-*-----------------------------------------------$Log: ramfile.h,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:26:08  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: ramfile.h,v $
+* Revision 3.5  1995/12/27 20:55:44  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.4  94/04/04  10:26:08  jrh
 *Add Release Copyright
 *
@@ -245,5 +245,43 @@ typedef struct {
     familytype	fams;
     membertype	mems;
 } tablestype;
+
+/* interface of 'dump.c' */
+void dump P_((struct cfile *cf, tablestype *tables));
+
+/* interface of 'init.c' */
+extern void init P_((tablestype *tables));
+
+/* interface of 'mem.c' */
+
+extern void check_block P_((functype *func, int iBlock));
+extern void check_cuse P_((vartype *var, int iCuse));
+extern void check_family P_((familytype *fam, int iFamily));
+extern void check_file P_((RAMFILE *rf, int iFile));
+extern void check_func P_((filetype *file, int iFunc));
+extern void check_header P_((headertype *hdr, int iHeader));
+extern void check_member P_((membertype *mem, int iMember));
+extern void check_puse P_((vartype *var, int iPuse));
+extern void check_var P_((functype *func, int iVar));
+
+/* interface of 'prev.c' */
+extern void load_prev
+	P_((char *tracefile, struct cfile *cf, tablestype *tables, int
+	indexOnly));
+extern int prev_member
+	P_((char *pDate, char *pVersion, int iFamily, char *pName, int iCost,
+	int iFreqFlag, int iCorrupted, membertype *mems));
+extern void prev_header
+	P_((char *pPath, int iStampCount, stampstype *stampVector, headertype
+	*hdr));
+extern void prev_source
+	P_((char *pName, RAMFILE *rf));
+
+/* interface of 'pro.c' */
+extern void process_pipe
+	P_((struct cfile *cf, char *tracefile, tablestype *tables, int initC,
+	int indexOnly));
+extern int testNo
+	P_((membertype *mems, char *testName));
 
 #endif /* ramfile_H */

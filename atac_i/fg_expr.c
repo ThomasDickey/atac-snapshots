@@ -21,12 +21,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char fg_expr_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.4 1994/04/04 10:12:44 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.5 1995/12/27 23:25:31 tom Exp $";
 /*
-*-----------------------------------------------$Log: fg_expr.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:12:44  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: fg_expr.c,v $
+* Revision 3.5  1995/12/27 23:25:31  tom
+* don't use NULL for int value!
+*
 * Revision 3.4  94/04/04  10:12:44  jrh
 * Add Release Copyright
 * 
@@ -140,14 +140,14 @@ int	ptr_use;
 	int		end;
 	int		tmp;
 
-	if (sblk == NULL) {
+	if (sblk == 0) {
 		/* unreachable code */
-		*endblk = NULL;
+		*endblk = 0;
 		return;
 	}
 
-	if (Tendblk) *Tendblk = NULL;
-	if (Fendblk) *Fendblk = NULL;
+	if (Tendblk) *Tendblk = 0;
+	if (Fendblk) *Fendblk = 0;
 
 	end = sblk;
 	dug_startblk(dug, sblk, n);

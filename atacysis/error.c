@@ -17,13 +17,18 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/error.c,v 3.2 1994/04/04 10:25:12 jrh Exp $";
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const error_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/error.c,v 3.3 1995/12/27 20:10:09 tom Exp $";
 /*
-*-----------------------------------------------$Log: error.c,v $
-*-----------------------------------------------Revision 3.2  1994/04/04 10:25:12  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: error.c,v $
+* Revision 3.3  1995/12/27 20:10:09  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.2  94/04/04  10:25:12  jrh
 *Add Release Copyright
 *
@@ -41,12 +46,6 @@ static char error_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-
-/* forward declarations */
-void trace_error();
-void internal_error();
 
 void
 internal_error(s, arg1, arg2)

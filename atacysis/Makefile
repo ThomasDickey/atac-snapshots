@@ -12,12 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atacysis/RCS/Makefile,v 3.10 1994/04/05 09:14:09 saul Exp $
+# $Header: /users/source/archives/atac.vcs/atacysis/RCS/Makefile,v 3.11 1995/12/29 21:37:59 tom Exp $
 #
-#-----------------------------------------------$Log: Makefile,v $
-#-----------------------------------------------Revision 3.10  1994/04/05 09:14:09  saul
-#-----------------------------------------------FROM_KEYS
-#-----------------------------------------------
+# $Log: Makefile,v $
+# Revision 3.11  1995/12/29 21:37:59  tom
+# mods for autoconfig
+#
 # Revision 3.10  94/04/05  09:14:09  saul
 # Remove memcpy.c
 # 
@@ -89,7 +89,7 @@
 # 
 #-----------------------------------------------end of log
 INCLUDES=..
-CFLAGS=-I$(INCLUDES) -g
+CFLAGS=-I$(INCLUDES) -DHAVE_CONFIG_H -g
 AOBJ=print.o static.o trace.o main.o summary.o bdisp.o 	\
 	rlist.o ddisp.o disp.o vector.o cdisp.o pdisp.o risk.o error.o	\
 	gmatch.o tab_disp.o pat_match.o fdisp.o srcfile_name.o		\

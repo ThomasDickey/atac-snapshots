@@ -17,13 +17,31 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char pro_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pro.c,v 3.3 1994/04/04 10:26:04 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include <string.h>
+
+#include "portable.h"
+#include "atacysis.h"
+#include "pack.h"
+#include "ramfile.h"
+#include "man.h"
+
+static char const pro_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pro.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: pro.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:26:04  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: pro.c,v $
+* Revision 3.4  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+* fix compiler warnings (casts).
+*
 *Revision 3.3  94/04/04  10:26:04  jrh
 *Add Release Copyright
 *
@@ -65,35 +83,31 @@ static char pro_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "ramfile.h"
-#include "man.h"
 
 /* forward declarations */
-void process_pipe();
-int testNo();
-static int pro_test();
-static void pro_block();
-static void pro_cuse();
-static void pro_puse();
-int pro_source();
-static void pro_header();
-static void extend_coverageVector();
-static void extend_stampVector();
-static int map_file();
-static int mapSet();
-static void mapReset();
-
-extern struct pkPack	*pk_create();
-extern void		pk_append();
-extern unsigned long	pk_take();
-
-extern void check_func();
-extern void check_block();
-extern void check_var();
-extern void check_cuse();
-extern void check_puse();
+static int pro_test
+	P_((membertype *mems, char *pDate, char *pVersion, char *testName, int
+	corrupted));
+static void pro_block
+	P_((blocktype *block, int iTestCase, int iFreq));
+static void pro_cuse
+	P_((vartype *var, int iDefine, int iUse, int iTestCase, int iFreq));
+static void pro_puse
+	P_((vartype *var, int iDefine, int iUse, int iTo, int iTestCase, int
+	iFreq));
+static int pro_source P_((RAMFILE *rf, char *pName));
+static void pro_header
+	P_((struct cfile *cf, headertype *hdr, char *pPath, time_t iStamp, int
+	iTestCase, char *tracefile, char *testName, int *corrupted));
+static void extend_coverageVector
+	P_((coveragetype **coverageVector, int *iCovNext, int *iCoverageCount,
+	int iTestCase));
+static void extend_stampVector
+	P_((stampstype **stampVector, time_t *lStampNext, int *iStampCount, int
+	iTestCase));
+static int map_file P_((int iFileId));
+static int mapSet P_((int iFileId, int iFile));
+static void mapReset P_((void));
 
 static int	*sourceMap = NULL;
 static int	iMapCount = 0;
@@ -186,12 +200,12 @@ int	iTestCase;
 
     if (iTestCase > *iStampCount) {
 	if (*iStampCount == 0) {
-	    *stampVector = pk_create();
+	    *stampVector = (stampstype *)pk_create();
 	}
-	pk_append(*stampVector, *lStampNext);
+	pk_append((pkPack *)(*stampVector), (unsigned long)(*lStampNext));
 	*lStampNext = (time_t)0;
 	for (i = *iStampCount + 1; i < iTestCase; ++i) {
-	    pk_append(*stampVector, 0);
+	    pk_append((pkPack *)(*stampVector), 0);
 	}
 	*iStampCount = iTestCase;
     }
@@ -208,12 +222,12 @@ int		iTestCase;
 
     if (iTestCase > *iCoverageCount) {
 	if (*iCoverageCount == 0) {
-	    *coverageVector = pk_create();
+	    *coverageVector = (coveragetype *)pk_create();
 	}
-	pk_append(*coverageVector, *iCovNext);
+	pk_append((pkPack *)(*coverageVector), (unsigned long)(*iCovNext));
 	*iCovNext = 0;
 	for (i = *iCoverageCount + 1; i < iTestCase; ++i) {
-	    pk_append(*coverageVector, 0);
+	    pk_append((pkPack *)(*coverageVector), 0);
 	}
 	*iCoverageCount = iTestCase;
     }
@@ -222,9 +236,9 @@ int		iTestCase;
 static void
 pro_header(cf, hdr, pPath,iStamp, iTestCase, tracefile, testName, corrupted)
 struct cfile	*cf;
+headertype	*hdr;
 char	 *pPath;
 time_t	iStamp;
-headertype	*hdr;
 int	iTestCase;
 char	*tracefile;
 char	*testName;
@@ -255,7 +269,7 @@ int	*corrupted;
 	hdr->headers[i].lStampNext = iStamp;
 }
 
-int
+static int
 pro_source(rf, pName)
 RAMFILE *rf;
 char *pName;
@@ -377,7 +391,7 @@ membertype	*mems;
 char		*testName;
 {
     int		i;
-    int		len;
+    size_t	len;
     int		max;
     char	*pName;
     int		n;

@@ -17,13 +17,13 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.10 1994/07/05 16:03:23 saul Exp $";
+static char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.11 1995/12/27 23:36:49 tom Exp $";
 
 /*
-*-----------------------------------------------$Log: atac_rt.c,v $
-*-----------------------------------------------Revision 3.10  1994/07/05 16:03:23  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+*$Log: atac_rt.c,v $
+*Revision 3.11  1995/12/27 23:36:49  tom
+*fix gcc warnings (missing prototypes)
+*
 * Revision 3.10  94/07/05  16:03:23  saul
 * Fix atac_child to use when fork() is detected after the fact.
 * 
@@ -101,6 +101,7 @@ static char ident[] = "\044Log: @(#)ATAC runtime\044";
 /*
 * Includes.
 */
+#include <stdlib.h>
 #include <stdio.h>
 #ifndef MVS
 #ifndef vms
@@ -122,7 +123,7 @@ static char *getTestName();
 static void prepareEnd();
 static int aTaC_cleanup();
 static int atac_flush();
-char *getenv();
+static FILE *opentrace P_((void));
 
 /*
 * Constants.
@@ -467,7 +468,6 @@ int		blk;
 	int			def_blk;
 	int			i;
 	FILESTAMP		*filestamp;
-	FILE			*opentrace();
 #ifndef NOFLUSH
 	int			flush;
 #endif

@@ -17,13 +17,22 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char tab_disp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tab_disp.c,v 3.5 1994/04/04 10:26:26 jrh Exp $";
+/* INCLUDED FILES */
+
+#include <stdio.h>              /* standard input/output lib    */
+#include <string.h>
+#include <ctype.h>              /* standard library routines    */
+
+#include "portable.h"
+#include "atacysis.h"           /* ATAC post run-time stuff     */
+
+static char const tab_disp_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tab_disp.c,v 3.6 1995/12/28 15:23:06 tom Exp $";
 /*
-*-----------------------------------------------$Log: tab_disp.c,v $
-*-----------------------------------------------Revision 3.5  1994/04/04 10:26:26  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: tab_disp.c,v $
+* Revision 3.6  1995/12/28 15:23:06  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.5  94/04/04  10:26:26  jrh
 *Add Release Copyright
 *
@@ -61,8 +70,8 @@ static char tab_disp_c[] =
  * 17 Feb 1992  -- MSM -- creation  
  * 
  * $Log: tab_disp.c,v $
- * Revision 3.5  1994/04/04 10:26:26  jrh
- * FROM_KEYS
+ * Revision 3.6  1995/12/28 15:23:06  tom
+ * adjust headers, prototyped for autoconfig
  *
 *Revision 3.5  94/04/04  10:26:26  jrh
 *Add Release Copyright
@@ -133,13 +142,6 @@ static char tab_disp_c[] =
  * 
  */
 
-/* INCLUDED FILES */
-
-#include <stdio.h>              /* standard input/output lib    */
-#include <ctype.h>              /* standard library routines    */
-#include "portable.h"
-#include "atacysis.h"           /* ATAC post run-time stuff     */
-
 /* DEFINITIONS */
 
 #define MAX_STRING 80           /* maximum field string length  */
@@ -183,16 +185,24 @@ static char tab_disp_c[] =
 
 /* FUNCTION PROTOTYPES (DECLARATIONS) */
 
-void tab_disp();                /* tabular display main interface       */
-void disp_cuse();               /* display uncovered local c-uses       */
-void disp_puse();               /* display uncovered local p-uses       */
-void disp_block();              /* display uncovered blocks             */
-void disp_decis();              /* display uncovered decisions          */
-void disp_ucuse();              /* display undefined local c-uses       */
-void disp_upuse();              /* display undefined local p-uses       */
-void get_context();             /* get a source file context            */
-void right_pad();               /* right-pad a string with spaces       */
-void header();                  /* print a centered header              */
+static void disp_cuse        /* display uncovered local c-uses       */
+	P_((int first, char *file, char *func, char *var, T_BLK *def, T_BLK *use));
+static void disp_puse        /* display uncovered local p-uses       */
+	P_((int first, char *file, char *func, char *var, T_BLK *def, T_BLK *use, T_BLK *to));
+static void disp_block       /* display uncovered blocks             */
+	P_((int first, char *file, char *func, T_BLK *b1));
+static void disp_decis       /* display uncovered decisions          */
+	P_((int first, char *file, char *func, T_BLK *use, int cov));
+static void disp_ucuse       /* display undefined local c-uses       */
+	P_((int first, char *file, char *func, char *var, T_BLK *use));
+static void disp_upuse       /* display undefined local p-uses       */
+	P_((int first, char *file, char *func, char *var, T_BLK *use, T_BLK *to));
+static void get_context      /* get a source file context            */
+	P_((char *filename, T_BLK *block, char *str, int length));
+static void right_pad        /* right-pad a string with spaces       */
+	P_((char *to, char *from, size_t max));
+static void header           /* print a centered header              */
+	P_((char *title, char *file, char *func));
 
 /* FUNCTIONS */
 
@@ -420,7 +430,8 @@ int	*covVector;
  * The tabular display routine for local c-uses.
  */
 
-void disp_cuse(first, file, func, var, def, use)
+static void
+disp_cuse(first, file, func, var, def, use)
 int    first;
 char  *file;
 char  *func;
@@ -469,7 +480,8 @@ T_BLK *use;
  * The tabular display routine for local p-uses.
  */
 
-void disp_puse(first, file, func, var, def, use, to)
+static void
+disp_puse(first, file, func, var, def, use, to)
 int    first;
 char  *file;
 char  *func;
@@ -524,7 +536,8 @@ T_BLK *to;
  * The tabular display routine for blocks.
  */
 
-void disp_block(first, file, func, b1)
+static void
+disp_block(first, file, func, b1)
 int    first;
 char  *file;
 char  *func;
@@ -559,7 +572,8 @@ T_BLK *b1;
  * The tabular display routine for decisions.   
  */
 
-void disp_decis(first, file, func, use, cov)
+static void
+disp_decis(first, file, func, use, cov)
 int    first;
 char  *file;
 char  *func;
@@ -606,7 +620,8 @@ int    cov;
  * The tabular display routine for undefined c-uses.
  */
 
-void disp_ucuse(first, file, func, var, use)
+static void
+disp_ucuse(first, file, func, var, use)
 int    first;
 char  *file;
 char  *func;
@@ -645,7 +660,8 @@ T_BLK *use;
  * The tabular display routine for local p-uses.
  */
 
-void disp_upuse(first, file, func, var, use, to)
+static void
+disp_upuse(first, file, func, var, use, to)
 int    first;
 char  *file;
 char  *func;
@@ -695,7 +711,8 @@ T_BLK *to;
  * set to NULL.
  */
 
-void get_context(filename, block, str, length)
+static void
+get_context(filename, block, str, length)
 char  *filename;
 T_BLK *block;
 char  *str;
@@ -785,15 +802,16 @@ int    length;
 /* FUNCTION: void right_pad(to, from, max)
  * char *to -- destination string
  * char *from -- source string
- * int   max  -- maximum string length
+ * size_t   max  -- maximum string length
  *
  * Function copies max characters from from to to, padding extra spaces.
  */
 
-void right_pad(to, from, max)
+static void
+right_pad(to, from, max)
 char *to;
 char *from;
-int   max;
+size_t   max;
 {
   int j;
 
@@ -808,7 +826,8 @@ int   max;
    to[max] = '\0';
 }
 
-void header(title, file, func)
+static void
+header(title, file, func)
 char	*title;
 char    *file;
 char    *func;

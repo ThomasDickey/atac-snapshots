@@ -17,13 +17,30 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char static_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/static.c,v 3.10 1994/04/04 10:26:20 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#ifndef MVS
+#include <sys/stat.h>
+#endif /* MVS */
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const static_c[] =
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/static.c,v 3.11 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: static.c,v $
-*-----------------------------------------------Revision 3.10  1994/04/04 10:26:20  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: static.c,v $
+* Revision 3.11  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+* fix compiler warnings (casts).
+*
 * Revision 3.10  94/04/04  10:26:20  jrh
 * Add Release Copyright
 * 
@@ -81,44 +98,34 @@ static char static_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
-#ifndef MVS
-#include <sys/stat.h>
-#endif /* MVS */
 
 /* forward declarations */
-void freeStatic();
-T_MODULE *static_data();
-static void module();
-static void fix_puse();
-static void fix_cuse();
-static int puse_cmp();
-static int cuse_cmp();
-static char *t_copy();
-static char *stralloc();
-static char *extend();
-static void getBinDotAtac();
-static void bufSize_error();
-static void input_error();
-static void internal_error();
+static void module P_((char *filename, T_MODULE *t_module, char *funcSelect));
+static void fix_puse P_((T_VAR *var, int n_var, T_PUSE *puse, int n_puse, T_PUSE **new_puse, unsigned short *n_new_puse));
+static void fix_cuse P_((T_VAR *var, int n_var, T_CUSE *cuse, int n_cuse, T_CUSE **new_cuse, unsigned short *n_new_cuse));
+static int puse_cmp P_((T_PUSE *a, T_PUSE *b));
+static int cuse_cmp P_((T_CUSE *a, T_CUSE *b));
+static char *t_copy P_((char *from, int size, int number));
+static char *stralloc P_((char *str));
+static char *extend P_((char *p, size_t size));
+static void getBinDotAtac P_((char *filename, T_MODULE *t_module, char *funcSelect));
+static void bufSize_error P_((char *filename, int bufSize));
+static void input_error P_((char *filename, int recno, char *s, char *arg1, char *arg2));
+
+#if __STDC__
+#define QSORT_CMP (int (*)(const void *, const void *))
+#else
+#define QSORT_CMP /* nothing */
+#endif
+
+#define FIELD_ERROR(filename, recno, msg, field, ignored) \
+	input_error(filename, recno, msg, (char *)field, (char *)ignored)
 
 #define CHECK_MALLOC(p) ((p)?1:(internal_error("Out of memory\n", 0, 0),0))
 
 #define MAXFIELDS	6
 
 #define DECIS_VAR	"=decis="
-
-static void
-internal_error(s, arg1, arg2)
-char	*s;
-char	*arg1;
-char	*arg2;
-{
-	fprintf(stderr, s, arg1, arg2);
-	exit(1);
-}
 
 static void
 input_error(filename, recno, s, arg1, arg2)
@@ -193,9 +200,9 @@ char		*funcSelect;
 	perror(filename);
 	exit(1);
     }
-    buf = (char *)malloc(sbuf.st_size);
+    buf = (char *)malloc((size_t)sbuf.st_size);
     CHECK_MALLOC(buf);
-    bufSize = fread(buf, 1, sbuf.st_size, fp);
+    bufSize = fread(buf, 1, (size_t)sbuf.st_size, fp);
     if (bufSize == 0) {
 	perror(filename);
 	exit(1);
@@ -323,13 +330,13 @@ char		*funcSelect;
 static char *
 extend(p, size)
 char	*p;
-int	size;
+size_t	size;
 {
     register char *newP;
 
     if (p) {
 #ifdef DEBUG
-	fprintf(stderr, "extend: %d\n", size);
+	fprintf(stderr, "extend: %d\n", (int)size);
 #endif /* DEBUG */
 	newP = (char *)realloc(p, size);
     }
@@ -360,7 +367,7 @@ int size;
 int number;
 {
 	char	*buf;
-	int	len;
+	size_t	len;
 
 	len = size * number;
 	buf = (char *)malloc(len);
@@ -412,7 +419,7 @@ unsigned short	*n_new_cuse;
 	/*
 	* Sort and drop duplicates.
 	*/
-	qsort(cuse, n_cuse, sizeof(T_CUSE), cuse_cmp);
+	qsort(cuse, (size_t)n_cuse, sizeof(T_CUSE), QSORT_CMP cuse_cmp);
 	j = 1;
 	for (i = 1; i < n_cuse; ++i)
 		if (cuse_cmp(cuse+i-1, cuse+i))
@@ -453,7 +460,7 @@ unsigned short	*n_new_puse;
 	/*
 	* Sort and drop duplicates.
 	*/
-	qsort(puse, n_puse, sizeof(T_PUSE), puse_cmp);
+	qsort(puse, (size_t)n_puse, sizeof(T_PUSE), QSORT_CMP puse_cmp);
 	j = 1;
 	for (i = 1; i < n_puse; ++i)
 		if (puse_cmp(puse+i-1, puse+i))
@@ -621,7 +628,7 @@ char		*funcSelect;
 		input_error(filename, cf_lineNo(cf),
 			    "invalid fileno: %s\n", stringBuf, 0);
 	    if (ifield[3] >= n_file)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "invalid fileno: %d\n", ifield[3], 0);
 	    if (n_puse) {
 		if ((int)t_func[n_func - 1].formalN_puse < n_puse)
@@ -689,10 +696,10 @@ char		*funcSelect;
 			 "blk input before func\n", 0, 0);
 	    for (i = 0; i < 6; ++i) ifield[i] = cf_getLong(cf);
 	    if (ifield[0] >= n_file)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "invalid fileno: %d\n", ifield[0], 0);
 	    if (ifield[3] >= n_file)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "invalid fileno: %d\n", ifield[3], 0);
 	    if (t_blk_size <= n_blk) {
 		t_blk = (T_BLK *)extend((char *)t_blk,
@@ -746,13 +753,13 @@ char		*funcSelect;
 	    for (i = 0; i < 3; ++i)
 		ifield[i] = cf_getLong(cf);
 	    if (ifield[0] >= n_var)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "C varno: %d\n", ifield[0], 0);
 	    if (ifield[1] >= n_blk)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "C blkno: %d\n", ifield[1], 0);
 	    if (ifield[2] >= n_blk)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "C blkno: %s\n", ifield[2], 0);
 	    if (t_cuse_size <= n_cuse) {
 		t_cuse = (T_CUSE *)extend((char *)t_cuse,
@@ -800,16 +807,16 @@ char		*funcSelect;
 	    for (i = 0; i < 4; ++i)
 		ifield[i] = cf_getLong(cf);
 	    if (ifield[0] >= n_var)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "P varno: %d\n", ifield[0], 0);
 	    if (ifield[1] >= n_blk)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "P blkno: %s\n", ifield[1], 0);
 	    if (ifield[2] >= n_blk)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "P blkno: %s\n", ifield[2], 0);
 	    if (ifield[3] >= n_blk)
-		input_error(filename, cf_lineNo(cf),
+		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "P blkno: %s\n", ifield[3], 0);
 	    if (t_puse_size <= n_puse) {
 		t_puse = (T_PUSE *)extend((char *)t_puse,
@@ -850,7 +857,7 @@ char		*funcSelect;
 	    /* comment */
 	    break;
 	default:
-	    input_error(filename, cf_lineNo(cf), "format: %c\n",
+	    FIELD_ERROR(filename, cf_lineNo(cf), "format: %c\n",
 			c, 0);
 	}
     }

@@ -17,16 +17,36 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char atac_to_bin_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atac_to_bin.c,v 3.7 1994/04/04 13:51:16 saul Exp $";
-static char bellcoreCopyRight[] =
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "version.h"
+#include "atacysis.h"
+#ifndef vms
+#ifndef MVS
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif /* not MVS */
+#endif /* not vms */
+
+static char const atac_to_bin_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atac_to_bin.c,v 3.8 1995/12/29 21:25:35 tom Exp $";
+static char const bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*-----------------------------------------------$Log: atac_to_bin.c,v $
-*-----------------------------------------------Revision 3.7  1994/04/04 13:51:16  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: atac_to_bin.c,v $
+* Revision 3.8  1995/12/29 21:25:35  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.7  94/04/04  13:51:16  saul
 *Fix binary copyright.
 *
@@ -50,28 +70,15 @@ static char bellcoreCopyRight[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "version.h"
-#include "atacysis.h"
-#ifndef vms
-#ifndef MVS
-#include <sys/stat.h>
-#include <fcntl.h>
-#endif /* not MVS */
-#endif /* not vms */
 
 /* forward declarations */
-int main();
-static int putBinDotAtac();
+static int putBinDotAtac P_((int fd, T_MODULE *mod));
 
 #define ROUND(n) 	/* round up to char pointer boundary */		\
     (((n) + sizeof(char *) - 1) & ~(sizeof(char *) - 1))
 
 static char	*zeros = NULL;
 #define PAD(fd,n)	write((fd), &zeros, ROUND(n) - (n))
-
-T_MODULE	*static_data();
 
 /*
 * putBinDotAtac:  Write out the data in mod in the following binary format.
@@ -100,7 +107,7 @@ T_MODULE	*mod;
     T_PUSE	*pusePtr;
     int		offset;
     int		stringOffset;
-    int		writeSize;
+    size_t	writeSize;
     T_HEADER	header;
 
     /*

@@ -21,12 +21,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char Pgram_y[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.6 1994/06/01 09:02:58 saul Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.7 1995/12/27 01:35:34 tom Exp $";
 /*
-*-----------------------------------------------$Log: Pgram.y,v $
-*-----------------------------------------------Revision 3.6  1994/06/01 09:02:58  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: Pgram.y,v $
+* Revision 3.7  1995/12/27 01:35:34  tom
+* handle INLINE, ASM states.  Also declare ATTRIBUTE state.
+*
 * Revision 3.6  94/06/01  09:02:58  saul
 * fix for ANSI f(...) 
 * 
@@ -148,6 +148,10 @@ static SRCPOS nosrcpos[2] = {{-1,0,0}, {-1,0,0}};
 %term <token> WHILE		291
 %term <token> TOK_PACKED	292		/* for MVS */
 %term <token> OFFSET	293
+
+%term <token> ASM               294
+%term <token> INLINE            295
+%term <token> ATTRIBUTE         296
 
 %term <token> '('	501	TOK_LPAREN	501
 %term <token> ')'	502	TOK_RPAREN	502
@@ -555,6 +559,11 @@ classtype:
 		|	STATIC
 			{
 				$$ = tmkleaf(GEN_CLASSTYPE, CLASSTYPE_STATIC,
+					$1.srcpos, 0);
+			}
+		|	INLINE
+			{
+				$$ = tmkleaf(GEN_CLASSTYPE, CLASSTYPE_INLINE,
 					$1.srcpos, 0);
 			}
 		|	EXTERN
@@ -1115,6 +1124,8 @@ compstmt:
 			}
 		;
 stmt:
+			ASM ';'
+		|
 			expr ';'
 			{
 				$$ = tmknode(GEN_STMT, STMT_EXPR, $1, 0);

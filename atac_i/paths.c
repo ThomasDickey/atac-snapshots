@@ -18,12 +18,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static char paths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.5 1994/04/05 13:19:00 saul Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.6 1995/12/27 23:32:30 tom Exp $";
 /*
-*-----------------------------------------------$Log: paths.c,v $
-*-----------------------------------------------Revision 3.5  1994/04/05 13:19:00  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: paths.c,v $
+* Revision 3.6  1995/12/27 23:32:30  tom
+* don't use NULL for int value!
+*
 * Revision 3.5  94/04/05  13:19:00  saul
 * Get rid of $length$ field in .atac.  atacysis doesn't understand it.
 * 
@@ -238,7 +238,7 @@ if (branch->to->block_id == 0) return;
 	* Visit each node reachable from node.
 	*/
 	if (branch->to->branches)
-		for (i = NULL; list_next(branch->to->branches, &i, &f);) {
+		for (i = 0; list_next(branch->to->branches, &i, &f);) {
 			if (feasableOnly && !feasableBranch(f)) continue;
 			u_traverse(dug, f, list, d_node, def, use_type,
 				branch->to, usePos, feasableOnly);
@@ -494,6 +494,6 @@ if (branch->to->block_id == 0) return;
 	* Visit each node reachable from node.
 	*/
 	if (branch->to->branches)
-	    for (i = NULL; list_next(branch->to->branches, &i, &f);)
+	    for (i = 0; list_next(branch->to->branches, &i, &f);)
 	        uCount(dug, f, list, def, use_type, counts);
 }

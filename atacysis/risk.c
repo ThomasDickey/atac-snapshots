@@ -17,13 +17,26 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char risk_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/risk.c,v 3.6 1994/04/04 10:26:11 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "portable.h"
+#include "atacysis.h"
+
+static char const risk_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/risk.c,v 3.7 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: risk.c,v $
-*-----------------------------------------------Revision 3.6  1994/04/04 10:26:11  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: risk.c,v $
+* Revision 3.7  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+*
 *Revision 3.6  94/04/04  10:26:11  jrh
 *Add Release Copyright
 *
@@ -56,14 +69,6 @@ static char risk_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "atacysis.h"
-
-/* forward declarations */
-void risk();
-static void doSum();
-static void doBlk();
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
@@ -82,6 +87,13 @@ typedef int COVTYPE;
 #define AMT_PDEF	1.0
 #define AMT_PPRED	1.0
 #define AMT_PTARG	1.0
+
+/* forward declarations */
+static void doSum
+	P_((float (*perLine)[COV_N], float *sum, int start, int end));
+static void doBlk
+	P_((T_BLK *blk, int mark, int *maxLine, float (**total)[COV_N], float
+	(**covered)[COV_N], COVTYPE covType, double amount));
 
 static void
 doBlk(blk, mark, maxLine, total, covered, covType, amount)

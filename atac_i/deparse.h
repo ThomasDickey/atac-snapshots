@@ -13,11 +13,11 @@
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
 /*
-* $Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.h,v 3.4 1994/06/01 09:01:46 saul Exp $
-*-----------------------------------------------$Log: deparse.h,v $
-*-----------------------------------------------Revision 3.4  1994/06/01 09:01:46  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.h,v 3.5 1995/12/13 01:20:14 tom Exp $
+* $Log: deparse.h,v $
+* Revision 3.5  1995/12/13 01:20:14  tom
+* handle CLASSTYPE_INLINE
+*
 * Revision 3.4  94/06/01  09:01:46  saul
 * fix for ANSI f(...)
 * 
@@ -102,6 +102,7 @@
 	{GEN_CLASSTYPE,	CLASSTYPE_ENUM_D,	"@N"},
 	{GEN_CLASSTYPE,	CLASSTYPE_STRUCT_R,	"@N"},
 	{GEN_CLASSTYPE,	CLASSTYPE_ENUM_R,	"@N"},
+	{GEN_CLASSTYPE,	CLASSTYPE_INLINE,	"inline"},
 	{GEN_PARAM_DCLS,	0,	"@L\n@@"},
 	{GEN_PARAM_DCL,	0,	"@N @S;"},
 	{GEN_PARAM_DEFS,	0,	"@L,@@"},
@@ -288,4 +289,4 @@
 	{GEN_QUAL,	QUAL_CONST,	"const"},
 	{GEN_QUAL,	QUAL_VOLATILE,	"volatile"},
 	{GEN_STRINGS,	0,	"@L@+\n@@@-"},
-	{GENUS_COUNT,	0,	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.h,v 3.4 1994/06/01 09:01:46 saul Exp $"},
+	{GENUS_COUNT,	0,	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.h,v 3.5 1995/12/13 01:20:14 tom Exp $"},

@@ -14,12 +14,12 @@
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
 #
-# $Header: /users/source/archives/atac.vcs/tools/RCS/atac,v 3.15 1994/04/21 09:33:26 saul Exp $
+# $Header: /users/source/archives/atac.vcs/tools/RCS/atac,v 3.16 1995/12/27 23:51:20 tom Exp $
 #
-#-----------------------------------------------$Log: atac,v $
-#-----------------------------------------------Revision 3.15  1994/04/21 09:33:26  saul
-#-----------------------------------------------FROM_KEYS
-#-----------------------------------------------
+#$Log: atac,v $
+#Revision 3.16  1995/12/27 23:51:20  tom
+#add $ATAC_PAGER environment variable
+#
 # Revision 3.15  94/04/21  09:33:26  saul
 # Move #!/bin/sh directive back to first line
 # 
@@ -386,7 +386,12 @@ fi
 ARGS="$ARGS $DOTTRACE $DOTATAC"
 if [ "$typeflag" = '' ]
 then
-	$ATACYSIS $ARGS | $HILI $UFLAG - | $EXPAND | TERM=- $MORE
+	if [ "$ATAC_PAGER" = "" ]
+	then
+		$ATACYSIS $ARGS | $HILI $UFLAG - | $EXPAND | TERM=- $MORE
+	else
+		$ATACYSIS $ARGS | $HILI $UFLAG - | $ATAC_PAGER
+	fi
 else
 	$ATACYSIS $ARGS
 fi

@@ -16,17 +16,28 @@
  #pragma csect (CODE, "scan$")
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
-#include <string.h>
-#include <stdlib.h>
 #endif /* MVS */
 
-static char scan_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.9 1994/04/04 10:13:59 jrh Exp $";
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "portable.h"
+#include "srcpos.h"
+#include "scan.h"
+#include "tnode.h"	/* Pgram.h needs it */
+#include "Pgram.h"
+
+#define DEBUG 0
+
+static char const scan_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.10 1995/12/29 23:29:35 tom Exp $";
 /*
-*-----------------------------------------------$Log: scan.c,v $
-*-----------------------------------------------Revision 3.9  1994/04/04 10:13:59  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: scan.c,v $
+* Revision 3.10  1995/12/29 23:29:35  tom
+* adjust headers, prototyped for autoconfig
+* add keywords to work with gcc 2.7.0 (including logic to skip over ASM)
+*
 * Revision 3.9  94/04/04  10:13:59  jrh
 * Add Release Copyright
 * 
@@ -120,12 +131,6 @@ static char scan_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include "portable.h"
-#include "srcpos.h"
-#include "scan.h"
-#include "tnode.h"	/* Pgram.h needs it */
-#include "Pgram.h"
 
 /* forward declarations */
 void yyerror();
@@ -211,7 +216,12 @@ static struct {
 #ifdef MVS
 	{ "_Packed", TOK_PACKED },		/* MVS */
 	{ "__offsetof", OFFSET },
-#endif MVS
+#endif /* MVS */
+	{ "__volatile__", VOLATILE },		/* GCC */
+	{ "__signed__", SIGNED },		/* GCC */
+	{ "__inline__", INLINE },		/* GCC: inline */
+	{ "__asm__", ASM },			/* GCC: asm */
+	{ "__attribute__", ATTRIBUTE },		/* GCC */
 };
 
 static int		charTable[MAXCHAR + 1];	/* MAXCHAR is in portable.h */
@@ -711,7 +721,7 @@ char	*name;
     CHECK_MALLOC(typeFix);
     typeFix->idType = idType;
     typeFix->oldType = *idType;
-    if (typeFixList == NULL)
+    if (typeFixList == 0)
 	typeFixList = list_create();
     list_put(typeFixList, typeFix);
 
@@ -722,7 +732,7 @@ void
 scan_pushScope()
 {
     list_put(scopeList, typeFixList);
-    typeFixList = NULL;
+    typeFixList = 0;
 }
 
 int
@@ -732,7 +742,7 @@ scan_popScope()
     typeFix_t	*typeFix;
 
     if (typeFixList) {
-	for (t = NULL; list_next(typeFixList, &t, &typeFix);) {
+	for (t = 0; list_next(typeFixList, &t, &typeFix);) {
 	    *typeFix->idType = typeFix->oldType;
 	    free(typeFix);
 	    list_delete(typeFixList, &t);
@@ -740,12 +750,12 @@ scan_popScope()
 	list_free(typeFixList, NULL);
     }
 
-    t = NULL;
+    t = 0;
     if (list_prev(scopeList, &t, &typeFixList)) {
 	list_delete(scopeList, &t);
 	return 1;
     } else {
-	typeFixList = NULL;
+	typeFixList = 0;
 	return 0;
     }
 }
@@ -787,7 +797,7 @@ FILE		*srcfile;
     /*
     * Create type fix list and scope list.
     */
-    typeFixList = NULL;
+    typeFixList = 0;
     scopeList = list_create();
 
     /*
@@ -1262,6 +1272,25 @@ yylex()
 	yylval.token.srcpos[RIGHT_SRCPOS].col = src.col;
     }
 
+#if DEBUG
+    fprintf(stderr, "parse %d:%s\n", value, yylval.token.text);
+#endif
+    if (value == ASM || value == ATTRIBUTE) {
+	int	nest = 0;
+	int	done = FALSE;
+#if DEBUG
+	fprintf(stderr, "IGNORING...\n");
+#endif
+	while (((value = yylex()) >= 0) && !done) {
+		if (value == TOK_LPAREN)
+			nest++;
+		else if (value == TOK_RPAREN)
+			done = (--nest <= 0);
+	}
+#if DEBUG
+	fprintf(stderr, "DONE, pass %d:%s\n", value, yylval.token.text);
+#endif
+    }
     return value;
 }
 

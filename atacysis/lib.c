@@ -17,13 +17,28 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char lib_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/lib.c,v 3.3 1994/04/04 10:25:32 jrh Exp $";
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include "portable.h"
+#include "atacysis.h"
+
+static char const lib_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/lib.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
 /*
-*-----------------------------------------------$Log: lib.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:25:32  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: lib.c,v $
+* Revision 3.4  1995/12/29 21:24:41  tom
+* adjust headers, prototyped for autoconfig
+* correct sign-extension in string-copy.
+*
 *Revision 3.3  94/04/04  10:25:32  jrh
 *Add Release Copyright
 *
@@ -63,9 +78,6 @@ static char lib_c[] =
 *
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
-#include <ctype.h>
-#include "portable.h"
 
 /*
 * Routines to read and write ascii data files.  These routines are
@@ -90,34 +102,8 @@ static char lib_c[] =
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
-typedef int rwMode;
-#define R_MODE ((rwMode)0)
-#define W_MODE ((rwMode)1)
-
-struct cfile {
-    FILE	*fp;
-    char	*fileName;
-    rwMode	mode;		/* read/write */
-    int		lineNo;
-    int		pendingCount;
-    long	pendingValue;
-    int		atFirstChar;
-};
-
 /* forward declarations */
-void cf_putLong();
-void cf_putString();
-void cf_putNewline();
-void cf_putFirstChar();
-long int cf_getLong();
-void cf_getString();
-int cf_getFirstChar();
-char *cf_fileName();
-int cf_lineNo();
-void cf_close();
-static int putLong();
-struct cfile *cf_openOut();
-struct cfile *cf_openIn();
+static int putLong P_((FILE *fp, long n));
 
 struct cfile *
 cf_openIn(path)
@@ -318,7 +304,7 @@ int		len;
 	    --cf->pendingCount;
 	    if (len > 0) {
 		sprintf(buf, "%ld", cf->pendingValue);
-		strncpy(pString, buf, len);
+		strncpy(pString, buf, (size_t)len);
 		pString[len - 1] = '\0';
 	    }
 	    return;
@@ -579,7 +565,7 @@ char		*s;
     }
 
     p = s;
-    while (c = *p++) {
+    while ((c = *p++) != '\0') {
 	r |= putc(c, fp);
     }
     r |= putc(' ', fp);

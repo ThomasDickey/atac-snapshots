@@ -1,16 +1,22 @@
-MANIFEST for atac, version v3_3_13
+MANIFEST for atac, version atac_951230
 --------------------------------------------------------------------------------
 MANIFEST                        this file
-Makefile                        atac3.3.13
 README                          atac3.3.13
+README-TOO                      additional notes
 Version                         atac3.3.13
 atac-tutorial.ps                atac3.3.13
 atac.1                          atac3.3.13
+atac.lsm                        Linux Software Map description of ATAC
 atacCC.1                        atac3.3.13
 atacLD.1                        atac3.3.13
 ataclib.1                       atac3.3.13
 atacmin.1                       atac3.3.13
 atactm.1                        atac3.3.13
+config_h.in                     template for config.h
+configure.in                    configure-script template
+install.sh                      install-script, if none found by configure
+makefile.in                     makefile-template, for auto-configure
+mkdirs.sh                       script to make directory-hierarchies
 portable.h                      atac3.3.13
 version.h                       atac3.3.13
 atac_cpp                        subdirectory
@@ -18,13 +24,12 @@ atac_cpp/Makefile               atac3.3.13
 atac_cpp/alloca.c               atac3.3.13
 atac_cpp/cccp.c                 atac3.3.13
 atac_cpp/cexp.y                 atac3.3.13
-atac_cpp/config.h               atac3.3.13
 atac_cpp/descrip.mms            atac3.3.13
 atac_cpp/mvs_libget.c           atac3.3.13
 atac_cpp/obstack.c              atac3.3.13
 atac_cpp/obstack.h              atac3.3.13
+atac_cpp/pcp.h                  describes the format of a compiled file
 atac_cpp/sio.c                  atac3.3.13
-atac_cpp/tm.h                   atac3.3.13
 atac_cpp/version.c              atac3.3.13
 atac_cpp/vms_lbr.c              atac3.3.13
 atac_i                          subdirectory
@@ -91,6 +96,7 @@ atacysis/main.c                 atac3.3.13
 atacysis/man.h                  atac3.3.13
 atacysis/mem.c                  atac3.3.13
 atacysis/pack.c                 atac3.3.13
+atacysis/pack.h                 struct pkPack and related prototypes
 atacysis/pat_match.c            atac3.3.13
 atacysis/pdisp.c                atac3.3.13
 atacysis/prev.c                 atac3.3.13
@@ -99,6 +105,7 @@ atacysis/pro.c                  atac3.3.13
 atacysis/ramfile.h              atac3.3.13
 atacysis/risk.c                 atac3.3.13
 atacysis/rlist.c                atac3.3.13
+atacysis/rlist.h                struct rlist & related prototypes
 atacysis/srcfile_name.c         atac3.3.13
 atacysis/static.c               atac3.3.13
 atacysis/summary.c              atac3.3.13
@@ -107,6 +114,8 @@ atacysis/tmerror.c              atac3.3.13
 atacysis/trace.c                atac3.3.13
 atacysis/vector.c               atac3.3.13
 atacysis/vms_disp.c             atac3.3.13
+changes                         subdirectory
+changes/atac_19951230.txt       summary of changes for atac_961230 version.
 tools                           subdirectory
 tools/Makefile                  atac3.3.13
 tools/atac                      atac3.3.13
@@ -118,6 +127,7 @@ tools/hili.c                    atac3.3.13
 tools/loguse                    atac3.3.13
 tools/min.c                     atac3.3.13
 tools/predefs.list              atac3.3.13
+tools/vile-pager                script to use VILE as a pager/browser for ATAC listings
 tutorial                        subdirectory
 tutorial/Makefile               atac3.3.13
 tutorial/input1                 atac3.3.13

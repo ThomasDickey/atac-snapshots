@@ -14,13 +14,13 @@
 ****************************************************************/
 #ifndef version_H
 #define version_H
-static char version_h[] = 
-	"$Header: /users/source/archives/atac.vcs/RCS/version.h,v 3.2 1994/04/04 09:52:11 jrh Exp $";
+static char const version_h[] = 
+	"$Header: /users/source/archives/atac.vcs/RCS/version.h,v 3.3 1995/12/28 15:11:54 tom Exp $";
 /*
-*-----------------------------------------------$Log: version.h,v $
-*-----------------------------------------------Revision 3.2  1994/04/04 09:52:11  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+*$Log: version.h,v $
+*Revision 3.3  1995/12/28 15:11:54  tom
+*make 'version_h' const to avoid unused-variable warnings
+*
 *Revision 3.2  94/04/04  09:52:11  jrh
 *Add Release Copyright
 *

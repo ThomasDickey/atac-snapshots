@@ -15,12 +15,12 @@
 #ifndef sym_H
 #define sym_H
 static char sym_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.3 1994/04/04 10:14:43 jrh Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.4 1995/12/13 01:03:44 tom Exp $";
 /*
-*-----------------------------------------------$Log: sym.h,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:14:43  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: sym.h,v $
+* Revision 3.4  1995/12/13 01:03:44  tom
+* add SCB_INLINE
+*
 * Revision 3.3  94/04/04  10:14:43  jrh
 * Add Release Copyright
 * 
@@ -85,7 +85,8 @@ static char sym_h[] =
 #define SCB_CONST	128	/* explicit constant (ANSI) */ 
 #define	SCB_VOLATILE	256	/* explicit volitile (ANSI) */
 #define SCB_AUTO	512
-#define SCB_TYPENAME	1024	/* from typedef */
+#define SCB_INLINE	1024
+#define SCB_TYPENAME	2048	/* from typedef */
 
 #define BTB_INT		1
 #define BTB_FLOAT	2
