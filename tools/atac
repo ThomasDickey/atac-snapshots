@@ -1,0 +1,392 @@
+#!/bin/sh
+#****************************************************************
+#Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+#
+#Permission to use, copy, modify, and distribute this material
+#for any purpose and without fee is hereby granted, provided
+#that the above copyright notice and this permission notice
+#appear in all copies, and that the name of Bellcore not be
+#used in advertising or publicity pertaining to this
+#material without the specific, prior written permission
+#of an authorized representative of Bellcore.  BELLCORE
+#MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+#OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+#WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+#****************************************************************
+#
+# $Header: /users/source/archives/atac.vcs/tools/RCS/atac,v 3.15 1994/04/21 09:33:26 saul Exp $
+#
+#-----------------------------------------------$Log: atac,v $
+#-----------------------------------------------Revision 3.15  1994/04/21 09:33:26  saul
+#-----------------------------------------------FROM_KEYS
+#-----------------------------------------------
+# Revision 3.15  94/04/21  09:33:26  saul
+# Move #!/bin/sh directive back to first line
+# 
+# Revision 3.14  94/04/04  15:11:34  saul
+# Remove contact info
+# 
+# Revision 3.13  94/04/04  10:52:57  jrh
+# Add Release Copyright
+# 
+# Revision 3.11  93/11/17  15:22:25  saul
+# print usage when arg missing e.g. for -c -F -m -n -N 
+# 
+# Revision 3.10  93/08/27  14:37:05  ewk
+# Remove the assignment to TERMCAP for AIX...problem fixed during installation.
+# 
+# Revision 3.9  93/08/09  12:48:01  saul
+# loguse
+# 
+# Revision 3.8  93/06/30  15:27:45  saul
+# -N flag for atac -N experimental feature
+# Fix bug causing file name substitution in test names with wild cards.
+# Fix bug requiring space before -c arg
+# 
+# Revision 3.7  93/04/29  17:20:07  ewk
+# Changed to reflect the name changes from atacLib
+# to ataclib and atacMin to atacmin.
+# 
+# Revision 3.6  93/03/31  11:38:36  saul
+# Avoid use of USAGE=`cat <<! ...
+# 
+# Revision 3.5  93/03/30  14:31:03  saul
+# Change comments to point to base as point of contact.
+# 
+# Revision 3.4  93/02/09  14:01:31  saul
+# Supply /dev/null when no trace file is specified and a.out.trace is missing.
+# 
+# Revision 3.3  93/01/15  10:37:53  saul
+# highlight ATAC in atac -v
+# 
+# Revision 3.2  92/12/31  07:06:59  saul
+# Fix "incompatible flags msg"
+# 
+# Revision 3.1  92/12/03  09:02:05  saul
+# cumulative, cost, and sort options
+# 
+# Revision 3.0  92/11/06  07:46:22  saul
+# propagate to version 3.0
+# 
+# Revision 2.18  92/10/29  11:25:22  saul
+# Changed default for -s to -mbdcp.
+# 
+# Revision 2.17  92/10/28  09:19:42  saul
+# use atacLib instead of INSTALLDIR
+# TERMCAP override for aixterm
+# 
+# Revision 2.16  92/10/05  11:59:14  saul
+# change {$x} to ${x}
+# 
+# Revision 2.15  92/10/05  10:40:38  saul
+# Remove space after args with flags (may cause wild card expansion)
+# 
+# Revision 2.14  92/09/30  11:08:03  saul
+# Add -me default option.  Add -H option.  Change trace file finding.
+# 
+# Revision 2.13  92/09/16  07:28:55  saul
+# Correct errors in finding .trace in ATAC_DIR, etc.
+# 
+# Revision 2.12  92/09/08  13:49:34  saul
+# Remove absolute path names.
+# 
+# Revision 2.11  92/09/08  10:33:26  saul
+# New options.
+# 
+# Revision 2.10  92/07/10  11:45:16  saul
+# new -CcPp options
+# 
+# Revision 2.9  92/07/10  09:54:38  saul
+# Error for -F* and -t* (-F * and -t * worked ok)
+# 
+# Revision 2.8  92/06/11  14:18:15  saul
+# clean up USAGE message
+# 
+# Revision 2.7  92/05/04  15:28:44  saul
+# Fix multiple flag error.
+# 
+# Revision 2.6  92/05/01  12:54:09  saul
+# EXPAND and MORE fixed.  Some "sh" didn't like ${x:-...}
+# 
+# Revision 2.5  92/04/29  08:48:04  saul
+# remove ksh dependency
+# 
+# Revision 2.4  92/04/06  14:14:14  saul
+# Fix -v option
+# 
+# Revision 2.3  92/03/17  15:34:45  saul
+# copyright
+# 
+# Revision 2.2  91/06/19  13:58:48  saul
+# add -v option (version)
+# 
+# Revision 2.1  91/06/19  13:56:24  saul
+# Propagte to version 2.0
+# 
+# Revision 1.1  91/06/12  16:32:57  saul
+# Aug 1990 baseline
+# 
+#-----------------------------------------------end of log
+#
+PGM='atac'
+USAGE="Usage:
+	$PGM -s [-AirfghKpqQS] [other-options]... files
+	$PGM -C [-AirfghKpq] [other-options]... files
+	$PGM -H [-Airfghp] [other-options]... files
+	$PGM -T [-air] [other-options]... files
+	$PGM [-airu] [other-options]... files
+	$PGM -v
+other-options:
+	-m {bcdepu}...
+	-F function
+	-n test-name [-x]
+	-c testname
+	-t threshold
+	-N select-expression [!-complement &-intersection +-union, ()-grouping]
+files:
+	trace-files...
+	atac-files..."
+#
+EXPAND="expand"
+MORE="more -s"
+#
+LIB=`ataclib`
+$LIB/loguse "$LIB" "$0 $*" >/dev/null 2>/dev/null
+[ "$ATAC_DIR" = '' ] && ATAC_DIR='.'
+HILI="$LIB/hili"
+ATACYSIS="$LIB/atacysis"
+VERSION="$LIB/Version"
+typeflag=''	#-s, -C, -H, -T, or none
+AFLAG=''	#all (regardless of coverage by weaker measure), default for -s
+NOTAFLAG=''	#only not covered by weaker measure, default except for -s
+CFLAG=''	#counter ATAC -C or -H
+IFLAG=''	#ignore file stamps
+RFLAG=''	#reverse display
+FFLAG=''	#per function
+GFLAG=''	#per file
+HFLAG=''	#no headers
+KFLAG=''	#show cost
+PFLAG=''	#per test
+QFLAG=''	#cumulative per test
+SFLAG=''	#sort
+UFLAG=''	#underline
+XFLAG=''	#exclude named tests
+DOTTRACE=''
+DOTATAC=''
+MFLAGS=''
+FUNCTIONS=''
+TESTS=''
+EVALEXPR=''
+CMP=''
+THRESHOLD=''
+#
+while [ $# -ne 0 ]
+do
+	case "$1" in
+	-[cFmnNt]?*)		# separate flags from value
+		flag=`expr "$1" : '\(..\)'`
+		arg=`expr "$1" : '..\(.*\)'`
+		shift
+		set shiftdummy "$flag" "$arg" "$@"
+		;;
+	-T?*)	flag=`expr "$1" : '\(..\)'`
+		arg=`expr "$1" : '..\(.*\)'`
+		shift
+		[ ! -d "$arg" ] && set shiftdummy "$flag" "$arg" "$@"
+		;;
+	-??*)			# separate combined flags
+		flag=`expr "$1" : '\(..\)'`
+		arg=`expr "$1" : '..\(.*\)'`
+		shift
+		set shiftdummy "$flag" "-$arg" "$@"
+		;;
+	-a)	AFLAG='a'
+		;;
+	-A)	NOTAFLAG='A'
+		;;
+	-C)	CFLAG='C'
+		typeflag='C'
+		;;
+	-H)	CFLAG='H'
+		typeflag='H'
+		;;
+	-i)	IFLAG='i'
+		;;
+	-K)	KFLAG='K'
+		;;
+	-r)	RFLAG='r'
+		;;
+	-f)	FFLAG='f'
+		;;
+	-g)	GFLAG='g'
+		;;
+	-h)	HFLAG='h'
+		;;
+	-p)	PFLAG='p'
+		;;
+	-q)	QFLAG='q'
+		;;
+	-Q)	QFLAG='q'
+		KFLAG='K'
+		SFLAG='S'
+		;;
+	-S)	SFLAG='S'
+		;;
+	-u)	UFLAG='u'
+		;;
+	-x)	XFLAG='x'
+		;;
+	-b)	MFLAGS="${MFLAGS}b"	# obsolete
+		;;
+	-d)	MFLAGS="${MFLAGS}d"	# obsolete
+		AFLAG='a'
+		;;
+	-D)	MFLAGS="${MFLAGS}d"	# obsolete
+		;;
+	-s)	ARGS="$ARGS $1"
+		typeflag='s'
+		;;
+	-T)	if [ -d "$2" ]
+		then			#Obsolete -T tmpdir usage. Ignore.
+			shift
+		else
+			ARGS="$ARGS $1"
+			typeflag='T'
+		fi
+		;;
+	-m)	shift
+		MFLAGS="${MFLAGS}$1"
+		;;
+	-F)	shift
+		[ "$FUNCTIONS" != '' ] && FUNCTIONS="${FUNCTIONS},"
+		FUNCTIONS="${FUNCTIONS}$1"
+		;;
+	-n)	shift
+		[ "$TESTS" != '' ] && TESTS="${TESTS},"
+		TESTS="${TESTS}$1"
+		;;
+	-N)	shift
+		if [ "$EVALEXPR" != '' ]
+		then
+			echo "duplicate flag: -N" >&2
+			echo "$USAGE" >&2
+			exit 1
+		fi
+		EVALEXPR="${EVALEXPR}$1"
+		;;
+	-c)	shift
+		[ "$CMP" != '' ] && CMP="${CMP},"
+		CMP="${CMP}$1"
+		;;
+	-t)	if expr "$2" : '[0-9]*$' >/dev/null
+		then
+			THRESHOLD="$2"
+			shift
+		fi
+		;;
+	-v)
+		$HILI - $VERSION <<!
++ 1 1|
+- 1 4|
+!
+		# (Ultrix /bin/sh doesn't strip tabs with <<-!)
+		if [ $# -eq 1 ]
+		then
+			exit 0
+		fi
+		;;
+	-*)	echo "unknown flag: $1" >&2
+		echo "$USAGE" >&2
+		exit 1
+		;;
+	*.atac)	DOTATAC="$DOTATAC $1"
+		;;
+	*)	if [ -r "$1" -o ! -r "$ATAC_DIR/$1" ]
+		then
+			DOTTRACE="$DOTTRACE $1"
+		else
+			DOTTRACE="$DOTTRACE $ATAC_DIR/$1"
+		fi
+		;;
+	esac
+	if [ $# -eq 0 ]
+	then
+		echo "$USAGE" >&2
+		exit 1
+	fi
+	shift
+done
+#
+ARGS=''
+#
+case "$typeflag" in
+s|C)	BADFLAGS="$UFLAG"
+	AFLAG='a'				# overide the default
+	[ "$NOTAFLAG" = 'A' ] && AFLAG=''	# use the default
+	ARGS="$ARGS -s${AFLAG}${IFLAG}${RFLAG}${FFLAG}${GFLAG}${HFLAG}${PFLAG}"
+	ARGS="${ARGS}${XFLAG}${CFLAG}${QFLAG}${KFLAG}${SFLAG}"
+	[ "$MFLAGS" = '' ] && MFLAGS='bdcp'
+	;;
+H)	BADFLAGS="${UFLAG}${QFLAG}${KFLAG}${SFLAG}"
+	AFLAG='a'				# overide the default
+	[ "$NOTAFLAG" = 'A' ] && AFLAG=''	# use the default
+	ARGS="$ARGS -s${AFLAG}${IFLAG}${RFLAG}${FFLAG}${GFLAG}${HFLAG}${PFLAG}"
+	ARGS="${ARGS}${XFLAG}${CFLAG}"
+	[ "$MFLAGS" = '' ] && MFLAGS='bdcp'
+	;;
+T)	BADFLAGS="${FFLAG}${GFLAG}${HFLAG}${PFLAG}${UFLAG}${NOTAFLAG}${QFLAG}"
+	BADFLAGS="${BADFLAGS}${KFLAG}${SFLAG}"
+	ARGS="$ARGS -T${AFLAG}${IFLAG}${RFLAG}${XFLAG}"
+	[ "$MFLAGS" = '' ] && MFLAGS='bdcp'
+	;;
+'')	BADFLAGS="${FFLAG}${GFLAG}${HFLAG}${PFLAG}${NOTAFLAG}${QFLAG}${KFLAG}"
+	BADFLAGS="${BADFLAGS}${SFLAG}"
+	if [ "$CMP" != '' ]
+	then
+		if [ "$RFLAG" = '' ]
+		then
+			RFLAG='r'
+		else
+			RFLAG=''
+		fi
+	fi
+	GOODFLAGS="${AFLAG}${IFLAG}${RFLAG}${XFLAG}"
+	[ "$GOODFLAGS" != '' ] && ARGS="$ARGS -$GOODFLAGS"
+	[ "$MFLAGS" = '' ] && MFLAGS='ebdcp'
+	;;
+esac
+if [ "$BADFLAGS" != '' ]
+then
+	echo "incompatible flags: -${typeflag}${BADFLAGS}" >&2
+	echo "$USAGE" >&2
+	exit 1
+fi
+ARGS="$ARGS -m $MFLAGS"
+[ "$FUNCTIONS" != '' ] && ARGS="$ARGS -F${FUNCTIONS}"
+[ "$TESTS" != '' ] && ARGS="$ARGS -n${TESTS}"
+[ "$EVALEXPR" != '' ] && ARGS="$ARGS -N${EVALEXPR}"
+[ "$CMP" != '' ] && ARGS="$ARGS -c${CMP}"
+[ "$THRESHOLD" != '' ] && ARGS="$ARGS -t${THRESHOLD}"
+[ "$UFLAG" != '' ] && UFLAG="-$UFLAG"
+if [ "$DOTTRACE" = '' ]
+then
+	if [ "$ATAC_TRACE" = '' ]
+	then
+		DOTTRACE="$ATAC_DIR/a.out.trace"
+		[ ! -r "$DOTTRACE" ] && DOTTRACE='/dev/null'
+	else
+		if [ -r "$ATAC_TRACE" -o ! -r "$ATAC_DIR/$ATAC_TRACE" ]
+		then
+			DOTTRACE="$ATAC_TRACE"
+		else
+			DOTTRACE="$ATAC_DIR/$ATAC_TRACE"
+		fi
+	fi
+fi
+ARGS="$ARGS $DOTTRACE $DOTATAC"
+if [ "$typeflag" = '' ]
+then
+	$ATACYSIS $ARGS | $HILI $UFLAG - | $EXPAND | TERM=- $MORE
+else
+	$ATACYSIS $ARGS
+fi

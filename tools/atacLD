@@ -1,0 +1,109 @@
+#!/bin/sh
+#****************************************************************
+#Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+#
+#Permission to use, copy, modify, and distribute this material
+#for any purpose and without fee is hereby granted, provided
+#that the above copyright notice and this permission notice
+#appear in all copies, and that the name of Bellcore not be
+#used in advertising or publicity pertaining to this
+#material without the specific, prior written permission
+#of an authorized representative of Bellcore.  BELLCORE
+#MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+#OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+#WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+#****************************************************************
+#
+# $Header: /users/source/archives/atac.vcs/tools/RCS/atacLD,v 1.5 1994/04/21 09:34:19 saul Exp $
+#
+#$Log: atacLD,v $
+#Revision 1.5  1994/04/21 09:34:19  saul
+#FROM_KEYS
+#
+# Revision 1.5  94/04/21  09:34:19  saul
+# Move #!/bin/sh directive back to first line
+# 
+# Revision 1.4  94/04/04  15:12:00  saul
+# Remove contact info
+# 
+# Revision 1.3  94/04/04  10:53:01  jrh
+# Add Release Copyright
+# 
+# Revision 1.2  93/07/13  10:01:35  ewk
+# Change: set shiftdummy -o "$arg" $@ ==> set shiftdummy -o "$arg" "$@"
+# 
+# Revision 1.1  93/07/12  15:40:11  ewk
+# Initial revision
+# 
+#-----------------------------------------------end of log
+# 
+LIB=`ataclib`
+PGM=atacLD
+VERSION="$LIB/Version"
+CC=$ATAC_CC
+if [ "$CC" = "" ]
+then
+	CC='cc'
+fi
+LD=$ATAC_LD
+if [ "$LD" = "" -o "$LD" = "$0" ]
+then
+	LD='ld'
+fi
+LDARG=''
+AOUT='a.out'
+TMP="/usr/tmp/atacLD$$"
+RC=1
+trap 'rm -fr ${TMP}; exit $RC' 0 1 2 3
+while [ $# -ne 0 ]
+do
+	case "$1" in
+	-v)	cat $VERSION
+		if [ $# -eq 1 ]
+		then
+			RC=0
+			exit 0
+		fi
+		LDARG="$LDARG $1"
+		;;
+	-o)
+		if [ $# -gt 1 ]
+		then
+			AOUT=`basename "$2"`
+			LDARG="$LDARG $1 $2"
+			shift
+		else
+			LDARG="$LDARG $1"
+		fi
+		;;
+	-o*)
+		arg=`expr "$1" : '-o\(.*\)'`
+		shift
+		set shiftdummy -o "$arg" "$@"
+		;;
+	*)	LDARG="$LDARG $1"
+		;;
+	esac
+	shift
+done
+if
+	mkdir $TMP
+	[ $? -ne 0 ]
+then
+	echo "$PGM: cannot create temp dir ${TMP}" >&2
+	exit 1
+fi
+if [ "$ATAC_RT" = "" ]
+then
+	ATAC_RT="$LIB/atac_rt.o"
+fi
+echo 'char *aTaC_trace = "'$AOUT'.trace";' >$TMP/aTaC_trace.c
+echo "cd $TMP; $CC -c aTaC_trace.c" | sh >/dev/null 2>/dev/null
+if [ ! -s $TMP/aTaC_trace.o ]
+then
+	echo 'char *aTaC_trace = "a.out.trace";' >$TMP/aTaC_trace.c
+	echo "cd $TMP; $CC -c aTaC_trace.c" | sh >/dev/null 2>/dev/null
+fi
+$LD $LDARG $ATAC_RT $TMP/aTaC_trace.o -lc
+RC=$?
+exit $?

@@ -1,0 +1,271 @@
+.\"****************************************************************
+.\"Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.\"
+.\"Permission to use, copy, modify, and distribute this material
+.\"for any purpose and without fee is hereby granted, provided
+.\"that the above copyright notice and this permission notice
+.\"appear in all copies, and that the name of Bellcore not be
+.\"used in advertising or publicity pertaining to this
+.\"material without the specific, prior written permission
+.\"of an authorized representative of Bellcore.  BELLCORE
+.\"MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+.\"OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+.\"WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.\"****************************************************************
+.\"	$Header: /users/source/archives/atac.vcs/RCS/atactm.1,v 3.9 1994/04/05 09:50:19 saul Exp $
+.\"
+.\"$Log: atactm.1,v $
+.\"Revision 3.9  1994/04/05 09:50:19  saul
+.\"FROM_KEYS
+.\"
+. \"Revision 3.9  94/04/05  09:50:19  saul
+. \"Add DISTRIBUTION heading.
+. \"
+. \"Revision 3.8  94/04/04  10:08:10  jrh
+. \"Add Release Copyright
+. \"
+. \"Revision 3.7  94/04/04  09:49:16  jrh
+. \"Add Release Copyright
+. \"
+. \"Revision 3.6  93/10/28  11:59:00  ewk
+. \"Change header to indicate release 3.3
+. \"
+. \"Revision 3.5  93/07/13  11:23:12  ewk
+. \" Updated SEE ALSO to include atacLD; fixed typos.
+. \"
+. \"Revision 3.4  93/03/30  14:33:14  saul
+. \"Change comments to point to base as point of contact.
+. \"
+. \"Revision 3.3  93/03/30  08:43:03  saul
+. \"Edits from ewk.
+. \"
+. \"Revision 3.2  92/12/30  11:29:43  saul
+. \"Add last change date
+. \"
+.\"Revision 3.1  92/12/03  09:00:34  saul
+.\"typo
+.\"
+.\"Revision 3.0  92/11/06  07:46:18  saul
+.\"propagate to version 3.0
+.\"
+.\"Revision 2.2  92/10/28  08:58:58  saul
+.\"editorial changes
+.\"
+.\"Revision 2.1  92/09/30  10:47:01  saul
+.\"*** empty log message ***
+.\"
+.\"-----------------------------------------------end of log
+.\"
+.TH ATACTM 1 "$Date: 1994/04/05 09:50:19 $" "ATAC release 3.3"
+.UC 4
+.SH NAME
+atactm \- automatic test analysis for C programs \- trace manager
+.SH SYNOPSIS
+.B atactm
+[
+.B \-o
+.IR new .trace 
+] [ 
+.I trace-file 
+]
+.br
+.B atactm
+.BI \-c \ cost
+.BI \-n \ test-name
+[
+.B \-x
+] [
+.B \-o
+.IR new .trace 
+] [ 
+.I trace-file 
+]
+.br
+.B atactm \-d
+.BI \-n \ test-name
+[
+.B \-x
+] [
+.B \-o
+.IR new .trace 
+] [ 
+.I trace-file 
+]
+.br
+.B atactm \-e
+.BI \-n \ test-name
+[
+.B \-x
+]
+.B \-o
+.IR new .trace 
+[
+.I trace-file 
+]
+.br
+.B atactm \-{lL}
+[
+.BI \-n \ test-name
+[
+.B \-x
+] ] [
+.I trace-file 
+]
+.br
+.B atactm \-r
+.I new-test-name
+[
+.BI \-n \ test-name
+[
+.B \-x
+] ] [
+.B \-o
+.IR new .trace 
+] [ 
+.I trace-file 
+]
+.SH DESCRIPTION
+.I Atactm
+manages trace files created by execution of a program compiled with
+.IR atacCC (1).
+A trace file contains coverage information for each test case executed
+by a program.
+.I Atactm
+can list, rename, extract, or assign cost to selected test cases.
+The options
+.BR \-c ,
+.BR \-d ,
+.BR \-e ,
+.BR \-l ,
+.BR \-L ,
+and 
+.B \-r
+select the operation to be performed and are mutually exclusive.
+If any of these options except
+.BR \-l " and " \-L
+are specified the trace file is compressed.
+If no option is specified, the only effect is to compress the trace file.
+If no trace file is specified the value of the
+.B ATAC_TRACE
+environment variable is used, if set.
+Otherwise 
+.I  a.out.trace
+is used.
+If the trace file name is not a complete path and the trace file is
+not found in the current directory, the directory named by the
+.B ATAC_DIR
+environment variable is searched.
+The original trace file is over-written unless the
+.B \-o
+option is specified.
+.SH OPTIONS
+.TP
+.BI \-c \ cost
+Assign 
+.I cost
+to test cases specified with
+.B \-n
+.I test-name.
+Test case cost is used by
+.IR atacmin (1).
+.TP
+.B \-d
+Delete test cases specified with
+.B \-n
+.I test-name.
+.TP
+.B \-e
+Extract test cases specified with
+.B \-n
+.I test-name.
+.TP
+.B \-l
+List test case names.
+If output is to a terminal, names are formatted into columns.
+If
+.B \-n
+.I test-name
+is specified, only selected test cases are listed.
+.TP
+.B \-L
+List test cases with time stamp, ATAC release, cost, and attributes.
+Attributes may be 
+.B f
+\&\- frequency information missing or
+.B c
+\&\- test information corrupted.
+If
+.B \-n
+.I test-name
+is specified, only selected test cases are listed.
+.TP
+.BI \-n \ test-name
+Select test cases matching
+.I test-name
+(See also
+.BR \-x .)
+Wild cards may be used in
+.I test-name.
+Wild cards are the same as those used for file names by sh(1) (*, ?, and [...]).
+Quote marks may be needed to prevent
+the shell from expanding the test name as file names.
+Multiple test-cases may also be specified by repeating the
+.B \-n
+option.
+.TP
+.BI \-r \ new-test-name
+Rename test cases specified with
+.B \-n
+.I test-name.
+If
+.B \-n
+.I test-name
+is omitted, all test cases are renamed.
+Test case names are composed of alphanumeric characters and underscore.
+A numeric suffix is appended to distinguish test cases with the same name.
+.TP
+.B \-x
+Include only test cases
+.I not
+selected by
+.B \-n
+options.
+.SH EXAMPLE
+The following command lists test cases in
+.I prog.trace
+.PP
+.nf
+.in +.5i
+.ft CB
+atactm -l prog.trace
+.in
+.ft
+.PP
+The output looks like this:
+.PP
+.in
+.ft
+t.1  t.2  t.3
+.in
+.ft
+.fi
+.SH FILES
+.IR a.out .trace
+\- trace file.
+.SH "SEE ALSO"
+atac(1), atacCC(1), atacLD(1), ataclib(1), atacmin(1), sh(1).
+.SH DISTRIBUTION
+Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+.PP
+Permission to use, copy, modify, and distribute this material
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice and this permission notice
+appear in all copies, and that the name of Bellcore not be
+used in advertising or publicity pertaining to this
+material without the specific, prior written permission
+of an authorized representative of Bellcore.  BELLCORE
+MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+.PP
+Send comments or questions to atac@bellcore.com.

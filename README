@@ -1,0 +1,125 @@
+/****************************************************************
+*Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)
+*
+*Permission to use, copy, modify, and distribute this material
+*for any purpose and without fee is hereby granted, provided
+*that the above copyright notice and this permission notice
+*appear in all copies, and that the name of Bellcore not be
+*used in advertising or publicity pertaining to this
+*material without the specific, prior written permission
+*of an authorized representative of Bellcore.  BELLCORE
+*MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+*OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+*WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+****************************************************************/
+$Header: /users/source/archives/atac.vcs/RCS/README,v 3.8 1994/04/05 10:45:56 saul Exp $
+
+CONTENTS
+
+This directory contains the source for ATAC.
+
+The manual pages for this package are in:
+
+	atac.1 atacCC.1 atacLD.1 ataclib.1 atacmin.1 atactm.1
+
+Version contains the current ATAC release number.
+
+The remaining files and subdirectories comprise the source code for ATAC.
+
+INSTALLATION
+
+ATAC had been ported without changes to many UNIX (TM) platforms including
+[Names that follow are trade marks.]: BSD, System V release 3, SunOS 4.1,
+Solaris, Pyramid OSx, ULTRIX V4.2, HP-UX 9.0, AIX 3.2, UTS.
+
+ATAC must install a collection of bin executables, a library, and
+several  manual pages.  They are typically placed in bin, lib, and man
+directories, respectively.  The ATAC Makefile is configured such that
+the bin, lib, and man directories may easily be installed in either the
+same or different parent directories.  To make ATAC while rooting bin,
+lib, and man in the same directory do the following:
+
+	make INSTALLDIR=/... install
+
+where /... is an absolute (rather than relative) directory path.  This
+will create the following directories and files, where all directories
+are created as required:
+
+	$(BINDIR)/atac
+	$(BINDIR)/atacCC
+	$(BINDIR)/ataclib
+	$(BINDIR)/atacmin
+	$(BINDIR)/atactm
+	$(LIBDIR)/atac/*
+	$(LIBDIR)/atac/src/*
+	$(LIBDIR)/atac/tutorial/*
+	$(MANDIR)/man1/atac*.1
+	$(MANDIR)/cat1
+
+where:
+
+	BINDIR=$(INSTALLDIR)/bin
+	LIBDIR=$(INSTALLDIR)/lib
+	MANDIR=$(INSTALLDIR)/man
+
+Alternatively, one or more of BINDIR, LIBDIR, and MANDIR may be placed
+elsewhere by supplying the appropriate directory path on the "make"
+command line.  For example:
+
+	make INSTALLDIR=/usr/local MANDIR=/usr/share/man install
+
+will install ATAC in the following locations, once again creating all
+directories as required:
+
+	/usr/local/bin/atac*
+	/usr/local/lib/atac/*
+	/usr/local/lib/atac/src/*
+	/usr/local/lib/atac/tutorial/*
+	/usr/share/man/man1/atac*.1
+	/usr/share/man/cat1
+
+As in the case of INSTALLDIR, an absolute (rather than relative) path
+must be used when specifying the LIBDIR directory.  BINDIR and MANDIR may
+be specified using absolute or relative directory paths.  The INSTALLDIR
+directory path must be specified, unless BINDIR, LIBDIR, and MANDIR are
+each specified separately.
+
+KNOWN PROBLEMS IN THIS VERSION
+
+1. atacCC does not support ANSI C scoped typedefs.  I.e. a typedef name
+   cannot be redefined in the same source file.  [This should be fixed by
+   changing the yacc grammar in atac_i/Pgram.y to accept typedef names in 
+   any context where redefinition of a typedef name is legal.  Contributions
+   toward implementing this are welcome.]
+
+2. atac may not detect coverage of certain decisions due to unexpected
+   order of expression evaluation.  A typical case that may occur
+   (depending on the compiler used) is that
+
+	while ((c = getc(file)) == EOF) ...
+
+   may report that the expression has evaluated to neither TRUE nor FALSE
+   even though the expression has in fact evaluated to both.  A possible
+   work around is to change the expression to:
+
+	while (EOF == (c = getc(file))) ...
+
+3. The ATAC runtime routine will leak memory when a function that was not
+   compiled with atacCC makes repeated calls to a function compiled with
+   atacCC.  The memory is not recovered until the calling function returns
+   to a function that was compiled with atacCC.
+
+4. Interruption of a function compiled with atacCC by a signal handler
+   or parallel thread compiled with atacCC may result in corruption of
+   the trace file.
+
+5. Multiple simultaneous executions of a program compiled with atacCC will
+   result in corruption of the trace file unless multiple trace files are
+   used.
+
+CONTACTS
+
+Send comments or questions to atac@bellcore.com.
+
+Saul London saul@bellcore.com
+Bob Horgan jrh@bellcore.com
