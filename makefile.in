@@ -12,13 +12,16 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.2 1996/11/11 23:36:04 tom Exp $
+# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.3 1996/12/02 00:02:41 tom Exp $
 # 
 # Makefile for ATAC.  See README.
 #
 
 #
 # $Log: makefile.in,v $
+# Revision 3.3  1996/12/02 00:02:41  tom
+# missed a Makefile/makefile conversion
+#
 # Revision 3.2  1996/11/11 23:36:04  tom
 # show cd/make (for tracing log with vile)
 # lowercase makefiles throughout
@@ -292,7 +295,7 @@ MAN:	$(MANDIR)/man1 $(MANDIR)/cat1
 TUTORIAL: $(TUTORIALDIR)
 	@chmod 755 $(TUTORIALDIR)
 	rm -f $(TUTORIALDIR)/*
-	$(INSTALL_DATA) tutorial/Makefile   $(TUTORIALDIR)
+	$(INSTALL_DATA) tutorial/makefile   $(TUTORIALDIR)
 	$(INSTALL_DATA) tutorial/input1     $(TUTORIALDIR)
 	$(INSTALL_DATA) tutorial/input2     $(TUTORIALDIR)
 	$(INSTALL_DATA) tutorial/input3     $(TUTORIALDIR)

@@ -1,5 +1,6 @@
-# $Header: /users/source/archives/atac.vcs/tutorial/RCS/makefile.in,v 1.1 1996/11/11 23:28:20 tom Exp $
+# $Header: /users/source/archives/atac.vcs/tutorial/RCS/makefile.in,v 1.2 1997/04/25 13:42:31 tom Exp $
 
+CC		= @CC@
 CFLAGS		= @CFLAGS@
 
 wordcount:	wc.o main.o

@@ -22,9 +22,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char dug_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.8 1996/11/13 00:07:22 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.9 1997/04/25 13:42:31 tom Exp $";
 /*
 * $Log: dug.c,v $
+* Revision 3.9  1997/04/25 13:42:31  tom
+* fix for SunOS K&R, which declares "int free()"
+* casts to appease compiler
+*
 * Revision 3.8  1996/11/13 00:07:22  tom
 * change ident to 'const' to quiet gcc
 * add forward-ref prototypes
@@ -97,6 +101,8 @@ static const char dug_c[] =
 */
 #if HAVE_STDLIB_H
 #include <stdlib.h>
+#else
+extern void free();
 #endif
 #include <stdio.h>
 #include "portable.h"
@@ -143,8 +149,6 @@ typedef struct {
 	SYM	*symbol;		/* key. Must be first */
 	int	id;
 } V_ID;
-
-void	free();
 
 DUG *
 dug_create()
@@ -243,7 +247,7 @@ int	parse_start;
 #endif
 
 	if (blk->parse_start == 0 || parse_start == 0)
-		blk->parse_start = parse_start;
+		blk->parse_start = (char *)parse_start;
 
 	return 1;
 }
@@ -279,7 +283,7 @@ int	parse_end;
 		internal_error(NULL, "dug_endblk 2: memory corrupted\n");
 #endif
 
-	blk->parse_end = parse_end;
+	blk->parse_end = (char *)parse_end;
 
 	return 1;
 }

@@ -12,97 +12,110 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.11 1995/12/27 23:36:49 tom Exp $";
+static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.12 1996/12/02 00:57:17 tom Exp $";
 
 /*
-*$Log: atac_rt.c,v $
-*Revision 3.11  1995/12/27 23:36:49  tom
-*fix gcc warnings (missing prototypes)
+* $Log: atac_rt.c,v $
+* Revision 3.12  1996/12/02 00:57:17  tom
+* gcc warnings (missing prototypes)
+*
+* Revision 3.11  1995/12/27 23:36:49  tom
+* fix gcc warnings (missing prototypes)
 *
 * Revision 3.10  94/07/05  16:03:23  saul
 * Fix atac_child to use when fork() is detected after the fact.
-* 
+*
 * Revision 3.9  94/07/05  15:51:00  saul
 * Added aTaC_fork to deal with fork().
-* 
+*
 * Revision 3.8  94/07/01  13:13:38  saul
 * Add test restart feature using atac_restart or ATAC_SIGNAL.
-* 
+*
 * Revision 3.7  94/04/04  10:52:42  jrh
 * Add Release Copyright
-* 
+*
 * Revision 3.6  93/08/04  15:50:10  ewk
 * Added MVS and solaris support.  Squelched some ANSI warnings.
-* 
+*
 * Revision 3.5  93/07/12  15:43:59  ewk
 * Applied modifications for MARCH (includes CSAM).
-* 
+*
 * Revision 3.4  93/07/09  14:13:15  saul
 * changed for VMS
-* 
+*
 * Revision 3.3  93/06/30  15:38:31  saul
 * Experimental ATAC_COMPRESS feature.
 *
 * Revision 3.2  93/01/18  08:48:06  saul
 * Add SCCS-what/RCS-ident string
-* 
+*
 * Revision 3.1  92/11/11  07:07:43  saul
 * #ifdefs expecting atexit when not available
-* 
+*
 * Revision 3.0  92/11/06  07:46:28  saul
 * propagate to version 3.0
-* 
+*
 * Revision 2.10  92/11/02  11:39:44  saul
 * let portable.h determine "at end" procedures
-* 
+*
 * Revision 2.9  92/10/30  09:42:27  saul
 * include portable.h
-* 
+*
 * Revision 2.8  92/10/28  09:14:52  saul
 * removed defined() macro for portability
-* 
+*
 * Revision 2.7  92/10/05  10:41:51  saul
 * Redefine exit for systems without atexit and on_exit
-* 
+*
 * Revision 2.6  92/09/30  11:35:34  saul
 * #elif not portable.  No compress option.  Rename some variables.
-* 
+*
 * Revision 2.5  92/09/22  15:26:56  saul
 * Fix source file list errors.  Store fileId per file not per function.
-* 
+*
 * Revision 2.4  92/09/08  10:31:24  saul
 * On exit processing and new data structures for freq counts.
-* 
+*
 * Revision 2.3  92/04/07  09:19:08  saul
 * quick fix for asynch interupts
-* 
+*
 * Revision 2.2  92/03/17  15:34:48  saul
 * copyright
-* 
+*
 * Revision 2.1  91/06/19  13:56:26  saul
 * Propagte to version 2.0
-* 
+*
 * Revision 1.1  91/06/12  16:30:23  saul
 * Aug 1990 baseline
-* 
+*
 *-----------------------------------------------end of log
-*/ 
+*/
 
 /*
 * SCCS-what/RCS-ident strings.  '\044' hides '$' from RCS source control.
 */
-static char ident[] = "\044Log: @(#)ATAC runtime\044";
+static const char ident[] = "\044Log: @(#)ATAC runtime\044";
 
 /*
 * Includes.
 */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #ifndef MVS
 #ifndef vms
 #include <fcntl.h>
@@ -112,18 +125,14 @@ static char ident[] = "\044Log: @(#)ATAC runtime\044";
 #include <ctype.h>
 #include <errno.h>		/* unix end processing */
 #include <signal.h>		/* for setupSignal() */
+
+#if HAVE_SYS_WAIT_H
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif
+
 #include "portable.h"
 #include "version.h"
-
-/* forward declarations */
-void aTaC_dump();
-static int add_path();
-int aTaC();
-static char *getTestName();
-static void prepareEnd();
-static int aTaC_cleanup();
-static int atac_flush();
-static FILE *opentrace P_((void));
 
 /*
 * Constants.
@@ -162,7 +171,7 @@ typedef struct path {
 
 typedef struct du {
 	unsigned short	var;		/* index into var[] */
-	unsigned short	type;		/* VAR_DEF, VAR_PUSE, VAR_CUSE */ 
+	unsigned short	type;		/* VAR_DEF, VAR_PUSE, VAR_CUSE */
 	PATH		*path;		/* list of defs reaching this use */
 } DU;
 
@@ -214,9 +223,26 @@ static int		fileId = 0;
 static int		restartFlag = 0;
 static char		*restartTestName = NULL;
 
+/* forward declarations */
+extern int aTaC P_((int level, int blk));
+extern int aTaC_fork P_((void));
+extern int atac_child P_((void));
+extern void aTaC_dump P_((void));
+extern void atac_restart P_((char *testName));
+static FILE *opentrace P_((void));
+static RETSIGTYPE sigHandler P_((int n));
+static char *getTestName P_((void));
+static int add_path P_((DU *use, int def_blk, int use_blk));
+static int atac_flush P_((FILE *fp, int final));
+static int atac_zero P_((void));
+static int redoFileNames P_((FILE *fp));
+static int setupSignal P_((void));
+static void aTaC_cleanup P_((void));
+static void prepareEnd P_((void));
+
 static int
-atac_flush(f, final)
-FILE	*f;
+atac_flush(fp, final)
+FILE	*fp;
 int	final;
 {
     DU_TABLE	*table;
@@ -227,20 +253,20 @@ int	final;
     PATH	*p;
     int		type;
     int		var;
-    int		fileId;
+    int		file_id;
     int		funcNo;
     int		nblk;
 
     for (table = list_of_tables; table != &dummyTable; table = table->next) {
-	fileId = table->fileId;
+	file_id = table->fileId;
 	funcNo = table->funcno;
 	nblk = table->nblk;
 	for (blk = 0; blk < nblk; ++blk) {
 	    count = table->blkCounts[blk] - 1;
 	    table->blkCounts[blk] = 0;
 	    if (count > 0) {
-		fprintf(f, "b %d %d %d %d\n",
-			fileId, funcNo, blk, count);
+		fprintf(fp, "b %d %d %d %d\n",
+			file_id, funcNo, blk, count);
 	    }
 	    du = table->blk[blk];
 	    du_limit = table->blk[blk + 1];
@@ -252,13 +278,13 @@ int	final;
 		    p->count = 0;
 		    if (count > 0) {
 			if (type & VAR_CUSE) {
-			    fprintf(f, "c %d %d %d %d %d %d\n",
-				    fileId, funcNo, var,
+			    fprintf(fp, "c %d %d %d %d %d %d\n",
+				    file_id, funcNo, var,
 				    p->def_blk, blk, count);
 			}
 			else if (type & VAR_PUSE) {
-			    fprintf(f, "p %d %d %d %d %d %d %d\n",
-				    fileId, funcNo, var,
+			    fprintf(fp, "p %d %d %d %d %d %d %d\n",
+				    file_id, funcNo, var,
 				    p->def_blk, p->use_blk, blk, count);
 			}
 		    }
@@ -266,9 +292,9 @@ int	final;
 	    }
 	}
     }
- 
+
     if (final != INTERMEDIATE_FLUSH)
-	fprintf(f, "f 0\n");
+	fprintf(fp, "f 0\n");
 
     return 0;
 }
@@ -296,7 +322,7 @@ atac_zero()
 	    }
 	}
     }
- 
+
     return 0;
 }
 
@@ -326,13 +352,12 @@ atac_zero()
 
 #ifdef END_PROCESSING
 #ifndef CSAM
-static
+static void
 #endif /* CSAM */
 aTaC_cleanup()
 {
     int		pid;
     int		wpid;
-    extern	errno;
     char	*compress;
     int		nthCompress;
 
@@ -342,15 +367,15 @@ aTaC_cleanup()
     }
 
 #ifdef FORK_SUPPORT
-    if (getenv("ATAC_NOCOMPRESS") != NULL) return 0;
+    if (getenv("ATAC_NOCOMPRESS") != NULL) return;
 
     compress = getenv("ATAC_COMPRESS");
     if (compress != NULL) {
 	nthCompress = atoi(compress);
 	if (nthCompress <= 0)
-	    return 0;
+	    return;
 	if ((time(0) % nthCompress) != 0)
-	    return 0;
+	    return;
     }
 
     /*
@@ -364,10 +389,8 @@ aTaC_cleanup()
 	open("/dev/null", O_WRONLY, 0);		/* 1 (stdout) */
 	close(2);
 	open("/dev/null", O_WRONLY, 0);		/* 2 (stderr) */
-	return execlp("atactm", "atactm", traceName, 0);
+	(void)execlp("atactm", "atactm", traceName, 0);
     } else {
-	extern	errno;
-
 	while ((wpid = wait(0)) != pid) {
 	    if (wpid == -1 && errno != EINTR) break;
 	}
@@ -406,8 +429,8 @@ int	status;
 #endif /* MARCH */
 
 static int
-redoFileNames(f)
-FILE	*f;
+redoFileNames(fp)
+FILE	*fp;
 {
     DU_TABLE	*table;
     FILESTAMP	*filestamp;
@@ -420,10 +443,10 @@ FILE	*f;
 	    break;
 	filestamp->name = "";	/* marker */
 	nFiles = filestamp->stamp >> 16;
-	fprintf(f, "s %d %s %d %s\n", table->fileId, filestamp[nFiles].name,
+	fprintf(fp, "s %d %s %d %s\n", table->fileId, filestamp[nFiles].name,
 		filestamp[nFiles].stamp, table->version);
 	for (i = 1; i < nFiles; ++i)
-	    fprintf(f, "h %s %d\n", filestamp[i].name, filestamp[i].stamp);
+	    fprintf(fp, "h %s %d\n", filestamp[i].name, filestamp[i].stamp);
     }
 
     for (table = list_of_tables; table != &dummyTable; table = table->next) {
@@ -476,12 +499,12 @@ int		blk;
 	busy = 1;
 
 	if (restartFlag != 0 && f != NULL) {
-	    long		clock;
+	    long		now;
 	    struct tm	*tm;
 
 	    atac_flush(f, FINAL_FLUSH);
-	    time(&clock);
-	    tm = (struct tm *)localtime(&clock);
+	    time(&now);
+	    tm = (struct tm *)localtime(&now);
 	    fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
 		    tm->tm_mon+1,
 		    tm->tm_mday,
@@ -505,15 +528,15 @@ int		blk;
 			* One time initializations.
 			*/
 			if (f == NULL) {
-				long		clock;
+				long		now;
 				struct tm	*tm;
 
 				prepareEnd();
 				setupSignal();
 				f = opentrace();
 				if (f == NULL) exit(1);
-				time(&clock);
-				tm = (struct tm *)localtime(&clock);
+				time(&now);
+				tm = (struct tm *)localtime(&now);
 				fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
 					tm->tm_mon+1,
 					tm->tm_mday,
@@ -534,14 +557,14 @@ int		blk;
 			*/
 			filestamp = table->files;
 			if (filestamp->name) {
-			        int	n = 1;
+				int	n = 1;
 				while (filestamp[n].name != NULL)
 				    ++n;
-			        table->fileId = fileId++;
+				table->fileId = fileId++;
 				fprintf(f, "s %d %s %d %s\n",
 					table->fileId, filestamp->name,
 					filestamp->stamp, table->version);
-    				/*
+				/*
 				* Kludges: CLEAN THIS UP!
 				* filestamp[0].name is used as a flag that
 				* indicates that a function in this file
@@ -553,10 +576,10 @@ int		blk;
 				filestamp[n].stamp = filestamp[0].stamp;
 				filestamp->name = NULL;
 				filestamp->stamp = (n << 16) | table->fileId;
-			    	if (strcmp(table->version, RT_VERSION) != 0) {
+				if (strcmp(table->version, RT_VERSION) != 0) {
 				    return IGNORE_LEVEL;
 				}
-				while (++filestamp < table->files + n) 
+				while (++filestamp < table->files + n)
 					fprintf(f, "h %s %d\n", filestamp->name,
 						filestamp->stamp);
 			} else table->fileId = filestamp->stamp & 0xFFFF;
@@ -706,7 +729,7 @@ int		blk;
 		if (du->type & VAR_DEF) {
 			context->deflist[du->var] = blk;
 			def_blk = blk;
-		} 
+		}
 		if (du->type & VAR_PUSE) {
 			if (def_blk != NULL_BLK) {
 				if (context->p_use_count == PUSE_STACKMAX)
@@ -743,7 +766,7 @@ int		blk;
 
 #define SIZE_PATH_POOL	256
 
-static					/* return 0 if found */
+static int				/* return 0 if found */
 add_path(use, def_blk, use_blk)
 DU		*use;
 int		def_blk;
@@ -851,7 +874,7 @@ opentrace()
 	return trace;
 }
 
-int
+void
 atac_restart(testName)
 char	*testName;
 {
@@ -861,12 +884,14 @@ char	*testName;
     restartFlag = 1;
 }
 
-static int
+static RETSIGTYPE
 sigHandler(n)
 int n;
 {
     restartFlag = 1;
+#if UNUSED	/* FIXME */
     return 0;
+#endif
 }
 
 static int
@@ -1021,7 +1046,7 @@ setupSignal()
 int
 atac_child()
 {
-    long	clock;
+    long	now;
     struct tm	*tm;
 
     atac_zero();
@@ -1034,8 +1059,8 @@ atac_child()
 	fprintf(stderr, "atac runtime can't write trace file: %s\n",
 		traceName);
 
-    time(&clock);
-    tm = (struct tm *)localtime(&clock);
+    time(&now);
+    tm = (struct tm *)localtime(&now);
     fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
 	    tm->tm_mon+1,
 	    tm->tm_mday,
@@ -1046,10 +1071,11 @@ atac_child()
     fprintf(f, " %s %s\n", VERSION, getTestName());
     redoFileNames(f);
     restartFlag = 0;
-    
+
     return 0;
 }
 
+int
 aTaC_fork()
 {
     int		pid;
