@@ -1,9 +1,10 @@
-MANIFEST for atac, version atac_971102
+MANIFEST for atac, version atac_971103
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
 README-TOO                      additional notes
 Version                         atac3.3.13
+aclocal.m4                      macros for autoconf script
 atac-tutorial.ps                atac3.3.13
 atac.1                          atac3.3.13
 atac.lsm                        Linux Software Map description of ATAC

@@ -1,3 +1,15 @@
+1997-11-03  Thomas E. Dickey  <dickey@clark.net>
+
+	* makefile.in: add EXTRA_CFLAGS
+
+	* configure.in:
+	use macros CF_GCC_WARNINGS, CF_STRIP_G_OPT, CF_STRIP_O_OPT and CF_CC_ANSI_CHECK
+
+	* aclocal.m4: RCS_BASE
+
+	* portable.h:
+	quick hack to use autoconf symbol for saying we do prototypes
+
 1997-11-01  Thomas E. Dickey  <dickey@clark.net>
 
 	* configure.in:

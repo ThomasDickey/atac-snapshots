@@ -12,9 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atac_cpp/RCS/makefile.in,v 3.2 1997/04/25 13:42:31 tom Exp $
+# $Header: /users/source/archives/atac.vcs/atac_cpp/RCS/makefile.in,v 3.3 1997/11/04 01:35:39 tom Exp $
 #
 # $Log: makefile.in,v $
+# Revision 3.3  1997/11/04 01:35:39  tom
+# add EXTRA_CFLAGS
+#
 # Revision 3.2  1997/04/25 13:42:31  tom
 # CC-substitution
 #
@@ -75,7 +78,7 @@ CC		= @CC@
 YACC		= @YACC@
 DEFINES		= -DHAVE_CONFIG_H
 INCLUDES	= ..
-CFLAGS		= -I$(INCLUDES) $(DEFINES) @CFLAGS@
+CFLAGS		= -I$(INCLUDES) $(DEFINES) @CFLAGS@ @EXTRA_CFLAGS@
 
 OBSTACK=obstack.o
 

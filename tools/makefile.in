@@ -12,9 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.10 1997/04/25 13:42:31 tom Exp $
+#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.11 1997/11/04 01:35:42 tom Exp $
 #
 # $Log: makefile.in,v $
+# Revision 3.11  1997/11/04 01:35:42  tom
+# add EXTRA_CFLAGS
+#
 # Revision 3.10  1997/04/25 13:42:31  tom
 # CC-substitution
 #
@@ -65,7 +68,7 @@
 CC		= @CC@
 LINK		= $(CC)
 INCLUDES	= ..
-CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@
+CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@ @EXTRA_CFLAGS@
 
 SRC=atac atacCC atacLD atacmin atac_rt.c hili.c min.c predefs.list Makefile
 

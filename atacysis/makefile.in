@@ -12,9 +12,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/atacysis/RCS/makefile.in,v 3.2 1997/04/25 13:42:31 tom Exp $
+# $Header: /users/source/archives/atac.vcs/atacysis/RCS/makefile.in,v 3.3 1997/11/04 01:35:46 tom Exp $
 #
 # $Log: makefile.in,v $
+# Revision 3.3  1997/11/04 01:35:46  tom
+# add EXTRA_CFLAGS
+#
 # Revision 3.2  1997/04/25 13:42:31  tom
 # CC-substitution
 #
@@ -96,7 +99,7 @@
 #-----------------------------------------------end of log
 CC		= @CC@
 INCLUDES	= ..
-CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@
+CFLAGS		= -I$(INCLUDES) -DHAVE_CONFIG_H @CFLAGS@ @EXTRA_CFLAGS@
 
 AOBJ=print.o static.o trace.o main.o summary.o bdisp.o 	\
 	rlist.o ddisp.o disp.o vector.o cdisp.o pdisp.o risk.o error.o	\

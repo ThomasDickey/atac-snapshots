@@ -15,7 +15,7 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #ifndef portable_H
 #define portable_H
 
-#if __STDC__
+#if __STDC__ || defined(CC_HAS_PROTOS)
 #define P_(p) p
 extern	int main(int, char **);
 #else	/* assume K&R */
@@ -24,10 +24,13 @@ extern	int main(int, char **);
 #endif
 
 static const char portable_h[] = 
-	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.14 1997/05/12 00:19:04 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.15 1997/11/03 19:12:28 tom Exp $";
 /*
 * Copyright @ 1992 Bell Communications Research, Inc. All Rights Reserved.
 *$Log: portable.h,v $
+*Revision 3.15  1997/11/03 19:12:28  tom
+*quick hack to use autoconf symbol for saying we do prototypes
+*
 *Revision 3.14  1997/05/12 00:19:04  tom
 *correct sign in LURSHIFT
 *
