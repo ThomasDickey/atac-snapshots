@@ -521,7 +521,7 @@ yylex ()
 	lexptr += 2;
 	if (toktab->token == ERROR)
 	  {
-	    char *buf = (char *) alloca (40);
+	    char *buf = (char *) malloc (40);
 	    sprintf (buf, "`%s' not allowed in operand of `#if'", toktab->operator);
 	    yyerror (buf);
 	  }
@@ -581,7 +581,7 @@ yylex ()
       register num_chars = 0;
       unsigned width = MAX_CHAR_TYPE_SIZE;
       int max_chars;
-      char *token_buffer;
+      char *token_buffer = 0;
 
       if (wide_flag)
 	{
@@ -595,7 +595,7 @@ yylex ()
       else
 	max_chars = MAX_LONG_TYPE_SIZE / width;
 
-      token_buffer = (char *) alloca (max_chars + 1);
+      token_buffer = (char *) malloc (max_chars + 1);
 
       while (1)
 	{
@@ -672,6 +672,8 @@ yylex ()
 #endif
 	  yylval.integer.value = result;
 	}
+    	if (token_buffer != 0)
+	  free(token_buffer);
     }
 
     /* This is always a signed type.  */

@@ -1,0 +1,68 @@
+atac-961112 - summary of changes made 1996/11/12.
+	Thomas Dickey (dickey@clark.net)
+--------------------------------------------------------------------------------
+For this pass, I made the following changes:
+
+	+ change from patch-oriented to rcs-oriented maintenance (there's some
+	  diffs due to suppressing the obsolete rcs comment-prefix).
+	+ renamed Makefile's in subdirectories to makefile.in, customized some
+	  for autoconfigure (needed to keep compiler-flags consistent).
+	+ added autoconfigure for bison/byacc/yacc.
+	+ modified Pgram.y to avoid a redefinition problem that broke build
+	  with gcc 2.7.2 (reported by Kevin Murphy <kevin@netaxs.com>)
+	+ make a first pass through the gcc warnings in atac_i directory
+	  (except for changing the rcs identifiers to 'const', and a couple
+	  of printf-formats, there's no logic change -- atac mixes pointer
+	  types rather freely, and I don't want to break it yet).
+
+--------------------------------------------------------------------------------
+ atac_961112/atac_cpp/makefile.in |   95 +++++++++
+ atac_961112/atac_i/makefile.in   |  213 +++++++++++++++++++++
+ atac_961112/atacysis/makefile.in |  198 +++++++++++++++++++
+ atac_961112/tools/makefile.in    |  110 +++++++++++
+ atac_961112/tutorial/makefile.in |   10 +
+ atac_cpp/cexp.y                  |    8 
+ atac_i/Pgram.y                   |  367 +++++++++++++++++++------------------
+ atac_i/alldu.c                   |   28 ++
+ atac_i/allpaths.c                |   21 +-
+ atac_i/atac_i.c                  |   29 +-
+ atac_i/bitvec.h                  |   26 +-
+ atac_i/const.c                   |   72 ++++---
+ atac_i/deparse.c                 |   32 ++-
+ atac_i/dug.c                     |   86 +++++---
+ atac_i/dug.h                     |   19 +
+ atac_i/error.c                   |   35 ++-
+ atac_i/fg_expr.c                 |   52 +++--
+ atac_i/fg_module.c               |   37 ++-
+ atac_i/fg_stmt.c                 |   27 +-
+ atac_i/filestamp.c               |   25 +-
+ atac_i/hook.h                    |   12 -
+ atac_i/list.c                    |   49 ++--
+ atac_i/mark.c                    |   37 ++-
+ atac_i/paths.c                   |   37 ++-
+ atac_i/print_sym.c               |   26 +-
+ atac_i/reglist.c                 |   65 +++---
+ atac_i/scan.c                    |   74 ++++---
+ atac_i/scan.h                    |   18 -
+ atac_i/srcpos.c                  |   31 ++-
+ atac_i/srcpos.h                  |   13 -
+ atac_i/strtab.c                  |   35 ++-
+ atac_i/sym.c                     |   80 ++++----
+ atac_i/sym.h                     |   13 -
+ atac_i/table.c                   |   60 +++---
+ atac_i/tnode.c                   |   54 ++---
+ atac_i/tnode.h                   |   49 +++-
+ atac_i/tree.c                    |   85 ++++----
+ atac_i/tree.h                    |    7 
+ atac_i/type.c                    |   33 +--
+ atac_i/upfix.c                   |   70 +++----
+ atacysis/dump.c                  |   55 +++--
+ atacysis/init.c                  |   31 +--
+ atacysis/man.h                   |   40 ++--
+ atacysis/srcfile_name.c          |    7 
+ atacysis/tab_disp.c              |   12 +
+ atacysis/tmerror.c               |   31 +--
+ configure.in                     |   13 +
+ makefile.in                      |   28 +-
+ 48 files changed, 1737 insertions, 818 deletions
+--------------------------------------------------------------------------------

@@ -12,6 +12,10 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
  #pragma csect (CODE, "scan$")
 #include <mvapts.h>
@@ -31,9 +35,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #define DEBUG 0
 
 static char const scan_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.10 1995/12/29 23:29:35 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.11 1996/11/12 23:50:31 tom Exp $";
 /*
 * $Log: scan.c,v $
+* Revision 3.11  1996/11/12 23:50:31  tom
+* add forward-ref prototypes
+* remove bizarre 'NULL' statements (a plain ';' works!)
+*
 * Revision 3.10  1995/12/29 23:29:35  tom
 * adjust headers, prototyped for autoconfig
 * add keywords to work with gcc 2.7.0 (including logic to skip over ASM)
@@ -133,29 +141,29 @@ static char const scan_c[] =
 */
 
 /* forward declarations */
-void yyerror();
-int yylex();
-static int scanNumber();
-static int scanAssignOp();
-static void scanQuotedString();
-void scan_end();
-void scan_init();
-int scan_popScope();
-void scan_pushScope();
-void scan_setType();
-static int scanWhiteSpace();
-static void poundDirective();
-static int scanSpaces();
-static int expandedMacro();
-static void scanComment();
-static void initCharTable();
+int scan_popScope P_(( void ));
+int yylex P_(( void ));
+static int expandedMacro P_(( void ));
+static int scanAssignOp P_(( int c ));
+static int scanNumber P_(( FILE *srcin, int offset, int nextC ));
+static int scanSpaces P_(( int c ));
+static int scanWhiteSpace P_(( int c ));
+static void initCharTable P_(( void ));
+static void poundDirective P_(( void ));
+static void scanComment P_(( void ));
+static void scanQuotedString P_(( FILE *srcin, int offset, int quote ));
+void scan_end P_(( char **uprefix ));
+void scan_init P_(( FILE *srcfile ));
+void scan_pushScope P_(( void ));
+void scan_setType P_(( char *name ));
+void yyerror P_(( char *string ));
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
 #define BUF_MALLOC_SIZE	40
 #define MAX_DIRECTIVE_SIZE  20	  
 
-char	*strtab_insert();
+extern char *strtab_insert();
 
 typedef struct {
     int			*idType;
@@ -567,7 +575,7 @@ poundDirective()
 	if (i == MAX_DIRECTIVE_SIZE) {
 	    lexical_error(&src, "unknown #-directive");
 	    while ((c = scanSpaces(' ')) != EOF && c != '\n')
-		NULL;
+		;
 	    src.line++;
 	    src.col = 0;
 	    return;
@@ -578,7 +586,7 @@ poundDirective()
 	if (strncmp(directive, "pragma", MAX_DIRECTIVE_SIZE) == 0) {
 #ifndef MVS
 	    while (c != '\n' && (c = scanSpaces(' ')) != EOF)
-		NULL;
+		;
 #else /* MVS */
 	    if (altfile == NULL)
 		{
@@ -588,7 +596,7 @@ poundDirective()
 		}
 	    if (altfile == (FILE *)-1)
 		while (c != '\n' && (c = scanSpaces(' ')) != EOF)
-		    NULL;
+		    ;
 	    else
 		{
 		    fprintf(altfile, "%s", "#pragma ");
@@ -618,7 +626,7 @@ poundDirective()
 
 		/* Skip the rest of this line.  */
 		while ((c = scanSpaces(' ')) != EOF && c != '\n')
-		    NULL;
+		    ;
 	    }
 	    src.line++;
 	    src.col = 0;
@@ -628,7 +636,7 @@ poundDirective()
 	if (strncmp(directive, "line", MAX_DIRECTIVE_SIZE) != 0) {
 	    lexical_error(&src, "unknown #-directive");
 	    while (c != '\n' && (c = scanSpaces(' ')) != EOF)
-		NULL;
+		;
 	    src.line++;
 	    src.col = 0;
 	    return;
@@ -668,7 +676,7 @@ poundDirective()
 
     /* skip the rest of this line.  */
     while ((c = scanSpaces(' ')) != EOF && c != '\n')
-	NULL;
+	;
     ++src.line;
     src.col = 0;
     return;
@@ -829,7 +837,7 @@ char **uprefix;
 	free(buf);
 
 	while(scan_popScope()) 
-	    NULL;	/* free all scopes. */
+	    ;	/* free all scopes. */
 
 	list_free(scopeList, NULL);
 }
@@ -839,8 +847,8 @@ char **uprefix;
 *	matching "quote" is seen.  
 */
 static void
-scanQuotedString(srcin, offset, quote)
-FILE	*srcin;
+scanQuotedString(srcin2, offset, quote)
+FILE	*srcin2;
 int	offset;
 int	quote;
 {
@@ -852,7 +860,7 @@ int	quote;
     escape = 0;
 
     while (1) {
-	c = getc(srcin); ++src.col;
+	c = getc(srcin2); ++src.col;
 	buf[i++] = c;
 	if (i == bufSize) {
 	    bufSize += BUF_MALLOC_SIZE;
@@ -942,8 +950,8 @@ int	c;
 *	anything else either.  They will get checked by semantic analysis.)
 */
 static int
-scanNumber(srcin, offset, nextC)
-FILE	*srcin;
+scanNumber(srcin2, offset, nextC)
+FILE	*srcin2;
 int	offset;
 int	nextC;
 {
@@ -968,7 +976,7 @@ int	nextC;
 	value = FCON;
 	break;
     default:
-	ungetc(c, srcin); --src.col;
+	ungetc(c, srcin2); --src.col;
 	buf[i] = '\0';
 	return ICON;
     }
@@ -980,13 +988,13 @@ int	nextC;
 	    buf = (char *)realloc(buf, bufSize);
 	    CHECK_MALLOC(buf);
 	}
-	c = getc(srcin); ++src.col;
+	c = getc(srcin2); ++src.col;
 	if ((c == '+' || c == '-') && (buf[i-1] == 'e' || buf[i-1] == 'E'))
 	    charType = LETTER;
 	else charType = charTable[CHAR(c)];
     } while (charType == DIGIT || charType == LETTER ||
 	     charType == TOK_PERIOD);
-    ungetc(c, srcin); --src.col;
+    ungetc(c, srcin2); --src.col;
     buf[i] = '\0';
 
     return value;

@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char alldu_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.4 1995/12/27 23:32:23 tom Exp $";
+static const char alldu_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/alldu.c,v 3.5 1996/11/12 23:45:51 tom Exp $";
 /*
 * $Log: alldu.c,v $
+* Revision 3.5  1996/11/12 23:45:51  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.4  1995/12/27 23:32:23  tom
 * don't use NULL for int value!
 *
@@ -54,6 +62,10 @@ static char alldu_c[] =
  * 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <string.h>
 #include <stdio.h>
 #include "portable.h"
 #include "sym.h"
@@ -61,16 +73,16 @@ static char alldu_c[] =
 #include "bitvec.h"
 
 /* forward declarations */
-static void u_traverse();
-static void paths_from();
-void alldu();
+static void u_traverse P_(( BLOCK *node ));
+static void paths_from P_(( DUG *dug, BLOCK *node ));
+void alldu P_(( DUG *dug ));
 
 #ifndef GIVE_UP
 #define GIVE_UP	(10*1000*1000)
 #endif
 
-DU *du_use();
-DU *du_use_type();
+extern DU *du_use P_(( DUG *dug, BLOCK *node, LIST *n ));
+extern DU *du_use_type P_(( DUG *dug, BLOCK *node, int symbol, int mode ));
 
 typedef struct definfo {
 	DUG	*dug;			/* flow graph */
@@ -122,7 +134,7 @@ BLOCK	*node;
 	*/
 	definfo.dug = dug;
 	definfo.d_node = node;
-	for (i = NULL; du = du_use(dug, node, &i);) {
+	for (i = NULL; (du = du_use(dug, node, &i)) != 0;) {
 		if ((du->ref_type & VAR_DEF) == 0) continue;
 		if (node->branches == NULL) continue;
 		definfo.sym = (SYM *)(du->var_id + 1);

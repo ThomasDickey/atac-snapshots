@@ -14,10 +14,13 @@
 ****************************************************************/
 #ifndef sym_H
 #define sym_H
-static char sym_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.4 1995/12/13 01:03:44 tom Exp $";
+static const char sym_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.h,v 3.5 1996/11/13 00:25:02 tom Exp $";
 /*
 * $Log: sym.h,v $
+* Revision 3.5  1996/11/13 00:25:02  tom
+* change ident to 'const' to quiet gcc
+*
 * Revision 3.4  1995/12/13 01:03:44  tom
 * add SCB_INLINE
 *
@@ -48,9 +51,9 @@ static char sym_h[] =
 * Revision 2.1  91/06/13  12:39:25  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:53  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:53  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 /*

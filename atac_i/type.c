@@ -12,6 +12,10 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
  #pragma csect (CODE, "type$")
 #include <mvapts.h>
@@ -20,13 +24,14 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <stdlib.h>
 #endif /* MVS */
 
-static char type_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/type.c,v 3.5 1994/04/04 10:15:23 jrh Exp $";
+static const char type_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/type.c,v 3.6 1996/11/13 00:41:44 tom Exp $";
 /*
-*-----------------------------------------------$Log: type.c,v $
-*-----------------------------------------------Revision 3.5  1994/04/04 10:15:23  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: type.c,v $
+* Revision 3.6  1996/11/13 00:41:44  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.5  94/04/04  10:15:23  jrh
 * Add Release Copyright
 * 
@@ -60,9 +65,9 @@ static char type_c[] =
 * Revision 2.1  91/06/13  12:39:30  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:56  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:56  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 #include <stdio.h>
@@ -74,11 +79,11 @@ static char type_c[] =
 #include "hook.h"
 
 /* forward declarations */
-void expr_type();
-void int_promote();
-static void usual_arith_conv();
-void copy_type();
-void clear_type();
+extern void clear_type P_(( VALTYPE *type ));
+extern void copy_type P_(( VALTYPE *from, VALTYPE *to ));
+extern void expr_type P_(( TNODE *n, VALTYPE *type ));
+extern void int_promote P_(( VALTYPE *type ));
+static void usual_arith_conv P_(( VALTYPE *op1, VALTYPE *op2, VALTYPE *type ));
 
 void
 clear_type(type)

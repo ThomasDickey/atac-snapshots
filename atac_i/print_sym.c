@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char print_sym_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/print_sym.c,v 3.4 1995/12/13 00:58:34 tom Exp $";
+static const char print_sym_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/print_sym.c,v 3.5 1996/11/12 22:33:41 tom Exp $";
 /*
 * $Log: print_sym.c,v $
+* Revision 3.5  1996/11/12 22:33:41  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.4  1995/12/13 00:58:34  tom
 * handle SCB_INLINE
 *
@@ -66,13 +74,13 @@ static char print_sym_c[] =
 #include "sym.h"
 
 /* forward declarations */
-void print_sym();
-static void iprint_sym();
-static int bit_align();
-static void print_valtype();
-void print_type();
-static void print_sclass();
-static void print_rqual();
+extern void print_sym P_(( SYM *sym, char *prefix ));
+extern void print_type P_(( FILE *f, VALTYPE *type, char *name, char *prefix ));
+static int bit_align P_(( FILE *f, SYM *sym, int indent, int alignment ));
+static void iprint_sym P_(( FILE *f, SYM *sym, int indent, char *prefix ));
+static void print_rqual P_(( FILE *f, char *name, unsigned long rqual, int needparen, DIMLIST *dim ));
+static void print_sclass P_(( FILE *f, int sclass ));
+static void print_valtype P_(( FILE *f, SYM *sym, char *prefix ));
 
 #define TAB(f,I)	do{int i = (I); while(i--) putc('\t', f);}while(0)
 

@@ -12,6 +12,10 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
  #pragma csect (CODE, "const$")
 #include <mvapts.h>
@@ -20,42 +24,43 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <stdlib.h>
 #endif /* MVS */
 
-static char const_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/const.c,v 3.6 1994/04/04 10:12:06 jrh Exp $";
+static const char const_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/const.c,v 3.7 1996/11/13 00:57:09 tom Exp $";
 /*
-*-----------------------------------------------$Log: const.c,v $
-*-----------------------------------------------Revision 3.6  1994/04/04 10:12:06  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-*Revision 3.6  94/04/04  10:12:06  jrh
-*Add Release Copyright
+* $Log: const.c,v $
+* Revision 3.7  1996/11/13 00:57:09  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
 *
-*Revision 3.5  94/03/21  08:29:31  saul
-*MVS support __offsetof as builtin (not handled by cpp)
+* Revision 3.6  94/04/04  10:12:06  jrh
+* Add Release Copyright
 *
-*Revision 3.4  93/08/09  12:24:44  saul
-*minor bug fixes, portability changes, test code
+* Revision 3.5  94/03/21  08:29:31  saul
+* MVS support __offsetof as builtin (not handled by cpp)
 *
-*Revision 3.3  1993/08/04  15:44:15  ewk
-*Added MVS and solaris support.  Squelched some ANSI warnings.
+* Revision 3.4  93/08/09  12:24:44  saul
+* minor bug fixes, portability changes, test code
 *
-*Revision 3.2  93/07/12  14:07:48  saul
-*MVS \v portablility
+* Revision 3.3  1993/08/04  15:44:15  ewk
+* Added MVS and solaris support.  Squelched some ANSI warnings.
 *
-*Revision 3.1  93/07/12  10:04:37  saul
-*MVS MODULEID
+* Revision 3.2  93/07/12  14:07:48  saul
+* MVS \v portablility
 *
-*Revision 3.0  92/11/06  07:46:11  saul
-*propagate to version 3.0
+* Revision 3.1  93/07/12  10:04:37  saul
+* MVS MODULEID
 *
-*Revision 2.3  92/11/04  15:59:58  saul
-*avoid use of uninitialized memory (was benign)
+* Revision 3.0  92/11/06  07:46:11  saul
+* propagate to version 3.0
 *
-*Revision 2.2  92/10/30  09:47:37  saul
-*include portable.h
+* Revision 2.3  92/11/04  15:59:58  saul
+* avoid use of uninitialized memory (was benign)
 *
-*Revision 2.1  92/07/10  13:36:14  saul
-*new
+* Revision 2.2  92/10/30  09:47:37  saul
+* include portable.h
+*
+* Revision 2.1  92/07/10  13:36:14  saul
+* new
 *
 *-----------------------------------------------end of log
 */
@@ -75,8 +80,11 @@ static char const_c[] =
 	((c) >= '0' && (c) <= '9') ? ((c) - '0') : -1)
 
 /* forward declarations */
-void evalConstExpr();
-static int evalSizeof();
+extern int evalIConstExpr P_(( TNODE *node ));
+extern void evalConstExpr P_(( TNODE *n, CONST_VALUE *value ));
+
+static int evalSizeof P_(( SYM *sym ));
+static void evalIcon P_(( SRCPOS *srcpos, char *fulltext, CONST_VALUE *value ));
 
 static int
 evalSizeof(sym)
@@ -705,11 +713,11 @@ CONST_VALUE	*value;
 #endif /* MVS */
 	case EXPR_LNAME:
 		{
-		    SYM	*sym;
+		    SYM	*sym2;
 
-		    sym = CHILD0(n)->sym.sym;
-		    if (sym && sym->constValue)
-			*value = *sym->constValue;
+		    sym2 = CHILD0(n)->sym.sym;
+		    if (sym2 && sym2->constValue)
+			*value = *sym2->constValue;
 		    else value->type = CONST_VT_UNDETERMINED;
 		}
 		break;

@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char fg_module_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.5 1995/12/13 01:01:32 tom Exp $";
+static const char fg_module_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.6 1996/11/12 23:57:55 tom Exp $";
 /*
 * $Log: fg_module.c,v $
+* Revision 3.6  1996/11/12 23:57:55  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.5  1995/12/13 01:01:32  tom
 * handle CLASSTYPE_INLINE
 *
@@ -82,13 +90,13 @@ static char fg_module_c[] =
 #include "version.h"
 
 /* forward declarations */
-static void init_outtables();
-static void fg_local_defs();
-static void fg_global_defs();
-void fg_body();
-static void fg_funcspec();
-static void fg_module();
-void flowgraph();
+static void fg_funcspec P_(( TNODE *n, char **fname ));
+static void fg_global_defs P_(( TNODE *n, char *global_defs ));
+static void fg_local_defs P_(( TNODE *n, DUG *dug, int sblk, int *endblk, int init ));
+static void fg_module P_(( TNODE *n, FILE *outsrc, FILE *outtables, char *global_defs, char *prefix ));
+static void init_outtables P_(( FILE *f ));
+void fg_body P_(( TNODE *n, DUG *dug, int sblk, int bblk, int cblk, int swblk, int *endblk, int *dblk ));
+void flowgraph P_(( TNODE *tree, FILE *outsrc, FILE *outtables, char *prefix ));
 
 #define MAX_PREFIX	4	/* generated name prefix */
 
@@ -104,8 +112,7 @@ char	*prefix;
 	char	*filename;
 	int	i;
 	char	*global_defs;	/* list of global variable defs. seen */
-	void	free();		/* standard memory free routine */
-	char	*srcfname();
+	extern char * srcfname P_(( int findex ));
 
 	init_outtables(outtables);
 	for (i = 0; (filename = srcfname(i)); ++i)
@@ -434,9 +441,9 @@ int	init;
 	case GEN_INDATA_DCL:
 		{
 			TNODE	*p;
-			int init;
+			int init2;
 	
-			init = 0;
+			init2 = 0;
 			p = CHILD0(n);
 			if (p->genus != GEN_CLASSTYPES) {
 				break;
@@ -446,11 +453,11 @@ int	init;
 					(p->species == CLASSTYPE_INLINE) ||
 					(p->species == CLASSTYPE_EXTERN))
 				{
-					init = 1;
+					init2 = 1;
 					break;
 				}
 			}
-			fg_local_defs(CHILD1(n), dug, sblk, &end, init);
+			fg_local_defs(CHILD1(n), dug, sblk, &end, init2);
 			break;
 		}
 	case GEN_INDATA_DCLS:

@@ -12,6 +12,10 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
  #pragma csect (CODE, "fg_expr$")
 #include <mvapts.h>
@@ -20,10 +24,14 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <stdlib.h>
 #endif /* MVS */
 
-static char fg_expr_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.5 1995/12/27 23:25:31 tom Exp $";
+static const char fg_expr_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_expr.c,v 3.6 1996/11/12 23:59:34 tom Exp $";
 /*
 * $Log: fg_expr.c,v $
+* Revision 3.6  1996/11/12 23:59:34  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.5  1995/12/27 23:25:31  tom
 * don't use NULL for int value!
 *
@@ -74,8 +82,8 @@ static char fg_expr_c[] =
 #include "dug.h"
 
 /* forward declarations */
-static void fg_asgn();
-void fg_expr();
+static void fg_asgn P_(( TNODE *n, DUG *dug, int sblk, int *endblk, int var_lhs, int ptr_lhs, int var_rhs, int ptr_rhs ));
+extern void fg_expr P_(( TNODE *n, DUG *dug, int sblk, int *endblk, int *Tendblk, int *Fendblk, int var_use, int ptr_use ));
 
 typedef struct {
 	int	s;	/* start block */
@@ -163,7 +171,7 @@ int	ptr_use;
 	{
 	case EXPR_QCOLON:
 		{
-			TNODE	*p;
+			TNODE	*p2;
 			int	Tend;
 			int	Fend;
 
@@ -171,13 +179,13 @@ int	ptr_use;
 			fg_expr(CHILD0(n), dug, sblk, &e1.e, &Tend, &Fend,
 				VAR_PUSE, VAR_VOID);
 			dug_du(dug, &decis_sym, e1.e, VAR_PUSE, CHILD0(n));
-			p = CHILD1(n);
+			p2 = CHILD1(n);
 			e2.s = dug_newblk(dug);
-			fg_expr(p, dug, e2.s, &e2.e, NULL, NULL,
+			fg_expr(p2, dug, e2.s, &e2.e, NULL, NULL,
 				var_use, ptr_use);
-			p = CHILD2(n);
+			p2 = CHILD2(n);
 			e3.s = dug_newblk(dug);
-			fg_expr(p, dug, e3.s, &e3.e, NULL, NULL,
+			fg_expr(p2, dug, e3.s, &e3.e, NULL, NULL,
 				var_use, ptr_use);
 			dug_branch(dug, e1.e, e2.s, COND_BOOLEAN, 1,CHILD0(n));
 			dug_branch(dug, e1.e, e3.s, COND_BOOLEAN, 0,CHILD0(n));
@@ -224,7 +232,7 @@ int	ptr_use;
 		case BINOP_ANDAND:
 		case BINOP_OROR:
 			{
-				TNODE	*p;
+				TNODE	*p2;
 				int	start;
 				int	Tstart;
 				int	Fstart;
@@ -258,8 +266,8 @@ int	ptr_use;
 					dug_branch(dug, start, e2.s,
 						   COND_BOOLEAN, 0, CHILD0(n));
 				}
-				p = CHILD2(n);
-				fg_expr(p, dug, e2.s, &e2.e, &Tstart, &Fstart,
+				p2 = CHILD2(n);
+				fg_expr(p2, dug, e2.s, &e2.e, &Tstart, &Fstart,
 					var_use, ptr_use);
 				dug_branch(dug, Tstart, Tend,
 					   COND_UNCONDITIONAL, 0, NULL);
@@ -289,10 +297,10 @@ int	ptr_use;
 		break;
 	case EXPR_UNOP:
 		{
-			TNODE	*p;
+			TNODE	*p2;
 	
-			p = CHILD0(n);
-			switch(p->species)
+			p2 = CHILD0(n);
+			switch(p2->species)
 			{
 			case UNOP_AND:
 				/*
@@ -394,17 +402,17 @@ int	ptr_use;
 		{
 			SYM	*sym;
 			unsigned long	sym_type;
-			TNODE	*p;
+			TNODE	*p2;
 	
 			/*
 			* If both references are VOID return.  (E.g. stmt: x;)
 			*/
 			if ((var_use | ptr_use) == VAR_VOID) break;
-			p = CHILD0(n);
-			sym = p->sym.sym;
+			p2 = CHILD0(n);
+			sym = p2->sym.sym;
 			if (sym == NULL) internal_error(n->srcpos,
 				"fg_expr missing symbol info for: %s",
-				p->text ? p->text : "?");
+				p2->text ? p2->text : "?");
 			if (sym->nametype != VALSYM)	/* e.g. mem of enum */
 				break;		/* not a variable */
 			/*
@@ -417,7 +425,7 @@ int	ptr_use;
 				if (!QUAL_ISARRAY(sym_type) &&
 					!QUAL_ISFUNC(sym_type))
 				{
-					dug_du(dug, sym, sblk, var_use, p);
+					dug_du(dug, sym, sblk, var_use, p2);
 				}
 			}
 
@@ -431,8 +439,8 @@ int	ptr_use;
 					QUAL_ISARRAY(sym_type))
 				{
 					dug_du(dug, sym, sblk,
-					       VAR_DREF | ptr_use, p);
-				} else dug_du(dug, sym, sblk, ptr_use, p);
+					       VAR_DREF | ptr_use, p2);
+				} else dug_du(dug, sym, sblk, ptr_use, p2);
 			}
 			break;
 		}

@@ -12,15 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char paths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.6 1995/12/27 23:32:30 tom Exp $";
+static const char paths_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.7 1996/11/12 23:31:58 tom Exp $";
 /*
 * $Log: paths.c,v $
+* Revision 3.7  1996/11/12 23:31:58  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.6  1995/12/27 23:32:30  tom
 * don't use NULL for int value!
 *
@@ -81,6 +89,9 @@ static char paths_c[] =
 * 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 #include "portable.h"
@@ -91,16 +102,16 @@ static char paths_c[] =
 #include "bitvec.h"
 
 /* forward declarations */
-static void uCount();
-static void pathCount();
-static int feasableBranch();
-static void print_dupath();
-static void u_traverse();
-static void paths_from();
-void paths();
+static int feasableBranch P_(( BRANCH *br ));
+static void pathCount P_(( DUG *dug, BLOCK *node, int *counts ));
+static void paths_from P_(( DUG *dug, BLOCK *node, int feasableOnly ));
+static void print_dupath P_(( int use_type, int sym, BLOCK *def_node, BRANCH *branch, BLOCK *prev_node, int dPos, int uPos ));
+static void uCount P_(( DUG *dug, BRANCH *branch, BVPTR *list, DU *def, int p_use, int *counts ));
+static void u_traverse P_(( DUG *dug, BRANCH *branch, BVPTR *list, BLOCK *d_node, DU *def, int p_use, BLOCK *prev_node, int prevPos, int feasableOnly ));
+extern void paths P_(( DUG *dug, FILE *f, int feasableOnly ));
 
-DU *du_use();
-DU *du_use_type();
+extern DU *du_use P_(( DUG *dug, BLOCK *node, LIST *n ));
+extern DU *du_use_type P_(( DUG *dug, BLOCK *node, int symbol, int mode ));
 
 static char	*fname;
 static FILE	*outfile;
@@ -153,7 +164,7 @@ int	feasableOnly;
 	* traverse graph down from node to find C-USEs and P-USEs.
 	* U_traverse adds each node to v_list when it is visited. 
 	*/
-	for (i = NULL; def = du_use(dug, node, &i);) {
+	for (i = NULL; (def = du_use(dug, node, &i)) != 0;) {
 		if ((def->ref_type & VAR_DEF) == 0) continue;
 		tFindVDef(def->defPos, &value);
 		if (value.type == CONST_VT)
@@ -428,7 +439,7 @@ int	*counts;
 	* traverse graph down from node to find C-USEs and P-USEs.
 	* uCount adds each node to v_list when it is visited. 
 	*/
-	for (i = NULL; def = du_use(dug, node, &i);) {
+	for (i = NULL; (def = du_use(dug, node, &i)) != 0;) {
 		if ((def->ref_type & VAR_DEF) == 0) continue;
 		v_list = BVALLOC(dug->count);
 		if (node->branches)

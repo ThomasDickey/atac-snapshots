@@ -12,18 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char strtab_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/strtab.c,v 3.3 1994/04/04 10:14:28 jrh Exp $";
+static const char strtab_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/strtab.c,v 3.4 1996/11/13 00:42:39 tom Exp $";
 /*
-*-----------------------------------------------$Log: strtab.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:14:28  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: strtab.c,v $
+* Revision 3.4  1996/11/13 00:42:39  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.3  94/04/04  10:14:28  jrh
 * Add Release Copyright
 * 
@@ -60,12 +65,16 @@ static char strtab_c[] =
 * Revision 2.1  91/06/13  12:39:21  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:51  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:51  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
+#include <string.h>
 #include "portable.h"
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
@@ -99,10 +108,10 @@ typedef struct strtab {
 static int alignSize = 0;
 
 /* forward declarations */
-char *strtab_upfix();
-void strtab_free();
-char *strtab_insert();
-STRTAB *strtab_create();
+extern char *strtab_upfix P_(( STRTAB *strtab ));
+extern void strtab_free P_(( STRTAB *strtab ));
+extern char *strtab_insert P_(( STRTAB *strtab, char *str, char **id ));
+extern STRTAB *strtab_create P_(( void ));
 
 /*
 * strtab_create:  Return pointer to strtab; to be passed to strtab_insert()

@@ -12,22 +12,27 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
  #pragma runopts(execops,isasize(50k))	/* ==> for MVS delete leading blank! */
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char atac_i_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.7 1994/04/04 13:42:39 saul Exp $";
-static char bellcoreCopyRight[] =
+static const char atac_i_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.8 1996/11/13 00:41:53 tom Exp $";
+static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-*-----------------------------------------------$Log: atac_i.c,v $
-*-----------------------------------------------Revision 3.7  1994/04/04 13:42:39  saul
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: atac_i.c,v $
+* Revision 3.8  1996/11/13 00:41:53  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.7  94/04/04  13:42:39  saul
 * Fix binary copyright.
 * 
@@ -76,16 +81,17 @@ static char bellcoreCopyRight[] =
 * Revision 2.1  91/06/13  12:38:55  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:35  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:35  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 #include <stdio.h>
 #include "portable.h"
 
 /* forward declarations */
-static void usage();
+static void usage P_(( char * ));
+void runErrorTests P_(( void *tree ));
 
 int dump_tables = 0;
 int all_paths = 0;
@@ -283,6 +289,7 @@ char	*argv[];
     return 0;
 }
 
+void
 runErrorTests(tree)
 void	*tree;
 {

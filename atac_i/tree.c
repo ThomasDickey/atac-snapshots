@@ -12,18 +12,23 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char tree_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.c,v 3.4 1994/04/04 10:15:10 jrh Exp $";
+static const char tree_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.c,v 3.5 1996/11/13 00:40:33 tom Exp $";
 /*
-*-----------------------------------------------$Log: tree.c,v $
-*-----------------------------------------------Revision 3.4  1994/04/04 10:15:10  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: tree.c,v $
+* Revision 3.5  1996/11/13 00:40:33  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.4  94/04/04  10:15:10  jrh
 * Add Release Copyright
 * 
@@ -66,6 +71,9 @@ static char tree_c[] =
 * 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include "portable.h"
 #include "srcpos.h"
@@ -75,18 +83,15 @@ static char tree_c[] =
 #include "hook.h"	/* for tree_print of GEN_HOOK */
 
 /* forward declarations */
-TNODE *tFindSwitch();
-TNODE *tFindPred();
-void tFindVDef();
-TNODE *tFindDef();
-int print_tree();
-static char *genstr();
-void tfreenode();
-TNODE *tsrc_pos();
-TNODE *tlist_ladd();
-TNODE *tlist_add();
-TNODE *tmknode();
-TNODE *tmkleaf();
+extern TNODE *tFindDef P_(( TNODE *n ));
+extern TNODE *tFindPred P_(( TNODE *n ));
+extern TNODE *tFindSwitch P_(( TNODE *n ));
+extern TNODE *tlist_ladd P_(( TNODE *list, TNODE *next ));
+extern TNODE *tsrc_pos P_(( TNODE *node, SRCPOS *begin, SRCPOS *end ));
+extern int print_tree P_(( TNODE *node, int id, int parent, int level ));
+extern void tFindVDef P_(( TNODE *n, CONST_VALUE *value ));
+extern void tfreenode P_(( TNODE *node ));
+static char *genstr P_(( int token ));
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
@@ -121,11 +126,11 @@ char	*text;
 }
 
 TNODE *
-tmknode(genus, species, child0, child1)
+tmknode(genus, species, Child0, Child1)
 int	genus;
 int	species;
-TNODE	*child0;
-TNODE	*child1;
+TNODE	*Child0;
+TNODE	*Child1;
 {
 	TNODE *t;
 
@@ -139,7 +144,7 @@ TNODE	*child1;
 	t->sym.symtab = NULL;
 	t->sym.sym = NULL;
 
-	if (child0 == NULL) {
+	if (Child0 == NULL) {
 		t->srcpos[LEFT_SRCPOS].file = -1;
 		t->srcpos[LEFT_SRCPOS].line = 0;
 		t->srcpos[LEFT_SRCPOS].col = 0;
@@ -150,31 +155,31 @@ TNODE	*child1;
 		return t;
 	}
 
-	t->srcpos[LEFT_SRCPOS].file = child0->srcpos[LEFT_SRCPOS].file;
-	t->srcpos[LEFT_SRCPOS].line = child0->srcpos[LEFT_SRCPOS].line;
-	t->srcpos[LEFT_SRCPOS].col = child0->srcpos[LEFT_SRCPOS].col;
+	t->srcpos[LEFT_SRCPOS].file = Child0->srcpos[LEFT_SRCPOS].file;
+	t->srcpos[LEFT_SRCPOS].line = Child0->srcpos[LEFT_SRCPOS].line;
+	t->srcpos[LEFT_SRCPOS].col = Child0->srcpos[LEFT_SRCPOS].col;
 
-	child0->up = t;
+	Child0->up = t;
 
-	if (child1) {
-		child1->up = t;
-		child0->over = child1;
-		child1->over = child0;
-		t->down = child1;
+	if (Child1) {
+		Child1->up = t;
+		Child0->over = Child1;
+		Child1->over = Child0;
+		t->down = Child1;
 		t->srcpos[RIGHT_SRCPOS].file =
-			child1->srcpos[RIGHT_SRCPOS].file;
+			Child1->srcpos[RIGHT_SRCPOS].file;
 		t->srcpos[RIGHT_SRCPOS].line =
-			child1->srcpos[RIGHT_SRCPOS].line;
+			Child1->srcpos[RIGHT_SRCPOS].line;
 		t->srcpos[RIGHT_SRCPOS].col =
-			child1->srcpos[RIGHT_SRCPOS].col;
+			Child1->srcpos[RIGHT_SRCPOS].col;
 	} else {
-		t->down = child0;
+		t->down = Child0;
 		t->srcpos[RIGHT_SRCPOS].file =
-			child0->srcpos[RIGHT_SRCPOS].file;
+			Child0->srcpos[RIGHT_SRCPOS].file;
 		t->srcpos[RIGHT_SRCPOS].line =
-			child0->srcpos[RIGHT_SRCPOS].line;
+			Child0->srcpos[RIGHT_SRCPOS].line;
 		t->srcpos[RIGHT_SRCPOS].col =
-			child0->srcpos[RIGHT_SRCPOS].col;
+			Child0->srcpos[RIGHT_SRCPOS].col;
 	}
 
 	return t;

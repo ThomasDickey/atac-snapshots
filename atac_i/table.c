@@ -12,18 +12,27 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char table_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.3 1994/04/04 10:14:49 jrh Exp $";
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+static const char table_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/table.c,v 3.4 1996/11/13 00:42:17 tom Exp $";
 /*
-*-----------------------------------------------$Log: table.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:14:49  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: table.c,v $
+* Revision 3.4  1996/11/13 00:42:17  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.3  94/04/04  10:14:49  jrh
 * Add Release Copyright
 * 
@@ -48,11 +57,14 @@ static char table_c[] =
 * Revision 2.1  91/06/13  12:39:26  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:53  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:53  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include "portable.h"
 
@@ -65,19 +77,22 @@ typedef struct node {
 	struct node	*up;
 } NODE;
 
+typedef	int	(*CMP) P_((DATA *, DATA *));
+
 typedef struct {
 	NODE	*tree;
-	int	(*cmp)();
+	CMP	cmp;
 } TABLE;
 
 /* forward declarations */
-DATA *table_insert();
-DATA *table_next();
-DATA *table_find();
-static void tree_free();
-void table_free();
-TABLE *table_create();
-int intcmp();
+extern DATA *table_find P_(( TABLE *table, DATA *key, NODE **node, int matchtype ));
+extern DATA *table_insert P_(( TABLE *table, DATA *data, int duplicates ));
+extern DATA *table_next P_(( TABLE *table, NODE **node ));
+extern TABLE *table_create P_(( CMP cmp ));
+extern int intcmp P_(( int a, int b ));
+extern void table_free P_(( TABLE *table, void (*datafree)(DATA *) ));
+
+static void tree_free P_(( NODE *tree, void (*datafree)(DATA *) ));
 
 int
 intcmp(a, b)	/* dummy integer compare routine */
@@ -89,7 +104,7 @@ int b;
 
 TABLE *
 table_create(cmp)
-int	(*cmp)();
+CMP	cmp;
 {
 	TABLE *r;
 
@@ -105,7 +120,7 @@ int	(*cmp)();
 void
 table_free(table, datafree)
 TABLE	*table;
-void	(*datafree)();
+void	(*datafree) P_((DATA *));
 {
 	if (table == NULL) return;		/* no table */
 
@@ -116,7 +131,7 @@ void	(*datafree)();
 static void
 tree_free(tree, datafree)
 NODE	*tree;
-void	(*datafree)();
+void	(*datafree) P_((DATA *));
 {
 	if (tree) {
 		tree_free(tree->left, datafree);
@@ -145,8 +160,7 @@ int	matchtype;	/* not implemented */
 	NODE	*n;
 	NODE	*next;
 	int	c;
-	int	(*cmp)();
-	DATA 	*table_next();
+	CMP	cmp;
 
 	if (matchtype != 0) return NULL;
 
@@ -221,7 +235,7 @@ int	duplicates;
 	NODE	**next;
 	NODE	*prev;
 	int	c;
-	int	(*cmp)();
+	CMP	cmp;
 
 	if (table == NULL) return NULL;			/* no table */
 

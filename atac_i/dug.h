@@ -14,10 +14,13 @@
 ****************************************************************/
 #ifndef dug_H
 #define dug_H
-static char dug_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.2 1995/12/27 23:23:54 tom Exp $";
+static const char dug_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.h,v 3.3 1996/11/13 00:28:32 tom Exp $";
 /*
 * $Log: dug.h,v $
+* Revision 3.3  1996/11/13 00:28:32  tom
+* change ident to 'const' to quiet gcc
+*
 * Revision 3.2  1995/12/27 23:23:54  tom
 * don't use NULL for int value!
 *
@@ -42,9 +45,9 @@ static char dug_h[] =
 * Revision 2.1  91/06/13  12:39:02  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:38  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:38  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 typedef char LIST;
@@ -55,8 +58,8 @@ typedef struct block {
 	LIST	*branches;
 	int	to_count;
 	LIST	*du_list;
-	int	parse_start;
-	int	parse_end;
+	void*	parse_start;
+	void*	parse_end;
 	struct block	*visited;
 } BLOCK;
 	
@@ -109,5 +112,5 @@ typedef struct {
 #define VAR_DREF	8	/* expression is dereferenced as a pointer */
 
 #define NULL_BLK	0
-#endif /* dug_H */
 
+#endif /* dug_H */

@@ -12,35 +12,39 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static char tnode_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.3 1994/04/04 10:14:56 jrh Exp $";
+static const char tnode_c[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.4 1996/11/13 00:41:17 tom Exp $";
 /*
-*-----------------------------------------------$Log: tnode.c,v $
-*-----------------------------------------------Revision 3.3  1994/04/04 10:14:56  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-*Revision 3.3  94/04/04  10:14:56  jrh
-*Add Release Copyright
+* $Log: tnode.c,v $
+* Revision 3.4  1996/11/13 00:41:17  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
 *
-*Revision 3.2  93/08/04  15:48:36  ewk
-*Added MVS and solaris support.  Squelched some ANSI warnings.
+* Revision 3.3  94/04/04  10:14:56  jrh
+* Add Release Copyright
 *
-e.c
-*Revision 3.1  93/07/12  11:47:19  saul
-*MVS MODULEID
+* Revision 3.2  93/08/04  15:48:36  ewk
+* Added MVS and solaris support.  Squelched some ANSI warnings.
 *
-*Revision 3.0  92/11/06  07:45:44  saul
-*propagate to version 3.0
+* Revision 3.1  93/07/12  11:47:19  saul
+* MVS MODULEID
 *
-*Revision 2.2  92/10/30  09:49:18  saul
-*include portable.h
+* Revision 3.0  92/11/06  07:45:44  saul
+* propagate to version 3.0
 *
-*Revision 2.1  92/09/30  10:38:35  saul
+* Revision 2.2  92/10/30  09:49:18  saul
+* include portable.h
+*
+* Revision 2.1  92/09/30  10:38:35  saul
 **** empty log message ***
 *
 *-----------------------------------------------end of log
@@ -51,13 +55,9 @@ e.c
 #include "tnode.h"
 
 /* forward declarations */
-void check_malloc();
-TNODE *tnext();
-TNODE *child4();
-TNODE *child3();
-TNODE *child2();
-TNODE *child1();
-TNODE *child0();
+void check_malloc P_(( char *p ));
+
+#define macro_n my_macro_n /* avoid compiler "shadow" warnings */
 
 TNODE *
 child0(n)

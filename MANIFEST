@@ -1,4 +1,4 @@
-MANIFEST for atac, version atac_951230
+MANIFEST for atac, version atac_961112
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
@@ -13,6 +13,7 @@ ataclib.1                       atac3.3.13
 atacmin.1                       atac3.3.13
 atactm.1                        atac3.3.13
 config_h.in                     template for config.h
+configure                       configure-script
 configure.in                    configure-script template
 install.sh                      install-script, if none found by configure
 makefile.in                     makefile-template, for auto-configure
@@ -20,11 +21,11 @@ mkdirs.sh                       script to make directory-hierarchies
 portable.h                      atac3.3.13
 version.h                       atac3.3.13
 atac_cpp                        subdirectory
-atac_cpp/Makefile               atac3.3.13
 atac_cpp/alloca.c               atac3.3.13
 atac_cpp/cccp.c                 atac3.3.13
 atac_cpp/cexp.y                 atac3.3.13
 atac_cpp/descrip.mms            atac3.3.13
+atac_cpp/makefile.in            template for atac_cpp/makefile
 atac_cpp/mvs_libget.c           atac3.3.13
 atac_cpp/obstack.c              atac3.3.13
 atac_cpp/obstack.h              atac3.3.13
@@ -33,7 +34,6 @@ atac_cpp/sio.c                  atac3.3.13
 atac_cpp/version.c              atac3.3.13
 atac_cpp/vms_lbr.c              atac3.3.13
 atac_i                          subdirectory
-atac_i/Makefile                 atac3.3.13
 atac_i/Pgram.y                  atac3.3.13
 atac_i/alldu.c                  atac3.3.13
 atac_i/allpaths.c               atac3.3.13
@@ -52,6 +52,7 @@ atac_i/fg_stmt.c                atac3.3.13
 atac_i/filestamp.c              atac3.3.13
 atac_i/hook.h                   atac3.3.13
 atac_i/list.c                   atac3.3.13
+atac_i/makefile.in              template for atac_i/makefile
 atac_i/mark.c                   atac3.3.13
 atac_i/parser.c                 atac3.3.13
 atac_i/paths.c                  atac3.3.13
@@ -72,7 +73,6 @@ atac_i/tree.h                   atac3.3.13
 atac_i/type.c                   atac3.3.13
 atac_i/upfix.c                  atac3.3.13
 atacysis                        subdirectory
-atacysis/Makefile               atac3.3.13
 atacysis/atac_to_bin.c          atac3.3.13
 atacysis/atactm.c               atac3.3.13
 atacysis/atacysis.h             atac3.3.13
@@ -93,6 +93,7 @@ atacysis/highest.c              atac3.3.13
 atacysis/init.c                 atac3.3.13
 atacysis/lib.c                  atac3.3.13
 atacysis/main.c                 atac3.3.13
+atacysis/makefile.in            template for atacysis/makefile
 atacysis/man.h                  atac3.3.13
 atacysis/mem.c                  atac3.3.13
 atacysis/pack.c                 atac3.3.13
@@ -116,8 +117,8 @@ atacysis/vector.c               atac3.3.13
 atacysis/vms_disp.c             atac3.3.13
 changes                         subdirectory
 changes/atac_19951230.txt       summary of changes for atac_961230 version.
+changes/atac_19961112.txt       changes for 961112
 tools                           subdirectory
-tools/Makefile                  atac3.3.13
 tools/atac                      atac3.3.13
 tools/atacCC                    atac3.3.13
 tools/atacLD                    atac3.3.13
@@ -125,13 +126,14 @@ tools/atac_rt.c                 atac3.3.13
 tools/atacmin                   atac3.3.13
 tools/hili.c                    atac3.3.13
 tools/loguse                    atac3.3.13
+tools/makefile.in               template for tools/makefile
 tools/min.c                     atac3.3.13
 tools/predefs.list              atac3.3.13
 tools/vile-pager                script to use VILE as a pager/browser for ATAC listings
 tutorial                        subdirectory
-tutorial/Makefile               atac3.3.13
 tutorial/input1                 atac3.3.13
 tutorial/input2                 atac3.3.13
 tutorial/input3                 atac3.3.13
 tutorial/main.c                 atac3.3.13
+tutorial/makefile.in            template for tutorial/makefile
 tutorial/wc.c                   atac3.3.13

@@ -14,18 +14,18 @@
 ****************************************************************/
 #ifndef bitvector_H
 #define bitvector_H
-static char bitvector_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/bitvec.h,v 3.2 1994/04/04 10:12:00 jrh Exp $";
+static const char bitvector_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/bitvec.h,v 3.3 1996/11/13 00:24:05 tom Exp $";
 /*
-*-----------------------------------------------$Log: bitvec.h,v $
-*-----------------------------------------------Revision 3.2  1994/04/04 10:12:00  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
-*Revision 3.2  94/04/04  10:12:00  jrh
-*Add Release Copyright
+* $Log: bitvec.h,v $
+* Revision 3.3  1996/11/13 00:24:05  tom
+* change ident to 'const' to quiet gcc
 *
-*Revision 3.1  93/07/12  09:47:24  saul
-*Name changed from bitvector.h for MVS.
+* Revision 3.2  94/04/04  10:12:00  jrh
+* Add Release Copyright
+*
+* Revision 3.1  93/07/12  09:47:24  saul
+* Name changed from bitvector.h for MVS.
 *
 * Revision 3.0  92/11/06  07:46:04  saul
 * propagate to version 3.0
@@ -36,9 +36,9 @@ static char bitvector_h[] =
 * Revision 2.1  91/06/13  12:38:56  saul
 * Propagate to version 2.0
 * 
- * Revision 1.1  91/06/12  20:25:35  saul
- * Aug 1990 baseline
- * 
+* Revision 1.1  91/06/12  20:25:35  saul
+* Aug 1990 baseline
+* 
 *-----------------------------------------------end of log
 */
 #define BITSPW		32			/* Bits Per Word */

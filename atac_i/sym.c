@@ -12,6 +12,10 @@
 *OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef MVS
  #pragma csect (CODE, "sym$")
 #include <mvapts.h>
@@ -29,9 +33,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "tree.h"
 
 static char const sym_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.c,v 3.8 1995/12/27 23:08:44 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.c,v 3.9 1996/11/13 00:13:21 tom Exp $";
 /*
 * $Log: sym.c,v $
+* Revision 3.9  1996/11/13 00:13:21  tom
+* change ident to 'const' to quiet gcc
+* add forward-ref prototypes
+*
 * Revision 3.8  1995/12/27 23:08:44  tom
 * handle SCB_INLINE, CLASSTYPE_INLINE
 *
@@ -102,38 +110,6 @@ static char const sym_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-void dump_sym();
-static void dcl_all();
-static void dcl_label();
-static void default_params();
-static void ansiParam();
-static int isVoid();
-static void dcl_param();
-static void dcl_formals();
-static void dcl_function();
-static void dcl();
-static void getClassTypes();
-static int checkSClass();
-static int checkBaseType();
-static SYM *ref_enum();
-static SYM *dcl_enum();
-static SYM *ref_struct();
-static SYM *dcl_struct();
-static void dcl_data_specs();
-static void get_null_dcl();
-static void dcl_data_item();
-static int count_stars();
-static SYM *ssym_find();
-SYM *sym_find();
-static void sym_insert();
-static SYM *mk_label();
-static SYM *mk_moesym();
-static SYM *mk_tagsym();
-static SYM *mk_valsym();
-static DIMLIST *copy_dimlist();
-static SYMLIST *copy_symlist();
-static int eval_iconst_expr();
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory"))
 
@@ -152,6 +128,39 @@ typedef int symType_t;
 #define SYM_TYPE_PARAM		((symType_t) 4)
 #define SYM_TYPE_FUNC		((symType_t) 5)
 #define SYM_TYPE_NOSPEC		((symType_t) 6)
+
+/* forward declarations */
+extern SYM *sym_find P_(( char *name, NAMETYPE nametype, SYMLIST *symtab ));
+extern void dump_sym P_(( TNODE *node, char *prefix ));
+
+static DIMLIST *copy_dimlist P_(( DIMLIST *list ));
+static SYM *dcl_enum P_(( TNODE *node, SYMTABLIST *symtablist ));
+static SYM *dcl_struct P_(( TNODE *node, SYMTABLIST *symtablist ));
+static SYM *mk_label P_(( TNODE	*nameNode ));
+static SYM *mk_moesym P_(( TNODE *nameNode, SYM *tag, int value ));
+static SYM *mk_tagsym P_(( NAMETYPE nametype ));
+static SYM *mk_valsym P_(( VALTYPE *type, NAMETYPE nametype ));
+static SYM *ref_enum P_(( TNODE *node, SYMTABLIST *symtablist ));
+static SYM *ref_struct P_(( TNODE *node, symType_t symType, SYMTABLIST *symtablist ));
+static SYM *ssym_find P_(( char *name, NAMETYPE nametype1, NAMETYPE nametype2, SYMTABLIST *symtablist ));
+static SYMLIST *copy_symlist P_(( SYMLIST *list ));
+static int checkBaseType P_(( int base, SRCPOS *srcpos ));
+static int checkSClass P_(( int sclass, symType_t symType, SRCPOS *srcpos ));
+static int count_stars P_(( TNODE *node ));
+static int isVoid P_(( TNODE *node ));
+static void ansiParam P_(( TNODE *node, SYMTABLIST *symtablist ));
+static void dcl P_(( TNODE *node, SYMTABLIST *symtablist ));
+static void dcl_all P_(( TNODE *node, SYMTABLIST *symtablist, SYMLIST **label_tab ));
+static void dcl_data_item P_(( TNODE *node, SYM *sym, SYMTABLIST *symtablist));
+static void dcl_data_specs P_(( TNODE *node, VALTYPE *type, SYMTABLIST *symtablist ));
+static void dcl_formals P_(( TNODE *node, SYMLIST **symtab ));
+static void dcl_function P_(( TNODE *node, SYMTABLIST *symtablist ));
+static void dcl_label P_(( TNODE *node, SYMLIST **label_tab, int definition ));
+static void dcl_param P_(( TNODE *node, SYMTABLIST *symtablist ));
+static void default_params P_(( SYMLIST	**symtab ));
+static void getClassTypes P_(( TNODE *node, symType_t symType, VALTYPE *type, SYMTABLIST *symtablist ));
+static void get_null_dcl P_(( TNODE *node, SYM *sym ));
+static void sym_insert P_(( SYM *sym, SYMLIST **symtab ));
 
 static SYMLIST *
 copy_symlist(list)
@@ -446,7 +455,6 @@ SYMTABLIST	*symtablist;
 	unsigned long	q;
 	DIMLIST		*dim;
 	int		n;
-	void		dcl_all();
 
 	if (node->genus != GEN_DATA_ITEM && node->genus != GEN_FUNC_SPEC) {
 		internal_error(node->srcpos, "Unexpected genus: %d",
@@ -644,7 +652,6 @@ SYMTABLIST	*symtablist;
 {
 	TNODE	*p;
 	SYM	*sym;
-	void	dcl_all();
 
 	if (node->genus != GEN_DATA_SPECS) {
 		internal_error(node->srcpos, "Unexpected genus: %d",
@@ -720,7 +727,6 @@ SYMTABLIST	*symtablist;
 	SYM		*fieldsym;
 	int		bit_alignment;
 	int		bits;
-	void		getClassTypes();
 
 	if (node->genus != GEN_STRUCT_DCL) {
 		internal_error(node->srcpos, "Unexpected genus: %d",
@@ -1771,6 +1777,8 @@ char		*prefix;
 	for (p = CHILD0(node); p != NULL; p = TNEXT(p))
 		dump_sym(p, prefix);
 }
+
+extern void sym P_(( TNODE *node ));
 
 void
 sym(node)

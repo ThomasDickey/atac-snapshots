@@ -14,13 +14,13 @@
 ****************************************************************/
 #ifndef srcpos_H
 #define srcpos_H
-static char srcpos_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.h,v 3.1 1994/04/04 10:14:21 jrh Exp $";
+static const char srcpos_h[] = 
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.h,v 3.2 1996/11/13 00:25:43 tom Exp $";
 /*
-*-----------------------------------------------$Log: srcpos.h,v $
-*-----------------------------------------------Revision 3.1  1994/04/04 10:14:21  jrh
-*-----------------------------------------------FROM_KEYS
-*-----------------------------------------------
+* $Log: srcpos.h,v $
+* Revision 3.2  1996/11/13 00:25:43  tom
+* change ident to 'const' to quiet gcc
+*
 * Revision 3.1  94/04/04  10:14:21  jrh
 * Add Release Copyright
 * 
@@ -43,4 +43,5 @@ typedef struct srcpos {
 	short	col;
 	int	line;
 } SRCPOS;
+
 #endif /* srcpos_H */

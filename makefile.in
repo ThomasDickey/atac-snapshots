@@ -12,13 +12,17 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.1 1995/12/30 00:42:02 tom Exp $
+# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.2 1996/11/11 23:36:04 tom Exp $
 # 
 # Makefile for ATAC.  See README.
 #
 
 #
 # $Log: makefile.in,v $
+# Revision 3.2  1996/11/11 23:36:04  tom
+# show cd/make (for tracing log with vile)
+# lowercase makefiles throughout
+#
 # Revision 3.1  1995/12/30 00:42:02  tom
 # RCS_BASE
 #
@@ -106,9 +110,9 @@
 # 
 #-----------------------------------------------end of log
 
-SHELL=/bin/sh
+SHELL		= /bin/sh
 @SET_MAKE@
-prefix=@prefix@
+prefix		= @prefix@
 INSTALLDIR	= @exec_prefix@
 
 INSTALL		= @INSTALL@
@@ -126,13 +130,13 @@ MANDIR=$(INSTALLDIR)/man
 system:	ATAC_I ATACYSIS ATAC_CPP TOOLS
 
 clean:
-	cd atac_i; $(MAKE) clean
-	cd atacysis; $(MAKE) clean
-	cd atac_cpp; $(MAKE) clean
-	cd tools; $(MAKE) clean
+	cd atac_i;   $(MAKE) $@
+	cd atacysis; $(MAKE) $@
+	cd atac_cpp; $(MAKE) $@
+	cd tools;    $(MAKE) $@
 
 distclean: clean
-	rm -f config.* makefile install
+	rm -f config.* makefile install */makefile
 
 install: system LIB BIN MAN TUTORIAL
 install.source: SOURCE
@@ -156,16 +160,16 @@ uninstall:
 	rm -f  $(MANDIR)/cat1/atac*
 
 ATAC_I:
-	@cd atac_i; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd atac_i; $(MAKE) "CFLAGS=$(CFLAGS)"
 
 ATACYSIS:	ATAC_I
-	@cd atacysis; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd atacysis; $(MAKE) "CFLAGS=$(CFLAGS)"
 
 ATAC_CPP:
-	@cd atac_cpp; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd atac_cpp; $(MAKE) "CFLAGS=$(CFLAGS)"
 
 TOOLS:
-	@cd tools; $(MAKE) "CFLAGS=$(CFLAGS)"
+	cd tools; $(MAKE) "CFLAGS=$(CFLAGS)"
 
 #
 # create install directories as needed
