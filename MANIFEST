@@ -1,4 +1,4 @@
-MANIFEST for atac, version atac_970511
+MANIFEST for atac, version atac_971101
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
@@ -13,7 +13,6 @@ ataclib.1                       atac3.3.13
 atacmin.1                       atac3.3.13
 atactm.1                        atac3.3.13
 config_h.in                     template for config.h
-configure                       configure-script
 configure.in                    configure-script template
 install.sh                      install-script, if none found by configure
 makefile.in                     makefile-template, for auto-configure
@@ -126,7 +125,6 @@ atacysis/vms_disp.c             atac3.3.13
 changes                         subdirectory
 changes/atac_19951230.txt       summary of changes for atac_961230 version.
 changes/atac_19961112.txt       changes for 961112
-changes/atac_19970511.txt       changes for 970511
 tools                           subdirectory
 tools/atac                      atac3.3.13
 tools/atacCC                    atac3.3.13

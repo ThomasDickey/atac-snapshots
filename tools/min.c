@@ -22,12 +22,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char min_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/min.c,v 3.11 1996/12/02 01:48:28 tom Exp $";
+"$Header: /users/source/archives/atac.vcs/tools/RCS/min.c,v 3.12 1997/11/01 16:10:51 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: min.c,v $
+* Revision 3.12  1997/11/01 16:10:51  tom
+* gcc warnings (size_t/int/long/unsigned long)
+*
 * Revision 3.11  1996/12/02 01:48:28  tom
 * gcc warnings (missing prototypes)
 *
@@ -102,8 +105,8 @@ typedef struct setVector {
 
 typedef struct setList {
 	setVector	**sl_sets;
-	int		sl_alloc;
-	int		sl_count;
+	size_t		sl_alloc;
+	size_t		sl_count;
 	long		sl_cost;
 } setList;
 
@@ -136,7 +139,7 @@ static int sv_subset P_((setVector *setA, setVector *setB, setVector *select));
 static struct setList *sl_Rminimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
 static struct setList *sl_copy P_((setList *list));
 static struct setList *sl_cost0 P_((setList *list));
-static struct setList *sl_create P_((int initAlloc));
+static struct setList *sl_create P_((size_t initAlloc));
 static struct setList *sl_get P_((FILE *f, int *pSetSize));
 static struct setList *sl_minimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
 static struct setList *sl_reduce P_((setList *list, setVector *select, long costLimit));
@@ -154,7 +157,7 @@ static void sl_freeAll P_((setList *list));
 static void sl_gBN P_((setList *listArg, setVector *selectArg, setList *keep));
 static void sl_greedy P_((setList *listArg, setVector *selectArg, setList *keep));
 static void sl_print P_((setList *list));
-static void sl_realloc P_((setList *list, int newAlloc));
+static void sl_realloc P_((setList *list, size_t newAlloc));
 static void sv_compress P_((setVector *set, setVector *select));
 static void sv_dump P_((setVector *set));
 static void sv_free P_((setVector *set));
@@ -346,7 +349,7 @@ int	*pSetSize;
 	 * Allocate set and copy contents into it.
 	 */
 	set = NULL;
-	set = (setVector *)ckMalloc(&set->sv_contents[index]);
+	set = (setVector *)ckMalloc((size_t)(&set->sv_contents[index]));
 	set->sv_name = (char *)ckMalloc(strlen(name) + 1);
 	strcpy(set->sv_name, name);
 	set->sv_cost = cost;
@@ -375,7 +378,7 @@ setVector *set;
 	setVector	*new;
 
 	new = NULL;
-	new = (setVector *)ckMalloc(&new->sv_contents[set->sv_contentsSize]);
+	new = (setVector *)ckMalloc((size_t)(&new->sv_contents[set->sv_contentsSize]));
 
 	new->sv_name = (char *)ckMalloc(strlen(set->sv_name) + 1);
 	strcpy(new->sv_name, set->sv_name);
@@ -570,7 +573,7 @@ setVector *select;
 
 static setList *
 sl_create(initAlloc)
-int	initAlloc;
+size_t	initAlloc;
 {
     setList	*list;
 
@@ -591,7 +594,7 @@ int	initAlloc;
 static void
 sl_realloc(list, newAlloc)
 setList *list;
-int	newAlloc;
+size_t	newAlloc;
 {
     register setVector	**sets;
     register setVector	**setsEnd;
@@ -748,7 +751,7 @@ int	*pSetSize;
 {
 	setList		*list;
 	setVector	*set;
-	static int	allocSize = 8;
+	static size_t	allocSize = 8;
 	int		setSize;
 	int		maxSetSize = 0;
 
@@ -826,7 +829,7 @@ setVector	*select;
     unsigned long	minValue;
     int			i;
 
-    minValue = ~0;
+    minValue = (unsigned long)(~0L);
     best = -1;
 
     for (i = 0; i < list->sl_count; ++i) {
@@ -1268,7 +1271,7 @@ char	*name;
      * Allocate an empty set of the correct size.
      */
     uSet = NULL;
-    uSet = (setVector *)ckMalloc(&uSet->sv_contents[contentsSize]);
+    uSet = (setVector *)ckMalloc((size_t)(&uSet->sv_contents[contentsSize]));
     uSet->sv_name = (char *)ckMalloc(strlen(name) + 1);
     strcpy(uSet->sv_name, name);
     uSet->sv_contentsSize = contentsSize;
@@ -1770,10 +1773,10 @@ char	*argv[];
     g_visited = 0;
     g_maxLevel = 0;
     g_recursionLimit = 0;
-    g_printFreq = ~0L;
+    g_printFreq = (unsigned long)(~0L);
     g_quiet = FALSE;
 
-    userCost = ~0;		/* big number */
+    userCost = (unsigned long)(~0L);		/* big number */
 
     /*
      * Collect options.
@@ -1798,7 +1801,7 @@ char	*argv[];
 		}
 		p = argv[i];
 	    }
-	    userCost = atoi(p);
+	    userCost = atol(p);
 	    p += strlen(p) - 1;	/* setup for next arg */
 	    break;
 	case 'C':

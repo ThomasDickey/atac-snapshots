@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char paths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.9 1997/05/12 00:38:53 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.10 1997/07/17 18:32:53 tom Exp $";
 /*
 * $Log: paths.c,v $
+* Revision 3.10  1997/07/17 18:32:53  tom
+* missed a NULL used as int.
+*
 * Revision 3.9  1997/05/12 00:38:53  tom
 * fix most gcc warnings
 *
@@ -443,7 +446,7 @@ int	*counts;
 	* traverse graph down from node to find C-USEs and P-USEs.
 	* uCount adds each node to v_list when it is visited. 
 	*/
-	for (i = NULL; (def = du_use(dug, node, &i)) != 0;) {
+	for (i = 0; (def = du_use(dug, node, &i)) != 0;) {
 		if ((def->ref_type & VAR_DEF) == 0) continue;
 		v_list = BVALLOC(dug->count);
 		if (node->branches)
