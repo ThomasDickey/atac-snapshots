@@ -21,19 +21,16 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <config.h>
 #endif
 
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#include <stdio.h>
-
 #include "portable.h"
 #include "atacysis.h"
 
 static char const gree_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/greedy.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/greedy.c,v 3.5 2005/08/14 13:47:59 tom Exp $";
 /*
 * $Log: greedy.c,v $
+* Revision 3.5  2005/08/14 13:47:59  tom
+* gcc warnings
+*
 * Revision 3.4  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *

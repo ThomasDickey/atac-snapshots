@@ -25,9 +25,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char mark_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.9 1997/12/09 00:53:23 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/mark.c,v 3.10 2005/08/13 16:16:41 tom Exp $";
 /*
 * $Log: mark.c,v $
+* Revision 3.10  2005/08/13 16:16:41  tom
+* gcc warnings
+*
 * Revision 3.9  1997/12/09 00:53:23  tom
 * cast dug->fname to cover up special marker() case
 *
@@ -438,9 +441,9 @@ TNODE	*n;
 		int	stmt_no;
 	};
 	static struct reuse 	reuse[N_REUSE_TEMP];
-	static			n_reuse = 0;
+	static int		n_reuse = 0;
 	static TNODE		*prev_pos = NULL;
-	static			lasttmp;
+	static int		lasttmp;
 	struct reuse temp;
 	VALTYPE	type;
 	VALTYPE	*r;

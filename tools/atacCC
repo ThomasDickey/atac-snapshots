@@ -14,9 +14,16 @@
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
 #
-# $Header: /users/source/archives/atac.vcs/tools/RCS/atacCC,v 3.14 1995/12/31 01:40:59 tom Exp $
+# $Header: /users/source/archives/atac.vcs/tools/RCS/atacCC,v 3.16 2005/08/14 16:45:54 tom Exp $
 #
 #$Log: atacCC,v $
+#Revision 3.16  2005/08/14 16:45:54  tom
+#make this work with gcc 2.95.3 (ignore __extension__ and __restrict keywords)
+#
+#Revision 3.15  2005/08/14 16:19:51  tom
+#improve computation of $GCC_BASE and $GCC_VERS using gcc options.
+#use $TMPDIR to allow overriding temp-file location.
+#
 #Revision 3.14  1995/12/31 01:40:59  tom
 #mods to support Linux aout vs ELF
 #
@@ -113,9 +120,13 @@ PGM=atacCC
 CINST="$LIB/atac_i"
 CPP="$LIB/atac_cpp"
 CPPARG='-C'
+
+CPPARG="$CPPARG -D__extension__= "
+CPPARG="$CPPARG -D__restrict= "
 CPPARG="$CPPARG -D__const=const -D__const__=const"
 CPPARG="$CPPARG -D__volatile=volatile -D__volatile=volatile"
 CPPARG="$CPPARG -D__signed=signed -D__signed=signed"
+
 CPP_PROTECT="-Dgetc=fgetc -Dputc=fputc -%getc -%putc"
 VERSION="$LIB/Version"
 CC=$ATAC_CC
@@ -129,8 +140,9 @@ fi
 # include-options and definitions to CPPARG.
 if ( eval "$CC -v" 2>&1 |fgrep gcc >/dev/null )
 then
-  GCC_BASE=i486-linux
-  GCC_VERS=`eval "$CC --version"`
+  GCC_BASE=`eval "$CC -dumpmachine"`
+  GCC_VERS=`eval "$CC -dumpversion"`
+  GCC_TREE=`eval "$CC -v 2>&1 |fgrep 'Reading specs' | sed -e 's,^[^/]*,,' -e 's,/[^/]*$,,'"`
 else
   GCC_BASE=""
   GCC_VERS=""
@@ -143,7 +155,7 @@ LINK='yes'
 AOUT='a.out'
 CPP_ONLY='no'
 # Comment next line to save intermediate .c files.
-TMP="/usr/tmp/atacCC$$"
+TMP="${TMPDIR-/tmp}/atacCC$$"
 RC=1
 trap 'rm -fr ${TMP}; exit $RC' 0 1 2 3
 ALL="$*"
@@ -254,7 +266,7 @@ if [ "$GCC_VERS" != "" ]
 then
 	if [ -d /usr/$GCC_BASE/include ]
 	then
-		CPPARG="$CPPARG -I/usr/local/include -I/usr/$GCC_BASE/include -I/usr/lib/gcc-lib/$GCC_BASE/$GCC_VERS/include"
+		CPPARG="$CPPARG -I/usr/local/include -I/usr/$GCC_BASE/include -I$GCC_TREE/include"
 	fi
 	if ( echo $GCC_BASE | fgrep aout >/dev/null )
 	then

@@ -1,0 +1,62 @@
+atac-20050814 - summary of changes made 2005/8/14
+	Thomas Dickey (dickey@invisible-island.net)
+
+	+ this version was used with gcc 2.95.3 to test diffstat 1.40
+	  on Debian/testing.
+	  
+	  My current default compiler is gcc 3.3.5, but there are several
+	  problems with atac's parsing the header files when run via that
+	  compiler.
+
+	+ update config.guess and config.sub
+
+	+ update autoconf macros in aclocal.m4, regenerate configure script.
+
+	+ fix ifdef's for stdarg.h vs varargs.h (report by Ralph Corderoy).
+
+	+ modify atacCC and atacLD scripts to use $TMPDIR to allow overriding
+	  the location of temp-files.  The scripts used /usr/tmp, which is
+	  not present on current configuration (/var/tmp is current).
+
+	+ use gcc options (-dumpversion, -dumpmachine, -v) to obtain gcc's
+	  configuration, replacing some hardcoded assumptions in atacCC.
+
+	+ compiler warning fixes:
+
+	  + include stdio.h, string.h, ctype.h and stdlib.h from portable.h,
+	    eliminating warnings about implicit declaration of standard
+	    functions.
+
+	  + fix several places where a variable was implicitly an int.
+
+# ------------------------------------------------------------------------------
+# aclocal.m4              |  875 +++++++++++++++++-----
+# atac_cpp/cccp.c         |   64 -
+# atac_i/atac_i.c         |    6 
+# atac_i/deparse.c        |   14 
+# atac_i/dug.c            |   13 
+# atac_i/error.c          |   14 
+# atac_i/fg_module.c      |    9 
+# atac_i/list.c           |    7 
+# atac_i/mark.c           |    9 
+# atac_i/srcpos.c         |   12 
+# atacysis/atac_to_bin.c  |    7 
+# atacysis/bdisp.c        |    7 
+# atacysis/ddisp.c        |    7 
+# atacysis/error.c        |    8 
+# atacysis/greedy.c       |   11 
+# atacysis/prev.c         |   12 
+# atacysis/srcfile_name.c |    9 
+# atacysis/static.c       |   23 
+# config.guess            | 1483 ++++++++++++++++++++++++++------------
+# config.sub              |  839 ++++++++++++++++++---
+# configure               | 1787 +++++++++++++++++++++++++++++++++-------------
+# configure.in            |    5 
+# install.sh              |  168 ++--
+# mkdirs.sh               |   12 
+# portable.h              |   59 +
+# tools/atacCC            |   22 
+# tools/atacLD            |    7 
+# tools/atac_rt.c         |    7 
+# 28 files changed, 4095 insertions(+), 1401 deletions(-)
+# ------------------------------------------------------------------------------

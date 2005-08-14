@@ -17,15 +17,17 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-#include <stdio.h>
-
+#include "config.h"
 #include "portable.h"
 #include "atacysis.h"
 
 static char const error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/error.c,v 3.3 1995/12/27 20:10:09 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/error.c,v 3.4 2005/08/14 14:02:03 tom Exp $";
 /*
 * $Log: error.c,v $
+* Revision 3.4  2005/08/14 14:02:03  tom
+* gcc warnings
+*
 * Revision 3.3  1995/12/27 20:10:09  tom
 * adjust headers, prototyped for autoconfig
 *

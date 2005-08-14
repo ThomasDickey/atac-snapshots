@@ -21,22 +21,21 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <config.h>
 #endif
 
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "portable.h"
 
-#include <stdio.h>
 #ifndef MVS
 #include <sys/stat.h>
 #endif /* MVS */
 
-#include "portable.h"
 #include "atacysis.h"
 
 static char const static_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/static.c,v 3.13 1997/12/10 01:51:44 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/static.c,v 3.14 2005/08/14 13:46:46 tom Exp $";
 /*
 * $Log: static.c,v $
+* Revision 3.14  2005/08/14 13:46:46  tom
+* gcc warnings
+*
 * Revision 3.13  1997/12/10 01:51:44  tom
 * simplified ifdef
 *
@@ -503,17 +502,17 @@ T_MODULE	*t_module;
 char		*funcSelect;
 {
     static T_CUSE	*t_cuse = NULL;
-    static		t_cuse_size = 0;
+    static int		t_cuse_size = 0;
     static T_PUSE	*t_puse = NULL;
-    static		t_puse_size = 0;
+    static int		t_puse_size = 0;
     static T_VAR	*t_var = NULL;
-    static		t_var_size = 0;
+    static int		t_var_size = 0;
     static T_BLK	*t_blk = NULL;
-    static		t_blk_size = 0;
+    static int		t_blk_size = 0;
     static T_FUNC	*t_func = NULL;
-    static		t_func_size = 0;
+    static int		t_func_size = 0;
     static T_FILE	*t_file = NULL;
-    static		t_file_size = 0;
+    static int		t_file_size = 0;
     int			n_cuse;
     int			n_puse;
     int			n_var;

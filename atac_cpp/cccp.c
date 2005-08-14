@@ -272,7 +272,7 @@ my_bzero (b, length)
 # endif
 #endif
 
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (__STDC__) && defined (HAVE_VFPRINTF)
 # include <stdarg.h>
 # define VA_START(va_list, var) va_start (va_list, var)
 # define PRINTF_ALIST(msg) char *msg, ...
@@ -429,7 +429,7 @@ extern const char *const sys_errlist[];
 extern char *sys_errlist[];
 #endif
 #else	/* HAVE_STRERROR */
-char *strerror ();
+char *strerror PROTO((int));
 #endif
 #else	/* VMS */
 char *strerror (int,...);
@@ -1084,28 +1084,28 @@ static int do_xifdef DO_PROTO;
 /* Here is the actual list of #-directives, most-often-used first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE, 0, 1},
-  {  2, do_if, "if", T_IF},
-  {  5, do_xifdef, "ifdef", T_IFDEF},
-  {  6, do_xifdef, "ifndef", T_IFNDEF},
-  {  5, do_endif, "endif", T_ENDIF},
-  {  4, do_else, "else", T_ELSE},
-  {  4, do_elif, "elif", T_ELIF},
-  {  4, do_line, "line", T_LINE},
-  {  7, do_include, "include", T_INCLUDE, 1},
-  { 12, do_include, "include_next", T_INCLUDE_NEXT, 1},
-  {  6, do_include, "import", T_IMPORT, 1},
-  {  5, do_undef, "undef", T_UNDEF},
-  {  5, do_error, "error", T_ERROR},
-  {  7, do_warning, "warning", T_WARNING},
+  {  6, do_define,     "define",         T_DEFINE,       0, 1, 0},
+  {  2, do_if,         "if",             T_IF,           0, 0, 0},
+  {  5, do_xifdef,     "ifdef",          T_IFDEF,        0, 0, 0},
+  {  6, do_xifdef,     "ifndef",         T_IFNDEF,       0, 0, 0},
+  {  5, do_endif,      "endif",          T_ENDIF,        0, 0, 0},
+  {  4, do_else,       "else",           T_ELSE,         0, 0, 0},
+  {  4, do_elif,       "elif",           T_ELIF,         0, 0, 0},
+  {  4, do_line,       "line",           T_LINE,         0, 0, 0},
+  {  7, do_include,    "include",        T_INCLUDE,      1, 0, 0},
+  { 12, do_include,    "include_next",   T_INCLUDE_NEXT, 1, 0, 0},
+  {  6, do_include,    "import",         T_IMPORT,       1, 0, 0},
+  {  5, do_undef,      "undef",          T_UNDEF,        0, 0, 0},
+  {  5, do_error,      "error",          T_ERROR,        0, 0, 0},
+  {  7, do_warning,    "warning",        T_WARNING,      0, 0, 0},
 #ifdef SCCS_DIRECTIVE
-  {  4, do_sccs, "sccs", T_SCCS},
+  {  4, do_sccs,       "sccs",           T_SCCS,         0, 0, 0},
 #endif
-  {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 1},
-  {  5, do_ident, "ident", T_IDENT},
-  {  6, do_assert, "assert", T_ASSERT},
-  {  8, do_unassert, "unassert", T_UNASSERT},
-  {  -1, 0, "", T_UNUSED},
+  {  6, do_pragma,     "pragma",         T_PRAGMA,       0, 0, 1},
+  {  5, do_ident,      "ident",          T_IDENT,        0, 0, 0},
+  {  6, do_assert,     "assert",         T_ASSERT,       0, 0, 0},
+  {  8, do_unassert,   "unassert",       T_UNASSERT,     0, 0, 0},
+  {  -1, 0,            "",               T_UNUSED,       0, 0, 0},
 };
 
 /* When a directive handler is called,
@@ -1202,7 +1202,7 @@ static struct tm *timestamp PROTO((void));
 static void special_symbol PROTO((HASHNODE *, FILE_BUF *));
 
 static int redundant_include_p PROTO((char *));
-static is_system_include PROTO((char *));
+static int is_system_include PROTO((char *));
 
 static char *read_filename_string PROTO((int, FILE *));
 static struct file_name_map *read_name_map PROTO((char *));
@@ -4134,7 +4134,7 @@ handle_directive (ip, op)
     /* Handle # followed by a line number.  */
     if (p != ident && !is_idchar[*p]) {
       static struct directive line_directive_table[] = {
-	{  4, do_line, "line", T_LINE},
+	{  4, do_line, "line", T_LINE, 0, 0, 0},
       };
       if (pedantic)
 	pedwarn ("`#' followed by integer");
@@ -8791,10 +8791,10 @@ macroexpand (hp, op)
       xbuf = defn->expansion;
       xbuf_len = defn->length;
     } else {
-      register U_CHAR *exp = defn->expansion;
+      register U_CHAR *exp2 = defn->expansion;
       register int offset;	/* offset in expansion,
 				   copied a piece at a time */
-      register int totlen;	/* total amount of exp buffer filled so far */
+      register int totlen;	/* total amount of exp2 buffer filled so far */
 
       register struct reflist *ap, *last_ap;
 
@@ -8847,7 +8847,7 @@ macroexpand (hp, op)
 
 	/* Add chars to XBUF.  */
 	for (i = 0; i < ap->nchars; i++, offset++)
-	  xbuf[totlen++] = exp[offset];
+	  xbuf[totlen++] = exp2[offset];
 
 	/* If followed by an empty rest arg with concatenation,
 	   delete the last run of nonwhite chars.  */
@@ -9013,11 +9013,11 @@ macroexpand (hp, op)
 
       for (i = offset; i < defn->length; i++) {
 	/* if we've reached the end of the macro */
-	if (exp[i] == ')')
+	if (exp2[i] == ')')
 	  rest_zero = 0;
 	if (! (rest_zero && last_ap != NULL && last_ap->rest_args
 	       && last_ap->raw_after != 0))
-	xbuf[totlen++] = exp[i];
+	xbuf[totlen++] = exp2[i];
       }
 
       xbuf[totlen] = 0;
@@ -9609,7 +9609,7 @@ vwarning (msg, args)
 }
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (__STDC__) && defined (HAVE_VFPRINTF)
 error_with_line (int line, PRINTF_ALIST (msg))
 #else
 error_with_line (line, PRINTF_ALIST (msg))
@@ -9695,7 +9695,7 @@ pedwarn (PRINTF_ALIST (msg))
 }
 
 void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (__STDC__) && defined (HAVE_VFPRINTF)
 pedwarn_with_line (int line, PRINTF_ALIST (msg))
 #else
 pedwarn_with_line (line, PRINTF_ALIST (msg))
@@ -9717,7 +9717,7 @@ pedwarn_with_line (line, PRINTF_ALIST (msg))
    giving specified file name and line number, not current.  */
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (__STDC__) && defined (HAVE_VFPRINTF)
 pedwarn_with_file_and_line (char *file, int line, PRINTF_ALIST (msg))
 #else
 pedwarn_with_file_and_line (file, line, PRINTF_ALIST (msg))

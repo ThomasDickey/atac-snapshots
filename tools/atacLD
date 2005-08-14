@@ -14,9 +14,12 @@
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
 #
-# $Header: /users/source/archives/atac.vcs/tools/RCS/atacLD,v 1.5 1994/04/21 09:34:19 saul Exp $
+# $Header: /users/source/archives/atac.vcs/tools/RCS/atacLD,v 1.6 2005/08/14 14:08:13 tom Exp $
 #
 #$Log: atacLD,v $
+#Revision 1.6  2005/08/14 14:08:13  tom
+#use $TMPDIR to allow temporary directory to be overridden.
+#
 #Revision 1.5  1994/04/21 09:34:19  saul
 #FROM_KEYS
 #
@@ -52,7 +55,7 @@ then
 fi
 LDARG=''
 AOUT='a.out'
-TMP="/usr/tmp/atacLD$$"
+TMP="${TMPDIR-/tmp}/atacLD$$"
 RC=1
 trap 'rm -fr ${TMP}; exit $RC' 0 1 2 3
 while [ $# -ne 0 ]

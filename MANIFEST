@@ -1,4 +1,4 @@
-MANIFEST for atac, version atac_980919
+MANIFEST for atac, version t20050814
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
@@ -135,6 +135,7 @@ changes/atac_19970511.txt       changes for 970511
 changes/atac_19971211.txt       changes for 971211
 changes/atac_19980823.txt       changes for 980823
 changes/atac_19980919.txt       changes for 980919
+changes/atac_20050814.txt       changes for 20050814
 tools                           subdirectory
 tools/atac                      atac3.3.13
 tools/atacCC                    atac3.3.13

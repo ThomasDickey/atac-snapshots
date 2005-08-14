@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_module_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.10 1997/12/09 00:50:13 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_module.c,v 3.11 2005/08/13 16:19:26 tom Exp $";
 /*
 * $Log: fg_module.c,v $
+* Revision 3.11  2005/08/13 16:19:26  tom
+* gcc warnings
+*
 * Revision 3.10  1997/12/09 00:50:13  tom
 * moved externs to atac_i.h
 *
@@ -115,7 +118,7 @@ static void init_outtables P_(( FILE *f ));
 
 #define MAX_PREFIX	4	/* generated name prefix */
 
-SYM decis_sym = {"=decis=", NULL, NULL, NULL_SYM, };	/* used in fg_*.c */
+SYM decis_sym = {"=decis=", NULL, NULL, NULL_SYM, 0, {{0}} }; /* used in fg_*.c */
 
 void
 flowgraph(tree, outsrc, outtables, prefix)
@@ -172,7 +175,7 @@ char	*prefix;
 			DUG	*dug;
 			char	*fname;
 			unsigned long	s_type;
-			static	funcno = 0;
+			static	int funcno = 0;
 
 			dug = (DUG *)dug_create();
 

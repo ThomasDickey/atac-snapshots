@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char list_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/list.c,v 3.8 1997/05/11 20:55:27 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/list.c,v 3.9 2005/08/14 13:45:53 tom Exp $";
 /*
 * $Log: list.c,v $
+* Revision 3.9  2005/08/14 13:45:53  tom
+* gcc warning (implicit type)
+*
 * Revision 3.8  1997/05/11 20:55:27  tom
 * rename DATA to LIST_DATATYPE
 *
@@ -246,7 +249,7 @@ char	*label;
 	LIST_DATATYPE *data;
 	int i;
 	int j;
-	static tab = -1;
+	static int tab = -1;
 
 	++tab;
 	for (j = 0; j < tab; ++j) putc('\t', stderr);
