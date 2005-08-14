@@ -25,8 +25,6 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <unistd.h>
 #endif
 
-#include <stdio.h>
-
 #include "portable.h"
 #include "version.h"
 #include "atacysis.h"
@@ -38,12 +36,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* not vms */
 
 static char const atac_to_bin_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atac_to_bin.c,v 3.8 1995/12/29 21:25:35 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atac_to_bin.c,v 3.9 2005/08/14 13:48:31 tom Exp $";
 static char const bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: atac_to_bin.c,v $
+* Revision 3.9  2005/08/14 13:48:31  tom
+* gcc warnings
+*
 * Revision 3.8  1995/12/29 21:25:35  tom
 * adjust headers, prototyped for autoconfig
 *

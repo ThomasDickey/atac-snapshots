@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif
 
 static const char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.9 1998/09/19 15:27:18 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.10 2005/08/14 13:45:49 tom Exp $";
 /*
 * $Log: error.c,v $
+* Revision 3.10  2005/08/14 13:45:49  tom
+* gcc warnings
+*
 * Revision 3.9  1998/09/19 15:27:18  tom
 * change error-message format to put filename, line, col before the message
 * to make it simpler to parse with vile's error-finder
@@ -71,12 +74,12 @@ static const char error_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
+#include "portable.h"
 
-#if HAVE_VARARGS_H && !CC_HAS_PROTOS
+#if defined(HAVE_VARARGS_H) && !CC_HAS_PROTOS
 #include <varargs.h>
 #else
-#if HAVE_STDARG_H
+#ifdef HAVE_STDARG_H
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -90,14 +93,13 @@ static const char error_c[] =
 #define VaStart(ap,arg) va_start(ap)
 #endif
 
-#include "portable.h"
 #include "error.h"
 #include "tnode.h"
 
 #define PARSE_ERROR	2
 #define INTERNAL_ERROR	3
 
-static warn_flag = 1;
+static int warn_flag = 1;
 
 static void any_error P_((SRCPOS *srcpos, char *label));
 

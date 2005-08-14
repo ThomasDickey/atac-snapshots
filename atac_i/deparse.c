@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char deparse_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.10 1998/09/19 15:01:02 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.c,v 3.11 2005/08/14 13:44:42 tom Exp $";
 /*
 * $Log: deparse.c,v $
+* Revision 3.11  2005/08/14 13:44:42  tom
+* gcc warnings
+*
 * Revision 3.10  1998/09/19 15:01:02  tom
 * add a cast for 2nd param of aTaC function
 *
@@ -83,11 +86,6 @@ static const char deparse_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#include <stdio.h>
-#include <ctype.h>
 
 #include "portable.h"
 
@@ -184,8 +182,8 @@ char	*prefix;
 	TNODE	*next;
 	int	genus;
 	int	species;
-	static	temptab = 0;
-	static	column = 0;
+	static	int temptab = 0;
+	static	int column = 0;
 
 	if (n == NULL) {
 		return;		/* e.g. Empty input. */

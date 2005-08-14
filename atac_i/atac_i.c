@@ -23,12 +23,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char atac_i_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.10 1997/12/09 00:48:59 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.11 2005/08/13 15:13:22 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
 * $Log: atac_i.c,v $
+* Revision 3.11  2005/08/13 15:13:22  tom
+* portable.h now always includes stdio.h
+*
 * Revision 3.10  1997/12/09 00:48:59  tom
 * use TNODE* instead of void*
 *
@@ -92,7 +95,6 @@ static const char bellcoreCopyRight[] =
 * 
 *-----------------------------------------------end of log
 */
-#include <stdio.h>
 #include "portable.h"
 #include "error.h"
 #include "flowgraph.h"

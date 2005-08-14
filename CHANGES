@@ -1,3 +1,31 @@
+2005-08-13  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* portable.h: include stdlib.h to get exit() prototype
+
+	* portable.h: quieted some of the -Wundef warnings
+
+	* configure: regenerated after updating aclocal.m4
+
+	* aclocal.m4: resync with my-autoconf
+
+	* configure.in: require current 2.13 patchlevel
+
+2005-06-25  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* config.sub: resync: 2005/6/2
+
+	* config.guess: resync: 2005/5/27
+
+2003-11-29  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* install-sh: RCS_BASE
+
+	* install.sh: resync with my-autoconf
+
+2002-06-29  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* mkdirs.sh: resync with my-autoconf
+
 1998-08-23  Thomas E. Dickey  <dickey@clark.net>
 
 	* configure: 980823

@@ -33,9 +33,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "rlist.h"
 
 static char const bdisp_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/bdisp.c,v 3.6 1995/12/29 21:24:41 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/bdisp.c,v 3.7 2005/08/14 13:56:42 tom Exp $";
 /*
 * $Log: bdisp.c,v $
+* Revision 3.7  2005/08/14 13:56:42  tom
+* gcc warnings
+*
 * Revision 3.6  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for auto-config
 *
@@ -251,7 +254,7 @@ int		displayMode;
 	int		end;
 	char		*srcfile;
 	static char	*prev_filename = NULL;
-	static		prev_end;
+	static int	prev_end;
 
 	srcfile = srcfile_name(file->filename, &file->chgtime, atacfile);
 	if (rlist_get(rlist, &s1, &s2, &e1, &e2) == 0)	/* get last */

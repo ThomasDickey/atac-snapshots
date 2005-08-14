@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char srcpos_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.8 1998/09/19 15:31:56 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.9 2005/08/14 13:43:57 tom Exp $";
 /*
 * $Log: srcpos.c,v $
+* Revision 3.9  2005/08/14 13:43:57  tom
+* gcc warnings
+*
 * Revision 3.8  1998/09/19 15:31:56  tom
 * spell out line and col words for clarity in the source-position
 *
@@ -71,11 +74,6 @@ static const char srcpos_c[] =
  * 
 *-----------------------------------------------end of log
 */
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#include <stdio.h>
 #include "portable.h"
 #include "error.h"
 #include "tnode.h"
@@ -87,7 +85,7 @@ static const char srcpos_c[] =
 static char **filenames = NULL;
 static int *stamps = NULL;
 static int n_filenames = 0;
-static fname_buf_size = 0;
+static int fname_buf_size = 0;
 
 void
 print_srcpos(srcpos, f)

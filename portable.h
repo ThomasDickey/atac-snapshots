@@ -20,17 +20,28 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 extern	int main(int, char **);
 #ifndef CC_HAS_PROTOS
 #define CC_HAS_PROTOS 1
+#define USE_PROTOTYPES 1
 #endif
 #else	/* assume K&R */
 #define P_(p) ()
 #define const
 #endif
 
-static const char portable_h[] = 
-	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.16 1997/12/10 01:51:44 tom Exp $";
+static const char portable_h[] =
+	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.19 2005/08/14 13:53:57 tom Exp $";
 /*
 * Copyright @ 1992 Bell Communications Research, Inc. All Rights Reserved.
 *$Log: portable.h,v $
+*Revision 3.19  2005/08/14 13:53:57  tom
+*include string.h and ctype.h
+*turn on prototypes in cccp
+*
+*Revision 3.18  2005/08/13 15:16:23  tom
+*include stdlib.h to get exit() prototype
+*
+*Revision 3.17  2005/08/13 12:30:53  tom
+*quieted some of the -Wundef warnings
+*
 *Revision 3.16  1997/12/10 01:51:44  tom
 *simplified ifdefs for atexit() and on_exit()
 *
@@ -91,7 +102,7 @@ static const char portable_h[] =
 *service specific ifdefs and local preference mods
 *
 *Revision 2.1  92/11/02  13:36:42  saul
-*Rabbit Software 1987 (from printed copy)     
+*Rabbit Software 1987 (from printed copy)
 *
 *-----------------------------------------------end of log
 */
@@ -105,9 +116,14 @@ static const char portable_h[] =
 *
 */
 
-#ifndef EOF
-#include <stdio.h>			/* Used to check for system V */
+#include <stdio.h>
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
 #endif
+
+#include <string.h>
+#include <ctype.h>
 
 /* Standard types */
 typedef int		boolean;	/* >= 16 bits used as boolean	*/
@@ -151,6 +167,39 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 
 #define SUCCEED		0		/* for use in exit()		*/
 #define FAIL		(-1)		/* for exit() & error returns	*/
+
+/*
+ * Definitions to allow us to just test #define's logically.
+ */
+
+#ifndef AIX
+#define AIX 0
+#endif
+#ifndef _AIX
+#define _AIX 0
+#endif
+#ifndef __AIX__
+#define __AIX__ 0
+#endif
+#ifndef _AIX32
+#define _AIX32 0
+#endif
+#ifndef IBMR2
+#define IBMR2 0
+#endif
+
+#ifndef sun
+#define sun 0
+#endif
+#ifndef sun3
+#define sun3 0
+#endif
+#ifndef sun386
+#define sun386 0
+#endif
+#ifndef sparc
+#define sparc 0
+#endif
 
 /*
 * AIX

@@ -21,13 +21,6 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <config.h>
 #endif
 
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#include <stdio.h>
-#include <ctype.h>
-
 #include "portable.h"
 #include "atacysis.h"
 #include "pack.h"
@@ -35,9 +28,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "man.h"
 
 static char const prev_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/prev.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/prev.c,v 3.5 2005/08/14 13:48:09 tom Exp $";
 /*
 * $Log: prev.c,v $
+* Revision 3.5  2005/08/14 13:48:09  tom
+* gcc warnings
+*
 * Revision 3.4  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 * fix compiler warnings (casts).

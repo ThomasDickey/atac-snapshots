@@ -22,9 +22,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char dug_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.14 1998/09/19 14:53:43 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/dug.c,v 3.15 2005/08/14 13:43:23 tom Exp $";
 /*
 * $Log: dug.c,v $
+* Revision 3.15  2005/08/14 13:43:23  tom
+* gcc warnings
+*
 * Revision 3.14  1998/09/19 14:53:43  tom
 * fix some gcc warnings (make the ZIDENT const, prototype aTaC, and bracket
 * empty-Zpath data)
@@ -115,12 +118,6 @@ static const char dug_c[] =
 * 
 *-----------------------------------------------end of log
 */
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#else
-extern void free();
-#endif
-#include <stdio.h>
 
 #include "portable.h"
 
@@ -766,7 +763,7 @@ int	funcno;
 char	*prefix;
 FILE	*f;
 {
-	static	first_call = 1;
+	static	int first_call = 1;
 	LIST *	i;
 	LIST *	j;
 	BLOCK	*node;

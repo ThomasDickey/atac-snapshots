@@ -17,7 +17,8 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-#include <stdio.h>
+#include "portable.h"
+
 #ifdef vms
 #include <types.h>
 #else /* not vms */
@@ -28,14 +29,16 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* not MVS */
 #endif /* not vms */
 
-#include "portable.h"
 #include "version.h"
 #include "disp.h"
 
 static char const srcfile_name_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/srcfile_name.c,v 3.6 1996/01/11 17:47:36 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/srcfile_name.c,v 3.7 2005/08/14 13:47:42 tom Exp $";
 /*
 * $Log: srcfile_name.c,v $
+* Revision 3.7  2005/08/14 13:47:42  tom
+* gcc warnings
+*
 * Revision 3.6  1996/01/11 17:47:36  tom
 * moved include
 *

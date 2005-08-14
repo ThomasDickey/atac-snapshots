@@ -21,10 +21,13 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.16 1998/08/23 22:01:18 tom Exp $";
+static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.17 2005/08/14 13:57:41 tom Exp $";
 
 /*
 * $Log: atac_rt.c,v $
+* Revision 3.17  2005/08/14 13:57:41  tom
+* gcc warning
+*
 * Revision 3.16  1998/08/23 22:01:18  tom
 * moved timestamp code into 'write_timestamp()', documented Y2K impact (none).
 *
@@ -790,7 +793,7 @@ int		use_blk;
 {
 	PATH *p;
 	static PATH *path_pool = NULL;
-	static size_path_pool = 0;
+	static int size_path_pool = 0;
 
 	for (p = use->path; p != NULL; p = p->next) {
 		if ((p->def_blk == def_blk) && (p->use_blk == use_blk)) {

@@ -17,16 +17,17 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-#include <stdio.h>
-
 #include "portable.h"
 #include "atacysis.h"
 #include "disp.h"
 
 static char const ddisp_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ddisp.c,v 3.6 1995/12/27 20:25:39 tom Exp $";
+	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ddisp.c,v 3.7 2005/08/14 13:47:16 tom Exp $";
 /*
 * $Log: ddisp.c,v $
+* Revision 3.7  2005/08/14 13:47:16  tom
+* gcc warnings
+*
 * Revision 3.6  1995/12/27 20:25:39  tom
 * adjust headers, prototyped for autoconfig
 *
