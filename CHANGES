@@ -1,3 +1,16 @@
+2006-12-22  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* config.guess: 2006-12-22
+
+2006-12-08  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* config.sub: 2006-12-03
+
+2005-08-14  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* portable.h: include string.h and ctype.h
+	turn on prototypes in cccp
+
 2005-08-13  Thomas E. Dickey  <dickey@invisible-island.net>
 
 	* portable.h: include stdlib.h to get exit() prototype

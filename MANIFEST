@@ -1,4 +1,4 @@
-MANIFEST for atac, version t20050814
+MANIFEST for atac, version t20070211
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
@@ -19,7 +19,7 @@ config.sub                      script to translate guessed configuration
 config_h.in                     template for config.h
 configure                       configure-script
 configure.in                    configure-script template
-install.sh                      install-script, if none found by configure
+install-sh                      generic install-script
 makefile.in                     makefile-template, for auto-configure
 mkdirs.sh                       script to make directory-hierarchies
 portable.h                      atac3.3.13
@@ -136,6 +136,7 @@ changes/atac_19971211.txt       changes for 971211
 changes/atac_19980823.txt       changes for 980823
 changes/atac_19980919.txt       changes for 980919
 changes/atac_20050814.txt       changes for 20050814
+changes/atac_20070211.txt       updated configure script, test-built with gcc 2.95.3, icc8 and gcc 3.2
 tools                           subdirectory
 tools/atac                      atac3.3.13
 tools/atacCC                    atac3.3.13
