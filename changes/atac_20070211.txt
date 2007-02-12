@@ -1,0 +1,16 @@
+atac-20070211 - summary of changes made 2007/2/11
+	Thomas Dickey (dickey@invisible-island.net)
+
+	+ update configure script macros
+
+	+ rename install.sh to install-sh to avoid problem with some "make"
+	  program's default rules.
+
+# ------------------------------------------------------------------------------
+# aclocal.m4               |  137 ++++++++++++--
+# atac_20070211/install-sh |  294 ++++++++++++++++++++++++++++++
+# config.guess             |  119 ++++++------
+# config.sub               |  124 ++++++++----
+# configure                |  432 +++++++++++++++++++++++++++++++--------------
+# 5 files changed, 860 insertions(+), 246 deletions(-)
+# ------------------------------------------------------------------------------

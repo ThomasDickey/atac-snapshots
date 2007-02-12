@@ -1,4 +1,28 @@
-dnl Macros for auto-configure script.
+dnl $XTermId: aclocal.m4,v 3.10 2007/02/11 22:42:27 tom Exp $
+dnl
+dnl ---------------------------------------------------------------------------
+dnl
+dnl Copyright 1997-2005,2007 by Thomas E. Dickey
+dnl
+dnl                         All Rights Reserved
+dnl
+dnl Permission to use, copy, modify, and distribute this software and its
+dnl documentation for any purpose and without fee is hereby granted,
+dnl provided that the above copyright notice appear in all copies and that
+dnl both that copyright notice and this permission notice appear in
+dnl supporting documentation, and that the name of the above listed
+dnl copyright holder(s) not be used in advertising or publicity pertaining
+dnl to distribution of the software without specific, written prior
+dnl permission.
+dnl
+dnl THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM ALL WARRANTIES WITH REGARD
+dnl TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+dnl AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE
+dnl LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+dnl WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+dnl ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+dnl OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
 dnl CF_ADD_CFLAGS version: 7 updated: 2004/04/25 17:48:30
@@ -453,7 +477,7 @@ fi
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_VERSION version: 3 updated: 2003/09/06 19:16:57
+dnl CF_GCC_VERSION version: 4 updated: 2005/08/27 09:53:42
 dnl --------------
 dnl Find version of gcc
 AC_DEFUN([CF_GCC_VERSION],[
@@ -461,7 +485,7 @@ AC_REQUIRE([AC_PROG_CC])
 GCC_VERSION=none
 if test "$GCC" = yes ; then
 	AC_MSG_CHECKING(version of $CC)
-	GCC_VERSION="`${CC} --version|sed -e '2,$d' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
+	GCC_VERSION="`${CC} --version| sed -e '2,$d' -e 's/^.*(GCC) //' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
 	test -z "$GCC_VERSION" && GCC_VERSION=unknown
 	AC_MSG_RESULT($GCC_VERSION)
 fi
@@ -683,7 +707,7 @@ printf("old\n");
 	,[$1=no])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_CPPFLAGS version: 17 updated: 2003/11/06 19:59:57
+dnl CF_NCURSES_CPPFLAGS version: 18 updated: 2005/12/31 13:26:39
 dnl -------------------
 dnl Look for the SVr4 curses clone 'ncurses' in the standard places, adjusting
 dnl the CPPFLAGS variable so we can include its header.
@@ -724,9 +748,27 @@ AC_CACHE_CHECK(for $cf_ncuhdr_root header in include-path, cf_cv_ncurses_h,[
 	done
 ])
 
+CF_NCURSES_HEADER
+CF_TERM_HEADER
+
+# some applications need this, but should check for NCURSES_VERSION
+AC_DEFINE(NCURSES)
+
+CF_NCURSES_VERSION
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_NCURSES_HEADER version: 1 updated: 2005/12/31 13:28:37
+dnl -----------------
+dnl Find a "curses" header file, e.g,. "curses.h", or one of the more common
+dnl variations of ncurses' installs.
+dnl
+dnl See also CF_CURSES_HEADER, which sets the same cache variable.
+AC_DEFUN([CF_NCURSES_HEADER],[
+
 if test "$cf_cv_ncurses_h" != no ; then
 	cf_cv_ncurses_header=$cf_cv_ncurses_h
 else
+
 AC_CACHE_CHECK(for $cf_ncuhdr_root include-path, cf_cv_ncurses_h2,[
 	test -n "$verbose" && echo
 	CF_HEADER_PATH(cf_search,$cf_ncuhdr_root)
@@ -762,7 +804,7 @@ AC_CACHE_CHECK(for $cf_ncuhdr_root include-path, cf_cv_ncurses_h2,[
 
 fi
 
-AC_DEFINE(NCURSES)
+# Set definitions to allow ifdef'ing for ncurses.h
 
 case $cf_cv_ncurses_header in # (vi
 *ncurses.h)
@@ -779,7 +821,6 @@ ncursesw/curses.h|ncursesw/ncurses.h)
 	;;
 esac
 
-CF_NCURSES_VERSION
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_NCURSES_LIBS version: 12 updated: 2004/04/27 16:26:05
@@ -933,13 +974,19 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PATH_SYNTAX version: 9 updated: 2002/09/17 23:03:38
+dnl CF_PATH_SYNTAX version: 11 updated: 2006/09/02 08:55:46
 dnl --------------
 dnl Check the argument to see that it looks like a pathname.  Rewrite it if it
 dnl begins with one of the prefix/exec_prefix variables, and then again if the
 dnl result begins with 'NONE'.  This is necessary to work around autoconf's
 dnl delayed evaluation of those symbols.
 AC_DEFUN([CF_PATH_SYNTAX],[
+if test "x$prefix" != xNONE; then
+  cf_path_syntax="$prefix"
+else
+  cf_path_syntax="$ac_default_prefix"
+fi
+
 case ".[$]$1" in #(vi
 .\[$]\(*\)*|.\'*\'*) #(vi
   ;;
@@ -951,12 +998,12 @@ case ".[$]$1" in #(vi
   eval $1="[$]$1"
   case ".[$]$1" in #(vi
   .NONE/*)
-    $1=`echo [$]$1 | sed -e s%NONE%$ac_default_prefix%`
+    $1=`echo [$]$1 | sed -e s%NONE%$cf_path_syntax%`
     ;;
   esac
   ;; #(vi
-.NONE/*)
-  $1=`echo [$]$1 | sed -e s%NONE%$ac_default_prefix%`
+.no|.NONE/*)
+  $1=`echo [$]$1 | sed -e s%NONE%$cf_path_syntax%`
   ;;
 *)
   ifelse($2,,[AC_ERROR([expected a pathname, not \"[$]$1\"])],$2)
@@ -1024,7 +1071,7 @@ AC_DEFUN([CF_STRIP_O_OPT],[
 $1=`echo ${$1} | sed -e 's/-O[[1-9]]\? //' -e 's/-O[[1-9]]\?$//'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SUBDIR_PATH version: 3 updated: 2002/12/29 18:30:46
+dnl CF_SUBDIR_PATH version: 4 updated: 2006/11/18 17:13:19
 dnl --------------
 dnl Construct a search-list for a nonstandard header/lib-file
 dnl	$1 = the variable to return as result
@@ -1033,19 +1080,19 @@ dnl	$3 = the subdirectory, e.g., bin, include or lib
 AC_DEFUN([CF_SUBDIR_PATH],
 [$1=""
 
-test -d [$]HOME && {
+test -d "[$]HOME" && {
 	test -n "$verbose" && echo "	... testing $3-directories under [$]HOME"
-	test -d [$]HOME/$3 &&          $1="[$]$1 [$]HOME/$3"
-	test -d [$]HOME/$3/$2 &&       $1="[$]$1 [$]HOME/$3/$2"
-	test -d [$]HOME/$3/$2/$3 &&    $1="[$]$1 [$]HOME/$3/$2/$3"
+	test -d "[$]HOME/$3" &&          $1="[$]$1 [$]HOME/$3"
+	test -d "[$]HOME/$3/$2" &&       $1="[$]$1 [$]HOME/$3/$2"
+	test -d "[$]HOME/$3/$2/$3" &&    $1="[$]$1 [$]HOME/$3/$2/$3"
 }
 
 # For other stuff under the home directory, it should be sufficient to put
 # a symbolic link for $HOME/$2 to the actual package location:
-test -d [$]HOME/$2 && {
+test -d "[$]HOME/$2" && {
 	test -n "$verbose" && echo "	... testing $3-directories under [$]HOME/$2"
-	test -d [$]HOME/$2/$3 &&       $1="[$]$1 [$]HOME/$2/$3"
-	test -d [$]HOME/$2/$3/$2 &&    $1="[$]$1 [$]HOME/$2/$3/$2"
+	test -d "[$]HOME/$2/$3" &&       $1="[$]$1 [$]HOME/$2/$3"
+	test -d "[$]HOME/$2/$3/$2" &&    $1="[$]$1 [$]HOME/$2/$3/$2"
 }
 
 test "$prefix" != /usr/local && \
@@ -1088,9 +1135,11 @@ test -d /usr && {
 }
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TERMCAP_LIBS version: 10 updated: 2001/10/18 20:42:39
+dnl CF_TERMCAP_LIBS version: 11 updated: 2006/10/28 15:15:38
 dnl ---------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
+dnl
+dnl The optional parameter may be "ncurses", "ncursesw".
 AC_DEFUN([CF_TERMCAP_LIBS],
 [
 AC_CACHE_VAL(cf_cv_termlib,[
@@ -1104,8 +1153,7 @@ AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
 ifelse([$1],,,[
 case "$1" in # (vi
 ncurses*)
-	CF_NCURSES_CPPFLAGS($1)
-	CF_NCURSES_LIBS($1)
+	CF_NCURSES_CONFIG($1)
 	cf_cv_termlib=terminfo
 	;;
 esac
@@ -1145,6 +1193,53 @@ if test "$cf_cv_termlib" = none; then
 	AC_MSG_WARN([Cannot find -ltermlib, -lcurses, or -ltermcap])
 fi
 ])])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_TERM_HEADER version: 1 updated: 2005/12/31 13:26:39
+dnl --------------
+dnl Look for term.h, which is part of X/Open curses.  It defines the interface
+dnl to terminfo database.  Usually it is in the same include-path as curses.h,
+dnl but some packagers change this, breaking various applications.
+AC_DEFUN([CF_TERM_HEADER],[
+AC_CACHE_CHECK(for terminfo header, cf_cv_term_header,[
+case ${cf_cv_ncurses_header} in #(vi
+*/ncurses.h|*/ncursesw.h) #(vi
+	cf_term_header=`echo "$cf_cv_ncurses_header" | sed -e 's%ncurses[[^.]]*\.h$%term.h%'`
+	;;
+*)
+	cf_term_header=term.h
+	;;
+esac
+
+for cf_test in $cf_term_header "ncurses/term.h" "ncursesw/term.h"
+do
+AC_TRY_COMPILE([#include <stdio.h>
+#include <${cf_cv_ncurses_header-curses.h}>
+#include <$cf_test>
+],[int x = auto_left_margin],[
+	cf_cv_term_header="$cf_test"],[
+	cf_cv_term_header=unknown
+	])
+	test "$cf_cv_term_header" != unknown && break
+done
+])
+
+# Set definitions to allow ifdef'ing to accommodate subdirectories
+
+case $cf_cv_term_header in # (vi
+*term.h)
+	AC_DEFINE(HAVE_TERM_H)
+	;;
+esac
+
+case $cf_cv_term_header in # (vi
+ncurses/term.h) #(vi
+	AC_DEFINE(HAVE_NCURSES_TERM_H)
+	;;
+ncursesw/term.h)
+	AC_DEFINE(HAVE_NCURSESW_TERM_H)
+	;;
+esac
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_TYPE_OUTCHAR version: 13 updated: 2002/10/09 20:00:37
 dnl ---------------
