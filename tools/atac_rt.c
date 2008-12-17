@@ -21,10 +21,13 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.17 2005/08/14 13:57:41 tom Exp $";
+static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.18 2008/12/17 01:24:59 tom Exp $";
 
 /*
 * $Log: atac_rt.c,v $
+* Revision 3.18  2008/12/17 01:24:59  tom
+* convert to ANSI, indent'd
+*
 * Revision 3.17  2005/08/14 13:57:41  tom
 * gcc warning
 *
@@ -173,104 +176,104 @@ static const char ident[] = "\044Log: @(#)ATAC runtime\044";
 */
 
 typedef struct {
-	struct du	*du;
-	short		blk;
+    struct du *du;
+    short blk;
 } PDEF;
 
 typedef struct path {
-	short	def_blk;
-	short	use_blk;		/* needed for p-uses */
-	unsigned int	count;
-	struct path	*next;
+    short def_blk;
+    short use_blk;		/* needed for p-uses */
+    unsigned int count;
+    struct path *next;
 } PATH;
 
 typedef struct du {
-	unsigned short	var;		/* index into var[] */
-	unsigned short	type;		/* VAR_DEF, VAR_PUSE, VAR_CUSE */
-	PATH		*path;		/* list of defs reaching this use */
+    unsigned short var;		/* index into var[] */
+    unsigned short type;	/* VAR_DEF, VAR_PUSE, VAR_CUSE */
+    PATH *path;			/* list of defs reaching this use */
 } DU;
 
 typedef struct {
-	char	*name;
-	int	stamp;
+    char *name;
+    int stamp;
 } FILESTAMP;
 
 typedef struct du_table {
-	FILESTAMP	*files;		/* Array of source file names/stamps */
-	char		version[2 * sizeof(char *)];	/* version string */
-	unsigned short	fileId;
-	unsigned short	funcno;		/* Function number in source file */
-	unsigned short	nblk;		/* number of entries in blk[] */
-	unsigned short	nvar;		/* number of entries in var[] */
-	DU		**blk;
-	struct du_table	*next;		/* Link pointer. */
-	unsigned int	*blkCounts;	/* block visitation counts */
+    FILESTAMP *files;		/* Array of source file names/stamps */
+    char version[2 * sizeof(char *)];	/* version string */
+    unsigned short fileId;
+    unsigned short funcno;	/* Function number in source file */
+    unsigned short nblk;	/* number of entries in blk[] */
+    unsigned short nvar;	/* number of entries in var[] */
+    DU **blk;
+    struct du_table *next;	/* Link pointer. */
+    unsigned int *blkCounts;	/* block visitation counts */
 } DU_TABLE;
 
 typedef struct Context {
-	int		funcno;
-	struct Context	*prev_context;
-	DU		**blk;
-	unsigned int	*blkCounts;
-	short		*deflist;
-	unsigned short	fileId;
-	PDEF		*p_use;
-	int		p_use_count;
-	int		prev_blk;
+    int funcno;
+    struct Context *prev_context;
+    DU **blk;
+    unsigned int *blkCounts;
+    short *deflist;
+    unsigned short fileId;
+    PDEF *p_use;
+    int p_use_count;
+    int prev_blk;
 } DU_CONTEXT;
 
 /*
 * Static data.
 */
 
-static DU_CONTEXT	*context_stack = NULL;
-static DU_CONTEXT	dummy_context = { -1, 0, 0, 0, 0, 0, 0, 0, 0 };
-static DU_CONTEXT	*context = &dummy_context;
+static DU_CONTEXT *context_stack = NULL;
+static DU_CONTEXT dummy_context =
+{-1, 0, 0, 0, 0, 0, 0, 0, 0};
+static DU_CONTEXT *context = &dummy_context;
 
 static DU_TABLE dummyTable;
-static DU_TABLE	*list_of_tables = &dummyTable;
+static DU_TABLE *list_of_tables = &dummyTable;
 
-static char		traceName[FILENAME_SIZE];
-static FILE		*f = NULL;
+static char traceName[FILENAME_SIZE];
+static FILE *f = NULL;
 
-static int		fileId = 0;
+static int fileId = 0;
 
-static int		restartFlag = 0;
-static char		*restartTestName = NULL;
+static int restartFlag = 0;
+static char *restartTestName = NULL;
 
 /* forward declarations */
-extern int aTaC P_((int level, int blk));
-extern int aTaC_fork P_((void));
-extern int atac_child P_((void));
-extern void aTaC_dump P_((void));
-extern void atac_restart P_((char *testName));
-static FILE *opentrace P_((void));
-static RETSIGTYPE sigHandler P_((int n));
-static char *getTestName P_((void));
-static int add_path P_((DU *use, int def_blk, int use_blk));
-static int atac_flush P_((FILE *fp, int final));
-static int atac_zero P_((void));
-static int redoFileNames P_((FILE *fp));
-static void prepareEnd P_((void));
-static void setupSignal P_((void));
-static void write_timestamp P_((void));
+extern int aTaC(int level, int blk);
+extern int aTaC_fork(void);
+extern int atac_child(void);
+extern void aTaC_dump(void);
+extern void atac_restart(char *testName);
+static FILE *opentrace(void);
+static RETSIGTYPE sigHandler(int n);
+static char *getTestName(void);
+static int add_path(DU * use, int def_blk, int use_blk);
+static int atac_flush(FILE *fp, int final);
+static int atac_zero(void);
+static int redoFileNames(FILE *fp);
+static void prepareEnd(void);
+static void setupSignal(void);
+static void write_timestamp(void);
 
 static int
-atac_flush(fp, final)
-FILE	*fp;
-int	final;
+atac_flush(FILE *fp,
+	   int final)
 {
-    DU_TABLE	*table;
-    int		blk;
-    int		count;
-    DU		*du;
-    DU		*du_limit;
-    PATH	*p;
-    int		type;
-    int		var;
-    int		file_id;
-    int		funcNo;
-    int		nblk;
+    DU_TABLE *table;
+    int blk;
+    int count;
+    DU *du;
+    DU *du_limit;
+    PATH *p;
+    int type;
+    int var;
+    int file_id;
+    int funcNo;
+    int nblk;
 
     for (table = list_of_tables; table != &dummyTable; table = table->next) {
 	file_id = table->fileId;
@@ -296,8 +299,7 @@ int	final;
 			    fprintf(fp, "c %d %d %d %d %d %d\n",
 				    file_id, funcNo, var,
 				    p->def_blk, blk, count);
-			}
-			else if (type & VAR_PUSE) {
+			} else if (type & VAR_PUSE) {
 			    fprintf(fp, "p %d %d %d %d %d %d %d\n",
 				    file_id, funcNo, var,
 				    p->def_blk, p->use_blk, blk, count);
@@ -315,14 +317,14 @@ int	final;
 }
 
 static int
-atac_zero()
+atac_zero(void)
 {
-    DU_TABLE	*table;
-    int		blk;
-    DU		*du;
-    DU		*du_limit;
-    PATH	*p;
-    int		nblk;
+    DU_TABLE *table;
+    int blk;
+    DU *du;
+    DU *du_limit;
+    PATH *p;
+    int nblk;
 
     for (table = list_of_tables; table != &dummyTable; table = table->next) {
 	nblk = table->nblk;
@@ -369,25 +371,25 @@ atac_zero()
 
 #ifdef END_PROCESSING
 #if HAVE_ATEXIT
-static void aTaC_cleanup P_((void))
-#else	/* using 'on_exit()' */
-static void aTaC_cleanup (status, arg)
-	int status;
-	char *arg;
+static void
+aTaC_cleanup(void)
+#else /* using 'on_exit()' */
+static void
+aTaC_cleanup(int status, char *arg)
 #endif
 {
-    int		pid;
-    int		wpid;
-    char	*compress;
-    int		nthCompress;
+    int pid;
+    int wpid;
+    char *compress;
+    int nthCompress;
 
     if (f) {
 	atac_flush(f, FINAL_FLUSH);
 	fclose(f);
     }
-
 #ifdef FORK_SUPPORT
-    if (getenv("ATAC_NOCOMPRESS") != NULL) return;
+    if (getenv("ATAC_NOCOMPRESS") != NULL)
+	return;
 
     compress = getenv("ATAC_COMPRESS");
     if (compress != NULL) {
@@ -399,8 +401,8 @@ static void aTaC_cleanup (status, arg)
     }
 
     /*
-    * Run atactm to compress trace.  Return when done.
-    */
+       * Run atactm to compress trace.  Return when done.
+     */
     pid = fork();
     if (pid == 0) {
 	close(0);
@@ -409,11 +411,12 @@ static void aTaC_cleanup (status, arg)
 	open("/dev/null", O_WRONLY, 0);		/* 1 (stdout) */
 	close(2);
 	open("/dev/null", O_WRONLY, 0);		/* 2 (stderr) */
-	execlp("atactm", "atactm", traceName, 0);
+	execlp("atactm", "atactm", traceName, NULL);
 	_exit(1);
     } else {
 	while ((wpid = wait(0)) != pid) {
-	    if (wpid == -1 && errno != EINTR) break;
+	    if (wpid == -1 && errno != EINTR)
+		break;
 	}
     }
 #endif /* FORK_SUPPORT */
@@ -421,7 +424,7 @@ static void aTaC_cleanup (status, arg)
 #endif /* END_PROCESSING */
 
 static void
-prepareEnd()
+prepareEnd(void)
 {
 #ifdef HAVE_ATEXIT
     atexit(aTaC_cleanup);
@@ -437,8 +440,7 @@ prepareEnd()
 #ifdef _EXIT_SUPPORT
 #ifndef HAVE_ATEXIT
 #ifndef HAVE_ON_EXIT
-exit(status)
-int	status;
+exit(int status)
 {
     aTaC_cleanup();
     _cleanup();
@@ -450,13 +452,12 @@ int	status;
 #endif /* MARCH */
 
 static int
-redoFileNames(fp)
-FILE	*fp;
+redoFileNames(FILE *fp)
 {
-    DU_TABLE	*table;
-    FILESTAMP	*filestamp;
-    int		nFiles;
-    int		i;
+    DU_TABLE *table;
+    FILESTAMP *filestamp;
+    int nFiles;
+    int i;
 
     for (table = list_of_tables; table != &dummyTable; table = table->next) {
 	filestamp = table->files;
@@ -479,15 +480,16 @@ FILE	*fp;
 }
 
 static char *
-getTestName()
+getTestName(void)
 {
-    char	*testName;
-    char	*p;
+    char *testName;
+    char *p;
 
     testName = restartTestName;
     if (testName == NULL) {
 	testName = getenv("ATAC_TEST");
-	if (testName == NULL) return "t";
+	if (testName == NULL)
+	    return "t";
     }
 
     for (p = testName; *p; ++p) {
@@ -504,15 +506,16 @@ getTestName()
  * not compare dates except to see if they are equal, so there is no need to
  * make a new file-format version with a 4-digit year.
  */
-static void write_timestamp()
+static void
+write_timestamp(void)
 {
     time_t now;
     struct tm *tm;
 
-    now = time((time_t*)0);
-    tm = (struct tm *)localtime(&now);
+    now = time((time_t *) 0);
+    tm = (struct tm *) localtime(&now);
     fprintf(f, "t %.2d/%.2d/%.2d-%.2d:%.2d:%.2d",
-	    tm->tm_mon+1,
+	    tm->tm_mon + 1,
 	    tm->tm_mday,
 	    tm->tm_year,
 	    tm->tm_hour,
@@ -521,319 +524,325 @@ static void write_timestamp()
     fprintf(f, " %s %s\n", VERSION, getTestName());
 }
 
-int					/* returns call level */
-aTaC(level, blk)
-int		level;
-int		blk;
+int				/* returns call level */
+aTaC(int level,
+     int blk)
 {
-	static int		call_level = -1;
-	static int		busy = 0;
-	PDEF			*pdef;
-	DU			*du;
-	DU			*du_limit;
-	int			def_blk;
-	int			i;
-	FILESTAMP		*filestamp;
+    static int call_level = -1;
+    static int busy = 0;
+    PDEF *pdef;
+    DU *du;
+    DU *du_limit;
+    int def_blk;
+    int i;
+    FILESTAMP *filestamp;
 #ifndef NOFLUSH
-	int			flush;
+    int flush;
 #endif
 
-	if (busy) return IGNORE_LEVEL;
-	busy = 1;
+    if (busy)
+	return IGNORE_LEVEL;
+    busy = 1;
 
-	if (restartFlag != 0 && f != NULL) {
-	    atac_flush(f, FINAL_FLUSH);
-	    write_timestamp();
-	    redoFileNames(f);
-	    restartFlag = 0;
-	}
+    if (restartFlag != 0 && f != NULL) {
+	atac_flush(f, FINAL_FLUSH);
+	write_timestamp();
+	redoFileNames(f);
+	restartFlag = 0;
+    }
 
-	if (level != call_level) {
+    if (level != call_level) {
+	/*
+	 * First call for this invocation of this function.
+	 */
+	if (level == 0) {
+	    DU_TABLE *table;
+
+	    /*
+	     * One time initializations.
+	     */
+	    if (f == NULL) {
+		prepareEnd();
+		setupSignal();
+		f = opentrace();
+		if (f == NULL)
+		    exit(1);
+		write_timestamp();
+		call_level = 0;
+		restartFlag = 0;
+	    }
+
+	    table = (DU_TABLE *) blk;
+	    blk = 0;
+
+	    /*
+	     * First entry to code in this source file.
+	     */
+	    filestamp = table->files;
+	    if (filestamp->name) {
+		int n = 1;
+		while (filestamp[n].name != NULL)
+		    ++n;
+		table->fileId = fileId++;
+		fprintf(f, "s %d %s %d %s\n",
+			table->fileId, filestamp->name,
+			filestamp->stamp, table->version);
 		/*
-		* First call for this invocation of this function.
-		*/
-		if (level == 0) {
-			DU_TABLE	*table;
-
-			/*
-			* One time initializations.
-			*/
-			if (f == NULL) {
-				prepareEnd();
-				setupSignal();
-				f = opentrace();
-				if (f == NULL) exit(1);
-				write_timestamp();
-				call_level = 0;
-				restartFlag = 0;
-			}
-
-			table = (DU_TABLE *)blk;
-			blk = 0;
-
-			/*
-			* First entry to code in this source file.
-			*/
-			filestamp = table->files;
-			if (filestamp->name) {
-				int	n = 1;
-				while (filestamp[n].name != NULL)
-				    ++n;
-				table->fileId = fileId++;
-				fprintf(f, "s %d %s %d %s\n",
-					table->fileId, filestamp->name,
-					filestamp->stamp, table->version);
-				/*
-				* Kludges: CLEAN THIS UP!
-				* filestamp[0].name is used as a flag that
-				* indicates that a function in this file
-				* has been entered before.
-				* filestamp[0].stamp is used to store the
-				* fileId.
-				*/
-				filestamp[n].name = filestamp[0].name;
-				filestamp[n].stamp = filestamp[0].stamp;
-				filestamp->name = NULL;
-				filestamp->stamp = (n << 16) | table->fileId;
-				if (strcmp(table->version, RT_VERSION) != 0) {
-				    return IGNORE_LEVEL;
-				}
-				while (++filestamp < table->files + n)
-					fprintf(f, "h %s %d\n", filestamp->name,
-						filestamp->stamp);
-			} else table->fileId = filestamp->stamp & 0xFFFF;
-
-			/*
-			* Push prev context on stack.
-			*/
-			context->prev_context = context_stack;
-			context_stack = context;
-			++call_level;
-
-			/*
-			* Create new context.
-			*/
-			context = (DU_CONTEXT *)malloc(
-				sizeof *context +
-				(PUSE_STACKMAX * sizeof *context->p_use) +
-				(table->nvar * sizeof *context->deflist));
-			if (context == NULL) {
-				fprintf(f,
-					"%d %d=>can't alloc context level %d\n",
-					table->fileId, (int)table->funcno,
-					call_level);
-				fflush(f);
-				exit(1);
-			}
-			context->funcno = table->funcno;
-			context->fileId = table->fileId;
-			context->blk = table->blk;
-			context->blkCounts = table->blkCounts;
-			context->p_use = (PDEF *)&context[1];
-			context->p_use_count = 0;
-			context->deflist = (short *)
-				&context->p_use[PUSE_STACKMAX];
-			for (i = 0; i < table->nvar; ++i)
-				context->deflist[i] = NULL_BLK;
-			/*
-			* Put table on linked list of functions for
-			* "atac_flush".
-			*/
-			if (table->next == NULL) {
-				table->next = list_of_tables;
-				list_of_tables = table;
-			}
+		 * Kludges: CLEAN THIS UP!
+		 * filestamp[0].name is used as a flag that
+		 * indicates that a function in this file
+		 * has been entered before.
+		 * filestamp[0].stamp is used to store the
+		 * fileId.
+		 */
+		filestamp[n].name = filestamp[0].name;
+		filestamp[n].stamp = filestamp[0].stamp;
+		filestamp->name = NULL;
+		filestamp->stamp = (n << 16) | table->fileId;
+		if (strcmp(table->version, RT_VERSION) != 0) {
+		    return IGNORE_LEVEL;
 		}
+		while (++filestamp < table->files + n)
+		    fprintf(f, "h %s %d\n", filestamp->name,
+			    filestamp->stamp);
+	    } else
+		table->fileId = filestamp->stamp & 0xFFFF;
 
-		/*
-		* Level is the value returned by the first call to aTaC()
-		* (i.e. with level=0), from the current invocation of the
-		* calling function.  Call_level is the value of level on the
-		* previous call of aTaC().  The static variable "context"
-		* points to the most recent context.  If level != call_level
-		* a function must have returned (or longjmp() was called)
-		* since the previous call of aTaC().  In this case we pop
-		* preceeding contexts off the stack and free them down to the
-		* one for the current call level.
-		*/
-		else do {
-			if (level == IGNORE_LEVEL) return -1;
-#ifdef RETURNPATHS
-			for (i = context->p_use_count; i > 0; --i) {
-				pdef = &context->p_use[i - 1];
-				if (add_path(pdef->du, pdef->blk, 0)) {
-					fprintf(f, "p %d %d %d %d %d 0 1\n",
-						context->fileId,
-						context->funcno,
-						pdef->du->var,
-						pdef->blk, context->prev_blk);
-#ifndef NOFLUSH
-					flush = 1;
-#endif
-				}
-			}
-#endif
-			free(context);
-			/*
-			* Pop stack.
-			*/
-			context = context_stack;
-			if (context == &dummy_context) {
-				fprintf(stderr,
-					"aTaC: can't find context\n");
-				fflush(f);
-				exit(1);
-			}
-			context_stack = context->prev_context;
-			--call_level;
-		} while (level != call_level);
+	    /*
+	       * Push prev context on stack.
+	     */
+	    context->prev_context = context_stack;
+	    context_stack = context;
+	    ++call_level;
+
+	    /*
+	       * Create new context.
+	     */
+	    context = (DU_CONTEXT *) malloc(
+					       sizeof *context +
+					       (PUSE_STACKMAX * sizeof *context->p_use)
+					       + (table->nvar * sizeof *context->deflist));
+	    if (context == NULL) {
+		fprintf(f,
+			"%d %d=>can't alloc context level %d\n",
+			table->fileId, (int) table->funcno,
+			call_level);
+		fflush(f);
+		exit(1);
+	    }
+	    context->funcno = table->funcno;
+	    context->fileId = table->fileId;
+	    context->blk = table->blk;
+	    context->blkCounts = table->blkCounts;
+	    context->p_use = (PDEF *) & context[1];
+	    context->p_use_count = 0;
+	    context->deflist = (short *)
+		&context->p_use[PUSE_STACKMAX];
+	    for (i = 0; i < table->nvar; ++i)
+		context->deflist[i] = NULL_BLK;
+	    /*
+	     * Put table on linked list of functions for
+	     * "atac_flush".
+	     */
+	    if (table->next == NULL) {
+		table->next = list_of_tables;
+		list_of_tables = table;
+	    }
 	}
 
-#ifndef NOFLUSH
-	flush = 0;
-#endif
-	for (i = context->p_use_count; i > 0; --i) {
-		pdef = &context->p_use[i - 1];
-		if (add_path(pdef->du, pdef->blk, blk)) {
-			fprintf(f, "p %d %d %d %d %d %d 1\n",
-				context->fileId, context->funcno,
+	/*
+	 * Level is the value returned by the first call to aTaC()
+	 * (i.e. with level=0), from the current invocation of the
+	 * calling function.  Call_level is the value of level on the
+	 * previous call of aTaC().  The static variable "context"
+	 * points to the most recent context.  If level != call_level
+	 * a function must have returned (or longjmp() was called)
+	 * since the previous call of aTaC().  In this case we pop
+	 * preceeding contexts off the stack and free them down to the
+	 * one for the current call level.
+	 */
+	else
+	    do {
+		if (level == IGNORE_LEVEL)
+		    return -1;
+#ifdef RETURNPATHS
+		for (i = context->p_use_count; i > 0; --i) {
+		    pdef = &context->p_use[i - 1];
+		    if (add_path(pdef->du, pdef->blk, 0)) {
+			fprintf(f, "p %d %d %d %d %d 0 1\n",
+				context->fileId,
+				context->funcno,
 				pdef->du->var,
-				pdef->blk, context->prev_blk, blk);
+				pdef->blk, context->prev_blk);
 #ifndef NOFLUSH
 			flush = 1;
 #endif
+		    }
 		}
+#endif
+		free(context);
+		/*
+		 * Pop stack.
+		 */
+		context = context_stack;
+		if (context == &dummy_context) {
+		    fprintf(stderr,
+			    "aTaC: can't find context\n");
+		    fflush(f);
+		    exit(1);
+		}
+		context_stack = context->prev_context;
+		--call_level;
+	    } while (level != call_level);
+    }
+#ifndef NOFLUSH
+    flush = 0;
+#endif
+    for (i = context->p_use_count; i > 0; --i) {
+	pdef = &context->p_use[i - 1];
+	if (add_path(pdef->du, pdef->blk, blk)) {
+	    fprintf(f, "p %d %d %d %d %d %d 1\n",
+		    context->fileId, context->funcno,
+		    pdef->du->var,
+		    pdef->blk, context->prev_blk, blk);
+#ifndef NOFLUSH
+	    flush = 1;
+#endif
 	}
-	context->p_use_count = 0;
+    }
+    context->p_use_count = 0;
 
-	if (context->blkCounts[blk]++ == 0) {
-		fprintf(f, "b %d %d %d 1\n",
-			context->fileId, context->funcno, blk);
+    if (context->blkCounts[blk]++ == 0) {
+	fprintf(f, "b %d %d %d 1\n",
+		context->fileId, context->funcno, blk);
 #ifndef NOFLUSH
-		flush = 1;
+	flush = 1;
 #endif
-	}
-	du = context->blk[blk];
-	du_limit = context->blk[blk + 1];
-	for (; du < du_limit; ++du) {
-		def_blk = context->deflist[du->var];
-		if (du->type & VAR_CUSE) {
-			if (def_blk != NULL_BLK) {
-				if (add_path(du, def_blk, blk)) {
-					fprintf(f, "c %d %d %d %d %d 1\n",
-						context->fileId,
-						context->funcno,
-						du->var,
-						def_blk, blk);
+    }
+    du = context->blk[blk];
+    du_limit = context->blk[blk + 1];
+    for (; du < du_limit; ++du) {
+	def_blk = context->deflist[du->var];
+	if (du->type & VAR_CUSE) {
+	    if (def_blk != NULL_BLK) {
+		if (add_path(du, def_blk, blk)) {
+		    fprintf(f, "c %d %d %d %d %d 1\n",
+			    context->fileId,
+			    context->funcno,
+			    du->var,
+			    def_blk, blk);
 #ifndef NOFLUSH
-					flush = 1;
+		    flush = 1;
 #endif
-				}
-			}
+		}
+	    }
 #ifdef UNINIT_USE
-			else {
-				if (add_path(du, def_blk, blk)) {
-					fprintf(f, "c %d %d %d ? %d 1\n",
-						context->fileId,
-						context->funcno,
-						du->var,
-						blk);
+	    else {
+		if (add_path(du, def_blk, blk)) {
+		    fprintf(f, "c %d %d %d ? %d 1\n",
+			    context->fileId,
+			    context->funcno,
+			    du->var,
+			    blk);
 #ifndef NOFLUSH
-						flush = 1;
-#endif
-				}
-			}
+		    flush = 1;
 #endif
 		}
-		if (du->type & VAR_DEF) {
-			context->deflist[du->var] = blk;
-			def_blk = blk;
-		}
-		if (du->type & VAR_PUSE) {
-			if (def_blk != NULL_BLK) {
-				if (context->p_use_count == PUSE_STACKMAX)
-					continue;
-				pdef = context->p_use + context->p_use_count++;
-				pdef->du = du;
-				pdef->blk = def_blk;
-				context->prev_blk = blk;
-			}
-#ifdef UNINIT_USE
-			else {
-				if (add_path(du, def_blk, blk)) {
-					fprintf(f, "p %d %d %d ? %d %d 1\n",
-						context->fileId,
-						context->funcno,
-						du->var,
-						context->prev_blk, blk);
-#ifndef NOFLUSH
-						flush = 1;
+	    }
 #endif
-				}
-			}
-#endif
-		}
 	}
+	if (du->type & VAR_DEF) {
+	    context->deflist[du->var] = blk;
+	    def_blk = blk;
+	}
+	if (du->type & VAR_PUSE) {
+	    if (def_blk != NULL_BLK) {
+		if (context->p_use_count == PUSE_STACKMAX)
+		    continue;
+		pdef = context->p_use + context->p_use_count++;
+		pdef->du = du;
+		pdef->blk = def_blk;
+		context->prev_blk = blk;
+	    }
+#ifdef UNINIT_USE
+	    else {
+		if (add_path(du, def_blk, blk)) {
+		    fprintf(f, "p %d %d %d ? %d %d 1\n",
+			    context->fileId,
+			    context->funcno,
+			    du->var,
+			    context->prev_blk, blk);
 #ifndef NOFLUSH
-	if (flush) fflush(f);
+		    flush = 1;
+#endif
+		}
+	    }
+#endif
+	}
+    }
+#ifndef NOFLUSH
+    if (flush)
+	fflush(f);
 #endif
 
-	busy = 0;
+    busy = 0;
 
-	return call_level;
+    return call_level;
 }
 
 #define SIZE_PATH_POOL	256
 
-static int				/* return 0 if found */
-add_path(use, def_blk, use_blk)
-DU		*use;
-int		def_blk;
-int		use_blk;
+static int			/* return 0 if found */
+add_path(
+	    DU * use,
+	    int def_blk,
+	    int use_blk)
 {
-	PATH *p;
-	static PATH *path_pool = NULL;
-	static int size_path_pool = 0;
+    PATH *p;
+    static PATH *path_pool = NULL;
+    static int size_path_pool = 0;
 
-	for (p = use->path; p != NULL; p = p->next) {
-		if ((p->def_blk == def_blk) && (p->use_blk == use_blk)) {
-		    if (p->count++ == 0)
-			return 1;
-		    else return 0;
-		}
+    for (p = use->path; p != NULL; p = p->next) {
+	if ((p->def_blk == def_blk) && (p->use_blk == use_blk)) {
+	    if (p->count++ == 0)
+		return 1;
+	    else
+		return 0;
 	}
+    }
 
-	/*
-	* Limit calls to malloc by keeping a pool.
-	*/
-	if (size_path_pool--)
-		p = path_pool++;
-	else {
-		p = (PATH *)malloc(SIZE_PATH_POOL * sizeof *p);
-		if (p == NULL) return 1;
-		path_pool = p + 1;
-		size_path_pool = SIZE_PATH_POOL - 1;
-	}
+    /*
+       * Limit calls to malloc by keeping a pool.
+     */
+    if (size_path_pool--)
+	p = path_pool++;
+    else {
+	p = (PATH *) malloc(SIZE_PATH_POOL * sizeof *p);
+	if (p == NULL)
+	    return 1;
+	path_pool = p + 1;
+	size_path_pool = SIZE_PATH_POOL - 1;
+    }
 
-        p->def_blk = def_blk;
-	p->use_blk = use_blk;
-	p->count = 1;
-	p->next = use->path;
-	use->path = p;
-	return 1;
+    p->def_blk = def_blk;
+    p->use_blk = use_blk;
+    p->count = 1;
+    p->next = use->path;
+    use->path = p;
+    return 1;
 }
 
 void
-aTaC_dump()
+aTaC_dump(void)
 {
-	int j;
-	DU_CONTEXT	*cp;
+    int j;
+    DU_CONTEXT *cp;
 
-	j = 0;
-	fprintf(stderr, "%d: %d %d\n", j++, context->fileId, context->funcno);
-	for (cp = context_stack; cp != NULL; cp = cp->prev_context) {
-		fprintf(stderr, "%d: %d %d\n", j++, cp->fileId, cp->funcno);
-	}
+    j = 0;
+    fprintf(stderr, "%d: %d %d\n", j++, context->fileId, context->funcno);
+    for (cp = context_stack; cp != NULL; cp = cp->prev_context) {
+	fprintf(stderr, "%d: %d %d\n", j++, cp->fileId, cp->funcno);
+    }
 }
 
 /*
@@ -845,57 +854,59 @@ aTaC_dump()
 *	is used.
 */
 static FILE *
-opentrace()
+opentrace(void)
 {
-	FILE		*trace;
-	char		*envval;
+    FILE *trace;
+    char *envval;
 #ifdef MVS
-	static char	aTaC_trace[] = "DD:ATACTRCE";
+    static char aTaC_trace[] = "DD:ATACTRCE";
 #else /* not MVS */
-	extern char	*aTaC_trace;
+    extern char *aTaC_trace;
 #endif
 
-	envval = getenv("ATAC_DIR");
-	if (envval && *envval) {
-		strcpy(traceName, envval);
+    envval = getenv("ATAC_DIR");
+    if (envval && *envval) {
+	strcpy(traceName, envval);
 #ifdef unix
-		if (traceName[strlen(traceName) - 1] != '/')
-			strcat(traceName, "/");
+	if (traceName[strlen(traceName) - 1] != '/')
+	    strcat(traceName, "/");
 #endif /* unix */
-	} else traceName[0] = '\0';
+    } else
+	traceName[0] = '\0';
 
-	envval = getenv("ATAC_TRACE");
-	if (envval && *envval) {
+    envval = getenv("ATAC_TRACE");
+    if (envval && *envval) {
 #ifdef unix
-		if (*envval == '/')
-			strcpy(traceName, envval);
-		else
+	if (*envval == '/')
+	    strcpy(traceName, envval);
+	else
 #endif /* unix */
 #ifdef vms
-		if (index(*envval, '[') != NULL || index(*envval, ':') != NULL)
-			strcpy(traceName, envval);
-		else
+	if (index(*envval, '[') != NULL || index(*envval, ':') != NULL)
+	    strcpy(traceName, envval);
+	else
 #endif /* vms */
-			strcat(traceName, envval);
+	    strcat(traceName, envval);
 #ifdef vms
-	} else strcat(traceName, "atac.trace");
+    } else
+	strcat(traceName, "atac.trace");
 #else /* not vms */
-	} else strcat(traceName, aTaC_trace);
+    } else
+	strcat(traceName, aTaC_trace);
 #endif /* not vms */
 
-	trace = fopen(traceName, "a");
-	if (trace == NULL) {
-		fprintf(stderr, "atac runtime can't write trace file: %s\n",
-			traceName);
-		return NULL;
-	}
+    trace = fopen(traceName, "a");
+    if (trace == NULL) {
+	fprintf(stderr, "atac runtime can't write trace file: %s\n",
+		traceName);
+	return NULL;
+    }
 
-	return trace;
+    return trace;
 }
 
 void
-atac_restart(testName)
-char	*testName;
+atac_restart(char *testName)
 {
     if (testName != NULL)
 	restartTestName = testName;
@@ -904,71 +915,71 @@ char	*testName;
 }
 
 static RETSIGTYPE
-sigHandler(n)
-int n;
+sigHandler(int n)
 {
     restartFlag = 1;
-#if UNUSED	/* FIXME */
+#if 0				/* FIXME */
     return 0;
 #endif
 }
 
 static void
-setupSignal()
+setupSignal(void)
 {
-    char	*envsig;
-    size_t	i;
+    char *envsig;
+    size_t i;
+    /* *INDENT-OFF* */
     static struct signames {
 	char	*name;
 	int	number;
     } signames[] = {
 #ifdef SIGHUP
-	{"HUP",	SIGHUP},
-	{"hup",	SIGHUP},
+	{"HUP",		SIGHUP},
+	{"hup",		SIGHUP},
 #endif /* HUP */
 #ifdef SIGINT
-	    {"INT",	SIGINT},
-	    {"int",	SIGINT},
+	{"INT",		SIGINT},
+	{"int",		SIGINT},
 #endif /* INT */
 #ifdef SIGQUIT
 	{"QUIT",	SIGQUIT},
 	{"quit",	SIGQUIT},
 #endif /* QUIT */
 #ifdef SIGILL
-	{"ILL",	SIGILL},
-	{"ill",	SIGILL},
+	{"ILL",		SIGILL},
+	{"ill",		SIGILL},
 #endif /* ILL */
 #ifdef SIGTRAP
 	{"TRAP",	SIGTRAP},
 	{"trap",	SIGTRAP},
 #endif /* TRAP */
 #ifdef SIGIOT
-	{"IOT",	SIGIOT},
-	{"iot",	SIGIOT},
+	{"IOT",		SIGIOT},
+	{"iot",		SIGIOT},
 #endif /* IOT */
 #ifdef SIGEMT
-	{"EMT",	SIGEMT},
-	{"emt",	SIGEMT},
+	{"EMT",		SIGEMT},
+	{"emt",		SIGEMT},
 #endif /* EMT */
 #ifdef SIGFPE
-	{"FPE",	SIGFPE},
-	{"fpe",	SIGFPE},
+	{"FPE",		SIGFPE},
+	{"fpe",		SIGFPE},
 #endif /* FPE */
 #ifdef SIGKILL
 	{"KILL",	SIGKILL},
 	{"kill",	SIGKILL},
 #endif /* KILL */
 #ifdef SIGBUS
-	{"BUS",	SIGBUS},
-	{"bus",	SIGBUS},
+	{"BUS",		SIGBUS},
+	{"bus",		SIGBUS},
 #endif /* BUS */
 #ifdef SIGSEGV
 	{"SEGV",	SIGSEGV},
 	{"segv",	SIGSEGV},
 #endif /* SEGV */
 #ifdef SIGSYS
-	{"SYS",	SIGSYS},
-	{"sys",	SIGSYS},
+	{"SYS",		SIGSYS},
+	{"sys",		SIGSYS},
 #endif /* SYS */
 #ifdef SIGPIPE
 	{"PIPE",	SIGPIPE},
@@ -983,8 +994,8 @@ setupSignal()
 	{"term",	SIGTERM},
 #endif /* TERM */
 #ifdef SIGURG
-	{"URG",	SIGURG},
-	{"urg",	SIGURG},
+	{"URG",		SIGURG},
+	{"urg",		SIGURG},
 #endif /* URG */
 #ifdef SIGSTOP
 	{"STOP",	SIGSTOP},
@@ -1043,6 +1054,7 @@ setupSignal()
 	{"usr2",	SIGUSR2},
 #endif /* USR2 */
 	};
+    /* *INDENT-ON* */
 
     envsig = getenv("ATAC_SIGNAL");
     if (envsig == NULL)
@@ -1056,7 +1068,7 @@ setupSignal()
     if (strncmp(envsig, "SIG", 3) == 0 || strncmp(envsig, "sig", 3) == 0)
 	envsig += 3;
 
-    for (i = 0; i < sizeof signames/sizeof *signames; ++i) {
+    for (i = 0; i < sizeof signames / sizeof *signames; ++i) {
 	if (strcmp(envsig, signames[i].name) == 0) {
 	    signal(signames[i].number, sigHandler);
 	    return;
@@ -1065,7 +1077,7 @@ setupSignal()
 }
 
 int
-atac_child()
+atac_child(void)
 {
     atac_zero();
 
@@ -1085,11 +1097,11 @@ atac_child()
 }
 
 int
-aTaC_fork()
+aTaC_fork(void)
 {
-    int		pid;
+    int pid;
 
-    atac_flush(f, INTERMEDIATE_FLUSH); /* In case exec() comes next. */
+    atac_flush(f, INTERMEDIATE_FLUSH);	/* In case exec() comes next. */
 
     pid = fork();
 

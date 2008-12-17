@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 3.15 
+# From configure.in Revision: 3.16 
 # Guess values for system-dependent variables and create Makefiles.
 # Generated automatically using autoconf version 2.13.20030927 
 # Copyright (C) 1992, 93, 94, 95, 96 Free Software Foundation, Inc.
@@ -1709,11 +1709,76 @@ fi
 cf_ncuhdr_root=ncurses
 
 test -n "$cf_cv_curses_dir" && \
-test "$cf_cv_curses_dir" != "no" && \
-CPPFLAGS="-I$cf_cv_curses_dir/include -I$cf_cv_curses_dir/include/$cf_ncuhdr_root $CPPFLAGS"
+test "$cf_cv_curses_dir" != "no" && { \
+  
+if test -n "$cf_cv_curses_dir/include $cf_cv_curses_dir/include/$cf_ncuhdr_root" ; then
+  for cf_add_incdir in $cf_cv_curses_dir/include $cf_cv_curses_dir/include/$cf_ncuhdr_root
+  do
+	while test $cf_add_incdir != /usr/include
+	do
+	  if test -d $cf_add_incdir
+	  then
+		cf_have_incdir=no
+		if test -n "$CFLAGS$CPPFLAGS" ; then
+		  # a loop is needed to ensure we can add subdirs of existing dirs
+		  for cf_test_incdir in $CFLAGS $CPPFLAGS ; do
+			if test ".$cf_test_incdir" = ".-I$cf_add_incdir" ; then
+			  cf_have_incdir=yes; break
+			fi
+		  done
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+          if test "$cf_add_incdir" = /usr/local/include ; then
+			if test "$GCC" = yes
+			then
+			  cf_save_CPPFLAGS=$CPPFLAGS
+			  CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			  cat > conftest.$ac_ext <<EOF
+#line 1739 "configure"
+#include "confdefs.h"
+#include <stdio.h>
+int main() {
+printf("Hello")
+; return 0; }
+EOF
+if { (eval echo configure:1746: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  :
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  cf_have_incdir=yes
+fi
+rm -f conftest*
+			  CPPFLAGS=$cf_save_CPPFLAGS
+			fi
+		  fi
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+		  test -n "$verbose" && echo "	adding $cf_add_incdir to include-path" 1>&6
+
+echo "${as_me-configure}:1763: testing adding $cf_add_incdir to include-path ..." 1>&5
+
+
+		  CPPFLAGS="-I$cf_add_incdir $CPPFLAGS"
+
+          cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
+          test "$cf_top_incdir" = "$cf_add_incdir" && break
+          cf_add_incdir="$cf_top_incdir"
+		else
+		  break
+		fi
+	  fi
+	done
+  done
+fi
+
+}
 
 echo $ac_n "checking for $cf_ncuhdr_root header in include-path""... $ac_c" 1>&6
-echo "configure:1717: checking for $cf_ncuhdr_root header in include-path" >&5
+echo "configure:1782: checking for $cf_ncuhdr_root header in include-path" >&5
 if eval "test \"`echo '$''{'cf_cv_ncurses_h'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1724,7 +1789,7 @@ else
 	do
 		
 	cat > conftest.$ac_ext <<EOF
-#line 1728 "configure"
+#line 1793 "configure"
 #include "confdefs.h"
 
 
@@ -1745,7 +1810,7 @@ printf("old\n");
 	
 ; return 0; }
 EOF
-if { (eval echo configure:1749: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1814: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   cf_cv_ncurses_h=$cf_header
 	
@@ -1771,42 +1836,57 @@ if test "$cf_cv_ncurses_h" != no ; then
 else
 
 echo $ac_n "checking for $cf_ncuhdr_root include-path""... $ac_c" 1>&6
-echo "configure:1775: checking for $cf_ncuhdr_root include-path" >&5
+echo "configure:1840: checking for $cf_ncuhdr_root include-path" >&5
 if eval "test \"`echo '$''{'cf_cv_ncurses_h2'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
 	test -n "$verbose" && echo
-	cf_search=""
-
-test -d "$HOME" && {
-	test -n "$verbose" && echo "	... testing include-directories under $HOME"
-	test -d "$HOME/include" &&          cf_search="$cf_search $HOME/include"
-	test -d "$HOME/include/$cf_ncuhdr_root" &&       cf_search="$cf_search $HOME/include/$cf_ncuhdr_root"
-	test -d "$HOME/include/$cf_ncuhdr_root/include" &&    cf_search="$cf_search $HOME/include/$cf_ncuhdr_root/include"
+	
+cf_header_path_list=""
+if test -n "${CFLAGS}${CPPFLAGS}" ; then
+	for cf_header_path in $CPPFLAGS $CFLAGS
+	do
+		case $cf_header_path in #(vi
+		-I*)
+			cf_header_path=`echo ".$cf_header_path" |sed -e 's/^...//' -e 's,/include$,,'`
+			
+test "$cf_header_path" != "NONE" && \
+test -d "$cf_header_path" && \
+ {
+	test -n "$verbose" && echo "	... testing for include-directories under $cf_header_path"
+	test -d $cf_header_path/include &&          cf_search="$cf_search $cf_header_path/include"
+	test -d $cf_header_path/include/$cf_ncuhdr_root &&       cf_search="$cf_search $cf_header_path/include/$cf_ncuhdr_root"
+	test -d $cf_header_path/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search $cf_header_path/include/$cf_ncuhdr_root/include"
+	test -d $cf_header_path/$cf_ncuhdr_root/include &&       cf_search="$cf_search $cf_header_path/$cf_ncuhdr_root/include"
+	test -d $cf_header_path/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search $cf_header_path/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-# For other stuff under the home directory, it should be sufficient to put
-# a symbolic link for $HOME/$cf_ncuhdr_root to the actual package location:
-test -d "$HOME/$cf_ncuhdr_root" && {
-	test -n "$verbose" && echo "	... testing include-directories under $HOME/$cf_ncuhdr_root"
-	test -d "$HOME/$cf_ncuhdr_root/include" &&       cf_search="$cf_search $HOME/$cf_ncuhdr_root/include"
-	test -d "$HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root" &&    cf_search="$cf_search $HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
+			cf_header_path_list="$cf_header_path_list $cf_search"
+			;;
+		esac
+	done
+fi
+
+cf_search=""
+
+
+test "/usr" != "$prefix" && \
+test -d "/usr" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under /usr"
+	test -d /usr/include &&          cf_search="$cf_search /usr/include"
+	test -d /usr/include/$cf_ncuhdr_root &&       cf_search="$cf_search /usr/include/$cf_ncuhdr_root"
+	test -d /usr/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search /usr/include/$cf_ncuhdr_root/include"
+	test -d /usr/$cf_ncuhdr_root/include &&       cf_search="$cf_search /usr/$cf_ncuhdr_root/include"
+	test -d /usr/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search /usr/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-test "$prefix" != /usr/local && \
-test -d /usr/local && {
-	test -n "$verbose" && echo "	... testing include-directories under /usr/local"
-	test -d /usr/local/include &&       cf_search="$cf_search /usr/local/include"
-	test -d /usr/local/include/$cf_ncuhdr_root &&    cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root"
-	test -d /usr/local/include/$cf_ncuhdr_root/include && cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root/include"
-	test -d /usr/local/$cf_ncuhdr_root/include &&    cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include"
-	test -d /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root && cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
-}
 
-test "$prefix" != NONE && \
-test -d $prefix && {
-	test -n "$verbose" && echo "	... testing include-directories under $prefix"
+test "$prefix" != "NONE" && \
+test -d "$prefix" && \
+ {
+	test -n "$verbose" && echo "	... testing for include-directories under $prefix"
 	test -d $prefix/include &&          cf_search="$cf_search $prefix/include"
 	test -d $prefix/include/$cf_ncuhdr_root &&       cf_search="$cf_search $prefix/include/$cf_ncuhdr_root"
 	test -d $prefix/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search $prefix/include/$cf_ncuhdr_root/include"
@@ -1814,24 +1894,43 @@ test -d $prefix && {
 	test -d $prefix/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search $prefix/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-test "$prefix" != /opt && \
-test -d /opt && {
-	test -n "$verbose" && echo "	... testing include-directories under /opt"
-	test -d /opt/include &&             cf_search="$cf_search /opt/include"
-	test -d /opt/include/$cf_ncuhdr_root &&          cf_search="$cf_search /opt/include/$cf_ncuhdr_root"
-	test -d /opt/include/$cf_ncuhdr_root/include &&       cf_search="$cf_search /opt/include/$cf_ncuhdr_root/include"
-	test -d /opt/$cf_ncuhdr_root/include &&          cf_search="$cf_search /opt/$cf_ncuhdr_root/include"
-	test -d /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&       cf_search="$cf_search /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
+
+test "/usr/local" != "$prefix" && \
+test -d "/usr/local" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under /usr/local"
+	test -d /usr/local/include &&          cf_search="$cf_search /usr/local/include"
+	test -d /usr/local/include/$cf_ncuhdr_root &&       cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root"
+	test -d /usr/local/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root/include"
+	test -d /usr/local/$cf_ncuhdr_root/include &&       cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include"
+	test -d /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-test "$prefix" != /usr && \
-test -d /usr && {
-	test -n "$verbose" && echo "	... testing include-directories under /usr"
-	test -d /usr/include &&             cf_search="$cf_search /usr/include"
-	test -d /usr/include/$cf_ncuhdr_root &&          cf_search="$cf_search /usr/include/$cf_ncuhdr_root"
-	test -d /usr/include/$cf_ncuhdr_root/include &&       cf_search="$cf_search /usr/include/$cf_ncuhdr_root/include"
-	test -d /usr/$cf_ncuhdr_root/include &&          cf_search="$cf_search /usr/$cf_ncuhdr_root/include"
+
+test "/opt" != "$prefix" && \
+test -d "/opt" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under /opt"
+	test -d /opt/include &&          cf_search="$cf_search /opt/include"
+	test -d /opt/include/$cf_ncuhdr_root &&       cf_search="$cf_search /opt/include/$cf_ncuhdr_root"
+	test -d /opt/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search /opt/include/$cf_ncuhdr_root/include"
+	test -d /opt/$cf_ncuhdr_root/include &&       cf_search="$cf_search /opt/$cf_ncuhdr_root/include"
+	test -d /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
+
+
+test "$HOME" != "$prefix" && \
+test -d "$HOME" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under $HOME"
+	test -d $HOME/include &&          cf_search="$cf_search $HOME/include"
+	test -d $HOME/include/$cf_ncuhdr_root &&       cf_search="$cf_search $HOME/include/$cf_ncuhdr_root"
+	test -d $HOME/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search $HOME/include/$cf_ncuhdr_root/include"
+	test -d $HOME/$cf_ncuhdr_root/include &&       cf_search="$cf_search $HOME/$cf_ncuhdr_root/include"
+	test -d $HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search $HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
+}
+
+
 
 test "$includedir" != NONE && \
 test "$includedir" != "/usr/include" && \
@@ -1847,52 +1946,76 @@ test -d "$oldincludedir" && {
 	test -d $oldincludedir/$cf_ncuhdr_root && cf_search="$cf_search $oldincludedir/$cf_ncuhdr_root"
 }
 
+cf_search="$cf_header_path_list $cf_search"
 
 	test -n "$verbose" && echo search path $cf_search
 	cf_save2_CPPFLAGS="$CPPFLAGS"
 	for cf_incdir in $cf_search
 	do
 		
-for cf_add_incdir in $cf_incdir
-do
-	while true
+if test -n "$cf_incdir" ; then
+  for cf_add_incdir in $cf_incdir
+  do
+	while test $cf_add_incdir != /usr/include
 	do
-		case $cf_add_incdir in
-		/usr/include) # (vi
-			;;
-		/usr/local/include) # (vi
+	  if test -d $cf_add_incdir
+	  then
+		cf_have_incdir=no
+		if test -n "$CFLAGS$CPPFLAGS" ; then
+		  # a loop is needed to ensure we can add subdirs of existing dirs
+		  for cf_test_incdir in $CFLAGS $CPPFLAGS ; do
+			if test ".$cf_test_incdir" = ".-I$cf_add_incdir" ; then
+			  cf_have_incdir=yes; break
+			fi
+		  done
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+          if test "$cf_add_incdir" = /usr/local/include ; then
 			if test "$GCC" = yes
 			then
-				cf_save_CPPFLAGS="$CPPFLAGS"
-				CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-				cat > conftest.$ac_ext <<EOF
-#line 1870 "configure"
+			  cf_save_CPPFLAGS=$CPPFLAGS
+			  CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			  cat > conftest.$ac_ext <<EOF
+#line 1981 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 printf("Hello")
 ; return 0; }
 EOF
-if { (eval echo configure:1877: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1988: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   :
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  CPPFLAGS="$cf_save_CPPFLAGS"
+  cf_have_incdir=yes
 fi
 rm -f conftest*
+			  CPPFLAGS=$cf_save_CPPFLAGS
 			fi
-			;;
-		*) # (vi
-			CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-			;;
-		esac
-		cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
-		test "$cf_top_incdir" = "$cf_add_incdir" && break
-		cf_add_incdir="$cf_top_incdir"
+		  fi
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+		  test -n "$verbose" && echo "	adding $cf_add_incdir to include-path" 1>&6
+
+echo "${as_me-configure}:2005: testing adding $cf_add_incdir to include-path ..." 1>&5
+
+
+		  CPPFLAGS="-I$cf_add_incdir $CPPFLAGS"
+
+          cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
+          test "$cf_top_incdir" = "$cf_add_incdir" && break
+          cf_add_incdir="$cf_top_incdir"
+		else
+		  break
+		fi
+	  fi
 	done
-done
+  done
+fi
 
 		for cf_header in \
 			ncurses.h \
@@ -1900,7 +2023,7 @@ done
 		do
 			
 	cat > conftest.$ac_ext <<EOF
-#line 1904 "configure"
+#line 2027 "configure"
 #include "confdefs.h"
 
 
@@ -1921,7 +2044,7 @@ printf("old\n");
 	
 ; return 0; }
 EOF
-if { (eval echo configure:1925: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2048: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   cf_cv_ncurses_h2=$cf_header
 	
@@ -1955,46 +2078,69 @@ echo "$ac_t""$cf_cv_ncurses_h2" 1>&6
 		cf_cv_ncurses_header=$cf_ncuhdr_root/$cf_cv_ncurses_header
 	fi
 	
-for cf_add_incdir in $cf_1st_incdir
-do
-	while true
+if test -n "$cf_1st_incdir" ; then
+  for cf_add_incdir in $cf_1st_incdir
+  do
+	while test $cf_add_incdir != /usr/include
 	do
-		case $cf_add_incdir in
-		/usr/include) # (vi
-			;;
-		/usr/local/include) # (vi
+	  if test -d $cf_add_incdir
+	  then
+		cf_have_incdir=no
+		if test -n "$CFLAGS$CPPFLAGS" ; then
+		  # a loop is needed to ensure we can add subdirs of existing dirs
+		  for cf_test_incdir in $CFLAGS $CPPFLAGS ; do
+			if test ".$cf_test_incdir" = ".-I$cf_add_incdir" ; then
+			  cf_have_incdir=yes; break
+			fi
+		  done
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+          if test "$cf_add_incdir" = /usr/local/include ; then
 			if test "$GCC" = yes
 			then
-				cf_save_CPPFLAGS="$CPPFLAGS"
-				CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-				cat > conftest.$ac_ext <<EOF
-#line 1972 "configure"
+			  cf_save_CPPFLAGS=$CPPFLAGS
+			  CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			  cat > conftest.$ac_ext <<EOF
+#line 2106 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 printf("Hello")
 ; return 0; }
 EOF
-if { (eval echo configure:1979: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2113: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   :
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  CPPFLAGS="$cf_save_CPPFLAGS"
+  cf_have_incdir=yes
 fi
 rm -f conftest*
+			  CPPFLAGS=$cf_save_CPPFLAGS
 			fi
-			;;
-		*) # (vi
-			CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-			;;
-		esac
-		cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
-		test "$cf_top_incdir" = "$cf_add_incdir" && break
-		cf_add_incdir="$cf_top_incdir"
+		  fi
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+		  test -n "$verbose" && echo "	adding $cf_add_incdir to include-path" 1>&6
+
+echo "${as_me-configure}:2130: testing adding $cf_add_incdir to include-path ..." 1>&5
+
+
+		  CPPFLAGS="-I$cf_add_incdir $CPPFLAGS"
+
+          cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
+          test "$cf_top_incdir" = "$cf_add_incdir" && break
+          cf_add_incdir="$cf_top_incdir"
+		else
+		  break
+		fi
+	  fi
 	done
-done
+  done
+fi
 
 
 fi
@@ -2028,7 +2174,7 @@ esac
 
 
 echo $ac_n "checking for terminfo header""... $ac_c" 1>&6
-echo "configure:2032: checking for terminfo header" >&5
+echo "configure:2178: checking for terminfo header" >&5
 if eval "test \"`echo '$''{'cf_cv_term_header'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2045,7 +2191,7 @@ esac
 for cf_test in $cf_term_header "ncurses/term.h" "ncursesw/term.h"
 do
 cat > conftest.$ac_ext <<EOF
-#line 2049 "configure"
+#line 2195 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 #include <${cf_cv_ncurses_header-curses.h}>
@@ -2055,7 +2201,7 @@ int main() {
 int x = auto_left_margin
 ; return 0; }
 EOF
-if { (eval echo configure:2059: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2205: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   
 	cf_cv_term_header="$cf_test"
@@ -2110,7 +2256,7 @@ EOF
 
 
 echo $ac_n "checking for ncurses version""... $ac_c" 1>&6
-echo "configure:2114: checking for ncurses version" >&5
+echo "configure:2260: checking for ncurses version" >&5
 if eval "test \"`echo '$''{'cf_cv_ncurses_version'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2136,7 +2282,7 @@ Autoconf "old"
 #endif
 EOF
 	cf_try="$ac_cpp conftest.$ac_ext 2>&5 | grep '^Autoconf ' >conftest.out"
-	{ (eval echo configure:2140: \"$cf_try\") 1>&5; (eval $cf_try) 2>&5; }
+	{ (eval echo configure:2286: \"$cf_try\") 1>&5; (eval $cf_try) 2>&5; }
 	if test -f conftest.out ; then
 		cf_out=`cat conftest.out | sed -e 's%^Autoconf %%' -e 's%^[^"]*"%%' -e 's%".*%%'`
 		test -n "$cf_out" && cf_cv_ncurses_version="$cf_out"
@@ -2145,7 +2291,7 @@ EOF
 
 else
   cat > conftest.$ac_ext <<EOF
-#line 2149 "configure"
+#line 2295 "configure"
 #include "confdefs.h"
 
 #include <${cf_cv_ncurses_header-curses.h}>
@@ -2166,10 +2312,10 @@ int main()
 	make an error
 # endif
 #endif
-	exit(0);
+	${cf_cv_main_return-return}(0);
 }
 EOF
-if { (eval echo configure:2173: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:2319: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   
 	cf_cv_ncurses_version=`cat $cf_tempfile`
@@ -2200,7 +2346,7 @@ cf_nculib_root=ncurses
 cf_ncurses_LIBS=""
 cf_ncurses_SAVE="$LIBS"
 echo $ac_n "checking for Gpm_Open in -lgpm""... $ac_c" 1>&6
-echo "configure:2204: checking for Gpm_Open in -lgpm" >&5
+echo "configure:2350: checking for Gpm_Open in -lgpm" >&5
 ac_lib_var=`echo gpm'_'Gpm_Open | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2208,7 +2354,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lgpm  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2212 "configure"
+#line 2358 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2219,7 +2365,7 @@ int main() {
 Gpm_Open()
 ; return 0; }
 EOF
-if { (eval echo configure:2223: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2369: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2235,7 +2381,7 @@ fi
 if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   echo $ac_n "checking for initscr in -lgpm""... $ac_c" 1>&6
-echo "configure:2239: checking for initscr in -lgpm" >&5
+echo "configure:2385: checking for initscr in -lgpm" >&5
 ac_lib_var=`echo gpm'_'initscr | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2243,7 +2389,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lgpm  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2247 "configure"
+#line 2393 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2254,7 +2400,7 @@ int main() {
 initscr()
 ; return 0; }
 EOF
-if { (eval echo configure:2258: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2404: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2286,7 +2432,7 @@ freebsd*)
 	# version of ncurses (but it should do no harm, since it's static).
 	if test "$cf_nculib_root" = ncurses ; then
 		echo $ac_n "checking for tgoto in -lmytinfo""... $ac_c" 1>&6
-echo "configure:2290: checking for tgoto in -lmytinfo" >&5
+echo "configure:2436: checking for tgoto in -lmytinfo" >&5
 ac_lib_var=`echo mytinfo'_'tgoto | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2294,7 +2440,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lmytinfo  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2298 "configure"
+#line 2444 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2305,7 +2451,7 @@ int main() {
 tgoto()
 ; return 0; }
 EOF
-if { (eval echo configure:2309: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2455: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2333,18 +2479,47 @@ LIBS="$cf_ncurses_LIBS $LIBS"
 
 if ( test -n "$cf_cv_curses_dir" && test "$cf_cv_curses_dir" != "no" )
 then
-	LIBS="-L$cf_cv_curses_dir/lib -l$cf_nculib_root $LIBS"
+	
+if test -n "$cf_cv_curses_dir/lib" ; then
+  for cf_add_libdir in $cf_cv_curses_dir/lib
+  do
+    if test $cf_add_libdir = /usr/lib ; then
+      :
+    elif test -d $cf_add_libdir
+    then
+      cf_have_libdir=no
+      if test -n "$LDFLAGS$LIBS" ; then
+        # a loop is needed to ensure we can add subdirs of existing dirs
+        for cf_test_libdir in $LDFLAGS $LIBS ; do
+          if test ".$cf_test_libdir" = ".-L$cf_add_libdir" ; then
+            cf_have_libdir=yes; break
+          fi
+        done
+      fi
+      if test "$cf_have_libdir" = no ; then
+        test -n "$verbose" && echo "	adding $cf_add_libdir to library-path" 1>&6
+
+echo "${as_me-configure}:2503: testing adding $cf_add_libdir to library-path ..." 1>&5
+
+
+        LDFLAGS="-L$cf_add_libdir $LDFLAGS"
+      fi
+    fi
+  done
+fi
+
+	LIBS="-l$cf_nculib_root $LIBS"
 else
 	
 	eval 'cf_cv_have_lib_'$cf_nculib_root'=no'
 	cf_libdir=""
 	echo $ac_n "checking for initscr""... $ac_c" 1>&6
-echo "configure:2343: checking for initscr" >&5
+echo "configure:2518: checking for initscr" >&5
 if eval "test \"`echo '$''{'ac_cv_func_initscr'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2348 "configure"
+#line 2523 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char initscr(); below.  */
@@ -2367,7 +2542,7 @@ initscr();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2371: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2546: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_initscr=yes"
 else
@@ -2387,17 +2562,17 @@ else
 
 		cf_save_LIBS="$LIBS"
 		echo $ac_n "checking for initscr in -l$cf_nculib_root""... $ac_c" 1>&6
-echo "configure:2391: checking for initscr in -l$cf_nculib_root" >&5
+echo "configure:2566: checking for initscr in -l$cf_nculib_root" >&5
 		LIBS="-l$cf_nculib_root $LIBS"
 		cat > conftest.$ac_ext <<EOF
-#line 2394 "configure"
+#line 2569 "configure"
 #include "confdefs.h"
 #include <${cf_cv_ncurses_header-curses.h}>
 int main() {
 initscr()
 ; return 0; }
 EOF
-if { (eval echo configure:2401: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2576: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   echo "$ac_t""yes" 1>&6
 			 eval 'cf_cv_have_lib_'$cf_nculib_root'=yes'
@@ -2407,36 +2582,51 @@ else
   cat conftest.$ac_ext >&5
   rm -rf conftest*
   echo "$ac_t""no" 1>&6
-			cf_search=""
-
-test -d "$HOME" && {
-	test -n "$verbose" && echo "	... testing lib-directories under $HOME"
-	test -d "$HOME/lib" &&          cf_search="$cf_search $HOME/lib"
-	test -d "$HOME/lib/$cf_nculib_root" &&       cf_search="$cf_search $HOME/lib/$cf_nculib_root"
-	test -d "$HOME/lib/$cf_nculib_root/lib" &&    cf_search="$cf_search $HOME/lib/$cf_nculib_root/lib"
+			
+cf_library_path_list=""
+if test -n "${LDFLAGS}${LIBS}" ; then
+	for cf_library_path in $LDFLAGS $LIBS
+	do
+		case $cf_library_path in #(vi
+		-L*)
+			cf_library_path=`echo ".$cf_library_path" |sed -e 's/^...//' -e 's,/lib$,,'`
+			
+test "$cf_library_path" != "NONE" && \
+test -d "$cf_library_path" && \
+ {
+	test -n "$verbose" && echo "	... testing for lib-directories under $cf_library_path"
+	test -d $cf_library_path/lib &&          cf_search="$cf_search $cf_library_path/lib"
+	test -d $cf_library_path/lib/$cf_nculib_root &&       cf_search="$cf_search $cf_library_path/lib/$cf_nculib_root"
+	test -d $cf_library_path/lib/$cf_nculib_root/lib &&    cf_search="$cf_search $cf_library_path/lib/$cf_nculib_root/lib"
+	test -d $cf_library_path/$cf_nculib_root/lib &&       cf_search="$cf_search $cf_library_path/$cf_nculib_root/lib"
+	test -d $cf_library_path/$cf_nculib_root/lib/$cf_nculib_root &&    cf_search="$cf_search $cf_library_path/$cf_nculib_root/lib/$cf_nculib_root"
 }
 
-# For other stuff under the home directory, it should be sufficient to put
-# a symbolic link for $HOME/$cf_nculib_root to the actual package location:
-test -d "$HOME/$cf_nculib_root" && {
-	test -n "$verbose" && echo "	... testing lib-directories under $HOME/$cf_nculib_root"
-	test -d "$HOME/$cf_nculib_root/lib" &&       cf_search="$cf_search $HOME/$cf_nculib_root/lib"
-	test -d "$HOME/$cf_nculib_root/lib/$cf_nculib_root" &&    cf_search="$cf_search $HOME/$cf_nculib_root/lib/$cf_nculib_root"
+			cf_library_path_list="$cf_library_path_list $cf_search"
+			;;
+		esac
+	done
+fi
+
+cf_search=""
+
+
+test "/usr" != "$prefix" && \
+test -d "/usr" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for lib-directories under /usr"
+	test -d /usr/lib &&          cf_search="$cf_search /usr/lib"
+	test -d /usr/lib/$cf_nculib_root &&       cf_search="$cf_search /usr/lib/$cf_nculib_root"
+	test -d /usr/lib/$cf_nculib_root/lib &&    cf_search="$cf_search /usr/lib/$cf_nculib_root/lib"
+	test -d /usr/$cf_nculib_root/lib &&       cf_search="$cf_search /usr/$cf_nculib_root/lib"
+	test -d /usr/$cf_nculib_root/lib/$cf_nculib_root &&    cf_search="$cf_search /usr/$cf_nculib_root/lib/$cf_nculib_root"
 }
 
-test "$prefix" != /usr/local && \
-test -d /usr/local && {
-	test -n "$verbose" && echo "	... testing lib-directories under /usr/local"
-	test -d /usr/local/lib &&       cf_search="$cf_search /usr/local/lib"
-	test -d /usr/local/lib/$cf_nculib_root &&    cf_search="$cf_search /usr/local/lib/$cf_nculib_root"
-	test -d /usr/local/lib/$cf_nculib_root/lib && cf_search="$cf_search /usr/local/lib/$cf_nculib_root/lib"
-	test -d /usr/local/$cf_nculib_root/lib &&    cf_search="$cf_search /usr/local/$cf_nculib_root/lib"
-	test -d /usr/local/$cf_nculib_root/lib/$cf_nculib_root && cf_search="$cf_search /usr/local/$cf_nculib_root/lib/$cf_nculib_root"
-}
 
-test "$prefix" != NONE && \
-test -d $prefix && {
-	test -n "$verbose" && echo "	... testing lib-directories under $prefix"
+test "$prefix" != "NONE" && \
+test -d "$prefix" && \
+ {
+	test -n "$verbose" && echo "	... testing for lib-directories under $prefix"
 	test -d $prefix/lib &&          cf_search="$cf_search $prefix/lib"
 	test -d $prefix/lib/$cf_nculib_root &&       cf_search="$cf_search $prefix/lib/$cf_nculib_root"
 	test -d $prefix/lib/$cf_nculib_root/lib &&    cf_search="$cf_search $prefix/lib/$cf_nculib_root/lib"
@@ -2444,39 +2634,60 @@ test -d $prefix && {
 	test -d $prefix/$cf_nculib_root/lib/$cf_nculib_root &&    cf_search="$cf_search $prefix/$cf_nculib_root/lib/$cf_nculib_root"
 }
 
-test "$prefix" != /opt && \
-test -d /opt && {
-	test -n "$verbose" && echo "	... testing lib-directories under /opt"
-	test -d /opt/lib &&             cf_search="$cf_search /opt/lib"
-	test -d /opt/lib/$cf_nculib_root &&          cf_search="$cf_search /opt/lib/$cf_nculib_root"
-	test -d /opt/lib/$cf_nculib_root/lib &&       cf_search="$cf_search /opt/lib/$cf_nculib_root/lib"
-	test -d /opt/$cf_nculib_root/lib &&          cf_search="$cf_search /opt/$cf_nculib_root/lib"
-	test -d /opt/$cf_nculib_root/lib/$cf_nculib_root &&       cf_search="$cf_search /opt/$cf_nculib_root/lib/$cf_nculib_root"
+
+test "/usr/local" != "$prefix" && \
+test -d "/usr/local" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for lib-directories under /usr/local"
+	test -d /usr/local/lib &&          cf_search="$cf_search /usr/local/lib"
+	test -d /usr/local/lib/$cf_nculib_root &&       cf_search="$cf_search /usr/local/lib/$cf_nculib_root"
+	test -d /usr/local/lib/$cf_nculib_root/lib &&    cf_search="$cf_search /usr/local/lib/$cf_nculib_root/lib"
+	test -d /usr/local/$cf_nculib_root/lib &&       cf_search="$cf_search /usr/local/$cf_nculib_root/lib"
+	test -d /usr/local/$cf_nculib_root/lib/$cf_nculib_root &&    cf_search="$cf_search /usr/local/$cf_nculib_root/lib/$cf_nculib_root"
 }
 
-test "$prefix" != /usr && \
-test -d /usr && {
-	test -n "$verbose" && echo "	... testing lib-directories under /usr"
-	test -d /usr/lib &&             cf_search="$cf_search /usr/lib"
-	test -d /usr/lib/$cf_nculib_root &&          cf_search="$cf_search /usr/lib/$cf_nculib_root"
-	test -d /usr/lib/$cf_nculib_root/lib &&       cf_search="$cf_search /usr/lib/$cf_nculib_root/lib"
-	test -d /usr/$cf_nculib_root/lib &&          cf_search="$cf_search /usr/$cf_nculib_root/lib"
+
+test "/opt" != "$prefix" && \
+test -d "/opt" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for lib-directories under /opt"
+	test -d /opt/lib &&          cf_search="$cf_search /opt/lib"
+	test -d /opt/lib/$cf_nculib_root &&       cf_search="$cf_search /opt/lib/$cf_nculib_root"
+	test -d /opt/lib/$cf_nculib_root/lib &&    cf_search="$cf_search /opt/lib/$cf_nculib_root/lib"
+	test -d /opt/$cf_nculib_root/lib &&       cf_search="$cf_search /opt/$cf_nculib_root/lib"
+	test -d /opt/$cf_nculib_root/lib/$cf_nculib_root &&    cf_search="$cf_search /opt/$cf_nculib_root/lib/$cf_nculib_root"
 }
+
+
+test "$HOME" != "$prefix" && \
+test -d "$HOME" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for lib-directories under $HOME"
+	test -d $HOME/lib &&          cf_search="$cf_search $HOME/lib"
+	test -d $HOME/lib/$cf_nculib_root &&       cf_search="$cf_search $HOME/lib/$cf_nculib_root"
+	test -d $HOME/lib/$cf_nculib_root/lib &&    cf_search="$cf_search $HOME/lib/$cf_nculib_root/lib"
+	test -d $HOME/$cf_nculib_root/lib &&       cf_search="$cf_search $HOME/$cf_nculib_root/lib"
+	test -d $HOME/$cf_nculib_root/lib/$cf_nculib_root &&    cf_search="$cf_search $HOME/$cf_nculib_root/lib/$cf_nculib_root"
+}
+
+
+
+cf_search="$cf_library_path_list $cf_search"
 
 			for cf_libdir in $cf_search
 			do
 				echo $ac_n "checking for -l$cf_nculib_root in $cf_libdir""... $ac_c" 1>&6
-echo "configure:2470: checking for -l$cf_nculib_root in $cf_libdir" >&5
+echo "configure:2681: checking for -l$cf_nculib_root in $cf_libdir" >&5
 				LIBS="-L$cf_libdir -l$cf_nculib_root $cf_save_LIBS"
 				cat > conftest.$ac_ext <<EOF
-#line 2473 "configure"
+#line 2684 "configure"
 #include "confdefs.h"
 #include <${cf_cv_ncurses_header-curses.h}>
 int main() {
 initscr()
 ; return 0; }
 EOF
-if { (eval echo configure:2480: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2691: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   echo "$ac_t""yes" 1>&6
 			 		 eval 'cf_cv_have_lib_'$cf_nculib_root'=yes'
@@ -2507,7 +2718,7 @@ fi
 
 if test -n "$cf_ncurses_LIBS" ; then
 	echo $ac_n "checking if we can link $cf_nculib_root without $cf_ncurses_LIBS""... $ac_c" 1>&6
-echo "configure:2511: checking if we can link $cf_nculib_root without $cf_ncurses_LIBS" >&5
+echo "configure:2722: checking if we can link $cf_nculib_root without $cf_ncurses_LIBS" >&5
 	cf_ncurses_SAVE="$LIBS"
 	for p in $cf_ncurses_LIBS ; do
 		q=`echo $LIBS | sed -e "s%$p %%" -e "s%$p$%%"`
@@ -2516,14 +2727,14 @@ echo "configure:2511: checking if we can link $cf_nculib_root without $cf_ncurse
 		fi
 	done
 	cat > conftest.$ac_ext <<EOF
-#line 2520 "configure"
+#line 2731 "configure"
 #include "confdefs.h"
 #include <${cf_cv_ncurses_header-curses.h}>
 int main() {
 initscr(); mousemask(0,0); tgoto((char *)0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:2527: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2738: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   echo "$ac_t""yes" 1>&6
 else
@@ -2549,11 +2760,76 @@ EOF
 cf_ncuhdr_root=ncurses
 
 test -n "$cf_cv_curses_dir" && \
-test "$cf_cv_curses_dir" != "no" && \
-CPPFLAGS="-I$cf_cv_curses_dir/include -I$cf_cv_curses_dir/include/$cf_ncuhdr_root $CPPFLAGS"
+test "$cf_cv_curses_dir" != "no" && { \
+  
+if test -n "$cf_cv_curses_dir/include $cf_cv_curses_dir/include/$cf_ncuhdr_root" ; then
+  for cf_add_incdir in $cf_cv_curses_dir/include $cf_cv_curses_dir/include/$cf_ncuhdr_root
+  do
+	while test $cf_add_incdir != /usr/include
+	do
+	  if test -d $cf_add_incdir
+	  then
+		cf_have_incdir=no
+		if test -n "$CFLAGS$CPPFLAGS" ; then
+		  # a loop is needed to ensure we can add subdirs of existing dirs
+		  for cf_test_incdir in $CFLAGS $CPPFLAGS ; do
+			if test ".$cf_test_incdir" = ".-I$cf_add_incdir" ; then
+			  cf_have_incdir=yes; break
+			fi
+		  done
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+          if test "$cf_add_incdir" = /usr/local/include ; then
+			if test "$GCC" = yes
+			then
+			  cf_save_CPPFLAGS=$CPPFLAGS
+			  CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			  cat > conftest.$ac_ext <<EOF
+#line 2790 "configure"
+#include "confdefs.h"
+#include <stdio.h>
+int main() {
+printf("Hello")
+; return 0; }
+EOF
+if { (eval echo configure:2797: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  :
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  cf_have_incdir=yes
+fi
+rm -f conftest*
+			  CPPFLAGS=$cf_save_CPPFLAGS
+			fi
+		  fi
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+		  test -n "$verbose" && echo "	adding $cf_add_incdir to include-path" 1>&6
+
+echo "${as_me-configure}:2814: testing adding $cf_add_incdir to include-path ..." 1>&5
+
+
+		  CPPFLAGS="-I$cf_add_incdir $CPPFLAGS"
+
+          cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
+          test "$cf_top_incdir" = "$cf_add_incdir" && break
+          cf_add_incdir="$cf_top_incdir"
+		else
+		  break
+		fi
+	  fi
+	done
+  done
+fi
+
+}
 
 echo $ac_n "checking for $cf_ncuhdr_root header in include-path""... $ac_c" 1>&6
-echo "configure:2557: checking for $cf_ncuhdr_root header in include-path" >&5
+echo "configure:2833: checking for $cf_ncuhdr_root header in include-path" >&5
 if eval "test \"`echo '$''{'cf_cv_ncurses_h'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2564,7 +2840,7 @@ else
 	do
 		
 	cat > conftest.$ac_ext <<EOF
-#line 2568 "configure"
+#line 2844 "configure"
 #include "confdefs.h"
 
 
@@ -2585,7 +2861,7 @@ printf("old\n");
 	
 ; return 0; }
 EOF
-if { (eval echo configure:2589: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2865: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   cf_cv_ncurses_h=$cf_header
 	
@@ -2611,42 +2887,57 @@ if test "$cf_cv_ncurses_h" != no ; then
 else
 
 echo $ac_n "checking for $cf_ncuhdr_root include-path""... $ac_c" 1>&6
-echo "configure:2615: checking for $cf_ncuhdr_root include-path" >&5
+echo "configure:2891: checking for $cf_ncuhdr_root include-path" >&5
 if eval "test \"`echo '$''{'cf_cv_ncurses_h2'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
 	test -n "$verbose" && echo
-	cf_search=""
-
-test -d "$HOME" && {
-	test -n "$verbose" && echo "	... testing include-directories under $HOME"
-	test -d "$HOME/include" &&          cf_search="$cf_search $HOME/include"
-	test -d "$HOME/include/$cf_ncuhdr_root" &&       cf_search="$cf_search $HOME/include/$cf_ncuhdr_root"
-	test -d "$HOME/include/$cf_ncuhdr_root/include" &&    cf_search="$cf_search $HOME/include/$cf_ncuhdr_root/include"
+	
+cf_header_path_list=""
+if test -n "${CFLAGS}${CPPFLAGS}" ; then
+	for cf_header_path in $CPPFLAGS $CFLAGS
+	do
+		case $cf_header_path in #(vi
+		-I*)
+			cf_header_path=`echo ".$cf_header_path" |sed -e 's/^...//' -e 's,/include$,,'`
+			
+test "$cf_header_path" != "NONE" && \
+test -d "$cf_header_path" && \
+ {
+	test -n "$verbose" && echo "	... testing for include-directories under $cf_header_path"
+	test -d $cf_header_path/include &&          cf_search="$cf_search $cf_header_path/include"
+	test -d $cf_header_path/include/$cf_ncuhdr_root &&       cf_search="$cf_search $cf_header_path/include/$cf_ncuhdr_root"
+	test -d $cf_header_path/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search $cf_header_path/include/$cf_ncuhdr_root/include"
+	test -d $cf_header_path/$cf_ncuhdr_root/include &&       cf_search="$cf_search $cf_header_path/$cf_ncuhdr_root/include"
+	test -d $cf_header_path/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search $cf_header_path/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-# For other stuff under the home directory, it should be sufficient to put
-# a symbolic link for $HOME/$cf_ncuhdr_root to the actual package location:
-test -d "$HOME/$cf_ncuhdr_root" && {
-	test -n "$verbose" && echo "	... testing include-directories under $HOME/$cf_ncuhdr_root"
-	test -d "$HOME/$cf_ncuhdr_root/include" &&       cf_search="$cf_search $HOME/$cf_ncuhdr_root/include"
-	test -d "$HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root" &&    cf_search="$cf_search $HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
+			cf_header_path_list="$cf_header_path_list $cf_search"
+			;;
+		esac
+	done
+fi
+
+cf_search=""
+
+
+test "/usr" != "$prefix" && \
+test -d "/usr" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under /usr"
+	test -d /usr/include &&          cf_search="$cf_search /usr/include"
+	test -d /usr/include/$cf_ncuhdr_root &&       cf_search="$cf_search /usr/include/$cf_ncuhdr_root"
+	test -d /usr/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search /usr/include/$cf_ncuhdr_root/include"
+	test -d /usr/$cf_ncuhdr_root/include &&       cf_search="$cf_search /usr/$cf_ncuhdr_root/include"
+	test -d /usr/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search /usr/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-test "$prefix" != /usr/local && \
-test -d /usr/local && {
-	test -n "$verbose" && echo "	... testing include-directories under /usr/local"
-	test -d /usr/local/include &&       cf_search="$cf_search /usr/local/include"
-	test -d /usr/local/include/$cf_ncuhdr_root &&    cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root"
-	test -d /usr/local/include/$cf_ncuhdr_root/include && cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root/include"
-	test -d /usr/local/$cf_ncuhdr_root/include &&    cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include"
-	test -d /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root && cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
-}
 
-test "$prefix" != NONE && \
-test -d $prefix && {
-	test -n "$verbose" && echo "	... testing include-directories under $prefix"
+test "$prefix" != "NONE" && \
+test -d "$prefix" && \
+ {
+	test -n "$verbose" && echo "	... testing for include-directories under $prefix"
 	test -d $prefix/include &&          cf_search="$cf_search $prefix/include"
 	test -d $prefix/include/$cf_ncuhdr_root &&       cf_search="$cf_search $prefix/include/$cf_ncuhdr_root"
 	test -d $prefix/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search $prefix/include/$cf_ncuhdr_root/include"
@@ -2654,24 +2945,43 @@ test -d $prefix && {
 	test -d $prefix/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search $prefix/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-test "$prefix" != /opt && \
-test -d /opt && {
-	test -n "$verbose" && echo "	... testing include-directories under /opt"
-	test -d /opt/include &&             cf_search="$cf_search /opt/include"
-	test -d /opt/include/$cf_ncuhdr_root &&          cf_search="$cf_search /opt/include/$cf_ncuhdr_root"
-	test -d /opt/include/$cf_ncuhdr_root/include &&       cf_search="$cf_search /opt/include/$cf_ncuhdr_root/include"
-	test -d /opt/$cf_ncuhdr_root/include &&          cf_search="$cf_search /opt/$cf_ncuhdr_root/include"
-	test -d /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&       cf_search="$cf_search /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
+
+test "/usr/local" != "$prefix" && \
+test -d "/usr/local" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under /usr/local"
+	test -d /usr/local/include &&          cf_search="$cf_search /usr/local/include"
+	test -d /usr/local/include/$cf_ncuhdr_root &&       cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root"
+	test -d /usr/local/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search /usr/local/include/$cf_ncuhdr_root/include"
+	test -d /usr/local/$cf_ncuhdr_root/include &&       cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include"
+	test -d /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search /usr/local/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
 
-test "$prefix" != /usr && \
-test -d /usr && {
-	test -n "$verbose" && echo "	... testing include-directories under /usr"
-	test -d /usr/include &&             cf_search="$cf_search /usr/include"
-	test -d /usr/include/$cf_ncuhdr_root &&          cf_search="$cf_search /usr/include/$cf_ncuhdr_root"
-	test -d /usr/include/$cf_ncuhdr_root/include &&       cf_search="$cf_search /usr/include/$cf_ncuhdr_root/include"
-	test -d /usr/$cf_ncuhdr_root/include &&          cf_search="$cf_search /usr/$cf_ncuhdr_root/include"
+
+test "/opt" != "$prefix" && \
+test -d "/opt" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under /opt"
+	test -d /opt/include &&          cf_search="$cf_search /opt/include"
+	test -d /opt/include/$cf_ncuhdr_root &&       cf_search="$cf_search /opt/include/$cf_ncuhdr_root"
+	test -d /opt/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search /opt/include/$cf_ncuhdr_root/include"
+	test -d /opt/$cf_ncuhdr_root/include &&       cf_search="$cf_search /opt/$cf_ncuhdr_root/include"
+	test -d /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search /opt/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
 }
+
+
+test "$HOME" != "$prefix" && \
+test -d "$HOME" && \
+(test $prefix = NONE || test -d $prefix) && {
+	test -n "$verbose" && echo "	... testing for include-directories under $HOME"
+	test -d $HOME/include &&          cf_search="$cf_search $HOME/include"
+	test -d $HOME/include/$cf_ncuhdr_root &&       cf_search="$cf_search $HOME/include/$cf_ncuhdr_root"
+	test -d $HOME/include/$cf_ncuhdr_root/include &&    cf_search="$cf_search $HOME/include/$cf_ncuhdr_root/include"
+	test -d $HOME/$cf_ncuhdr_root/include &&       cf_search="$cf_search $HOME/$cf_ncuhdr_root/include"
+	test -d $HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root &&    cf_search="$cf_search $HOME/$cf_ncuhdr_root/include/$cf_ncuhdr_root"
+}
+
+
 
 test "$includedir" != NONE && \
 test "$includedir" != "/usr/include" && \
@@ -2687,52 +2997,76 @@ test -d "$oldincludedir" && {
 	test -d $oldincludedir/$cf_ncuhdr_root && cf_search="$cf_search $oldincludedir/$cf_ncuhdr_root"
 }
 
+cf_search="$cf_header_path_list $cf_search"
 
 	test -n "$verbose" && echo search path $cf_search
 	cf_save2_CPPFLAGS="$CPPFLAGS"
 	for cf_incdir in $cf_search
 	do
 		
-for cf_add_incdir in $cf_incdir
-do
-	while true
+if test -n "$cf_incdir" ; then
+  for cf_add_incdir in $cf_incdir
+  do
+	while test $cf_add_incdir != /usr/include
 	do
-		case $cf_add_incdir in
-		/usr/include) # (vi
-			;;
-		/usr/local/include) # (vi
+	  if test -d $cf_add_incdir
+	  then
+		cf_have_incdir=no
+		if test -n "$CFLAGS$CPPFLAGS" ; then
+		  # a loop is needed to ensure we can add subdirs of existing dirs
+		  for cf_test_incdir in $CFLAGS $CPPFLAGS ; do
+			if test ".$cf_test_incdir" = ".-I$cf_add_incdir" ; then
+			  cf_have_incdir=yes; break
+			fi
+		  done
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+          if test "$cf_add_incdir" = /usr/local/include ; then
 			if test "$GCC" = yes
 			then
-				cf_save_CPPFLAGS="$CPPFLAGS"
-				CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-				cat > conftest.$ac_ext <<EOF
-#line 2710 "configure"
+			  cf_save_CPPFLAGS=$CPPFLAGS
+			  CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			  cat > conftest.$ac_ext <<EOF
+#line 3032 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 printf("Hello")
 ; return 0; }
 EOF
-if { (eval echo configure:2717: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3039: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   :
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  CPPFLAGS="$cf_save_CPPFLAGS"
+  cf_have_incdir=yes
 fi
 rm -f conftest*
+			  CPPFLAGS=$cf_save_CPPFLAGS
 			fi
-			;;
-		*) # (vi
-			CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-			;;
-		esac
-		cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
-		test "$cf_top_incdir" = "$cf_add_incdir" && break
-		cf_add_incdir="$cf_top_incdir"
+		  fi
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+		  test -n "$verbose" && echo "	adding $cf_add_incdir to include-path" 1>&6
+
+echo "${as_me-configure}:3056: testing adding $cf_add_incdir to include-path ..." 1>&5
+
+
+		  CPPFLAGS="-I$cf_add_incdir $CPPFLAGS"
+
+          cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
+          test "$cf_top_incdir" = "$cf_add_incdir" && break
+          cf_add_incdir="$cf_top_incdir"
+		else
+		  break
+		fi
+	  fi
 	done
-done
+  done
+fi
 
 		for cf_header in \
 			ncurses.h \
@@ -2740,7 +3074,7 @@ done
 		do
 			
 	cat > conftest.$ac_ext <<EOF
-#line 2744 "configure"
+#line 3078 "configure"
 #include "confdefs.h"
 
 
@@ -2761,7 +3095,7 @@ printf("old\n");
 	
 ; return 0; }
 EOF
-if { (eval echo configure:2765: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3099: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   cf_cv_ncurses_h2=$cf_header
 	
@@ -2795,46 +3129,69 @@ echo "$ac_t""$cf_cv_ncurses_h2" 1>&6
 		cf_cv_ncurses_header=$cf_ncuhdr_root/$cf_cv_ncurses_header
 	fi
 	
-for cf_add_incdir in $cf_1st_incdir
-do
-	while true
+if test -n "$cf_1st_incdir" ; then
+  for cf_add_incdir in $cf_1st_incdir
+  do
+	while test $cf_add_incdir != /usr/include
 	do
-		case $cf_add_incdir in
-		/usr/include) # (vi
-			;;
-		/usr/local/include) # (vi
+	  if test -d $cf_add_incdir
+	  then
+		cf_have_incdir=no
+		if test -n "$CFLAGS$CPPFLAGS" ; then
+		  # a loop is needed to ensure we can add subdirs of existing dirs
+		  for cf_test_incdir in $CFLAGS $CPPFLAGS ; do
+			if test ".$cf_test_incdir" = ".-I$cf_add_incdir" ; then
+			  cf_have_incdir=yes; break
+			fi
+		  done
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+          if test "$cf_add_incdir" = /usr/local/include ; then
 			if test "$GCC" = yes
 			then
-				cf_save_CPPFLAGS="$CPPFLAGS"
-				CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-				cat > conftest.$ac_ext <<EOF
-#line 2812 "configure"
+			  cf_save_CPPFLAGS=$CPPFLAGS
+			  CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			  cat > conftest.$ac_ext <<EOF
+#line 3157 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 printf("Hello")
 ; return 0; }
 EOF
-if { (eval echo configure:2819: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3164: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   :
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  CPPFLAGS="$cf_save_CPPFLAGS"
+  cf_have_incdir=yes
 fi
 rm -f conftest*
+			  CPPFLAGS=$cf_save_CPPFLAGS
 			fi
-			;;
-		*) # (vi
-			CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
-			;;
-		esac
-		cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
-		test "$cf_top_incdir" = "$cf_add_incdir" && break
-		cf_add_incdir="$cf_top_incdir"
+		  fi
+		fi
+
+		if test "$cf_have_incdir" = no ; then
+		  test -n "$verbose" && echo "	adding $cf_add_incdir to include-path" 1>&6
+
+echo "${as_me-configure}:3181: testing adding $cf_add_incdir to include-path ..." 1>&5
+
+
+		  CPPFLAGS="-I$cf_add_incdir $CPPFLAGS"
+
+          cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
+          test "$cf_top_incdir" = "$cf_add_incdir" && break
+          cf_add_incdir="$cf_top_incdir"
+		else
+		  break
+		fi
+	  fi
 	done
-done
+  done
+fi
 
 
 fi
@@ -2868,7 +3225,7 @@ esac
 
 
 echo $ac_n "checking for terminfo header""... $ac_c" 1>&6
-echo "configure:2872: checking for terminfo header" >&5
+echo "configure:3229: checking for terminfo header" >&5
 if eval "test \"`echo '$''{'cf_cv_term_header'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2885,7 +3242,7 @@ esac
 for cf_test in $cf_term_header "ncurses/term.h" "ncursesw/term.h"
 do
 cat > conftest.$ac_ext <<EOF
-#line 2889 "configure"
+#line 3246 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 #include <${cf_cv_ncurses_header-curses.h}>
@@ -2895,7 +3252,7 @@ int main() {
 int x = auto_left_margin
 ; return 0; }
 EOF
-if { (eval echo configure:2899: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3256: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   
 	cf_cv_term_header="$cf_test"
@@ -2950,7 +3307,7 @@ EOF
 
 
 echo $ac_n "checking for ncurses version""... $ac_c" 1>&6
-echo "configure:2954: checking for ncurses version" >&5
+echo "configure:3311: checking for ncurses version" >&5
 if eval "test \"`echo '$''{'cf_cv_ncurses_version'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2976,7 +3333,7 @@ Autoconf "old"
 #endif
 EOF
 	cf_try="$ac_cpp conftest.$ac_ext 2>&5 | grep '^Autoconf ' >conftest.out"
-	{ (eval echo configure:2980: \"$cf_try\") 1>&5; (eval $cf_try) 2>&5; }
+	{ (eval echo configure:3337: \"$cf_try\") 1>&5; (eval $cf_try) 2>&5; }
 	if test -f conftest.out ; then
 		cf_out=`cat conftest.out | sed -e 's%^Autoconf %%' -e 's%^[^"]*"%%' -e 's%".*%%'`
 		test -n "$cf_out" && cf_cv_ncurses_version="$cf_out"
@@ -2985,7 +3342,7 @@ EOF
 
 else
   cat > conftest.$ac_ext <<EOF
-#line 2989 "configure"
+#line 3346 "configure"
 #include "confdefs.h"
 
 #include <${cf_cv_ncurses_header-curses.h}>
@@ -3006,10 +3363,10 @@ int main()
 	make an error
 # endif
 #endif
-	exit(0);
+	${cf_cv_main_return-return}(0);
 }
 EOF
-if { (eval echo configure:3013: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3370: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   
 	cf_cv_ncurses_version=`cat $cf_tempfile`
@@ -3040,24 +3397,24 @@ else
   
 cf_cv_termlib=none
 cat > conftest.$ac_ext <<EOF
-#line 3044 "configure"
+#line 3401 "configure"
 #include "confdefs.h"
 
 int main() {
 char *x=(char*)tgoto("",0,0)
 ; return 0; }
 EOF
-if { (eval echo configure:3051: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3408: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   cat > conftest.$ac_ext <<EOF
-#line 3054 "configure"
+#line 3411 "configure"
 #include "confdefs.h"
 
 int main() {
 int x=tigetstr("")
 ; return 0; }
 EOF
-if { (eval echo configure:3061: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3418: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   cf_cv_termlib=terminfo
 else
@@ -3068,6 +3425,9 @@ else
 fi
 rm -f conftest*
 	test -n "$verbose" && echo "	using functions in predefined $cf_cv_termlib LIBS" 1>&6
+
+echo "${as_me-configure}:3430: testing using functions in predefined $cf_cv_termlib LIBS ..." 1>&5
+
 
 
 else
@@ -3086,16 +3446,16 @@ if test "$cf_cv_termlib" = none; then
 	for cf_func in tigetstr tgetstr
 	do
 		echo $ac_n "checking for $cf_func in -l$cf_lib""... $ac_c" 1>&6
-echo "configure:3090: checking for $cf_func in -l$cf_lib" >&5
+echo "configure:3450: checking for $cf_func in -l$cf_lib" >&5
 		cat > conftest.$ac_ext <<EOF
-#line 3092 "configure"
+#line 3452 "configure"
 #include "confdefs.h"
 
 int main() {
 int x=$cf_func("")
 ; return 0; }
 EOF
-if { (eval echo configure:3099: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3459: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   cf_result=yes
 else
@@ -3122,7 +3482,7 @@ fi
 if test "$cf_cv_termlib" = none; then
 	# allow curses library for broken AIX system.
 	echo $ac_n "checking for initscr in -lcurses""... $ac_c" 1>&6
-echo "configure:3126: checking for initscr in -lcurses" >&5
+echo "configure:3486: checking for initscr in -lcurses" >&5
 ac_lib_var=`echo curses'_'initscr | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -3130,7 +3490,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lcurses  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 3134 "configure"
+#line 3494 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -3141,7 +3501,7 @@ int main() {
 initscr()
 ; return 0; }
 EOF
-if { (eval echo configure:3145: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3505: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -3162,7 +3522,7 @@ else
 fi
 
 	echo $ac_n "checking for tgoto in -ltermcap""... $ac_c" 1>&6
-echo "configure:3166: checking for tgoto in -ltermcap" >&5
+echo "configure:3526: checking for tgoto in -ltermcap" >&5
 ac_lib_var=`echo termcap'_'tgoto | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -3170,7 +3530,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-ltermcap  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 3174 "configure"
+#line 3534 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -3181,7 +3541,7 @@ int main() {
 tgoto()
 ; return 0; }
 EOF
-if { (eval echo configure:3185: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3545: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -3217,7 +3577,7 @@ CHECK_DECL_FLAG="-I$srcdir"
 CHECK_DECL_HDRS='#include <atacterm.h>'
 
 echo $ac_n "checking for term.h""... $ac_c" 1>&6
-echo "configure:3221: checking for term.h" >&5
+echo "configure:3581: checking for term.h" >&5
 if eval "test \"`echo '$''{'cf_cv_term_header'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3230,7 +3590,7 @@ for cf_header in \
 	term.h
 do
 	cat > conftest.$ac_ext <<EOF
-#line 3234 "configure"
+#line 3594 "configure"
 #include "confdefs.h"
 
 #include <${cf_cv_ncurses_header-curses.h}>
@@ -3239,7 +3599,7 @@ int main() {
 WINDOW *x
 ; return 0; }
 EOF
-if { (eval echo configure:3243: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3603: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   cf_cv_term_header=$cf_header
 	 break
@@ -3280,7 +3640,7 @@ esac
 
 
 echo $ac_n "checking if we should include curses.h or termcap.h""... $ac_c" 1>&6
-echo "configure:3284: checking if we should include curses.h or termcap.h" >&5
+echo "configure:3644: checking if we should include curses.h or termcap.h" >&5
 if eval "test \"`echo '$''{'cf_cv_need_curses_h'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3298,7 +3658,7 @@ do
     test -n "$cf_t_opts" && CPPFLAGS="$CPPFLAGS -D$cf_t_opts"
 
     cat > conftest.$ac_ext <<EOF
-#line 3302 "configure"
+#line 3662 "configure"
 #include "confdefs.h"
 /* $cf_c_opts $cf_t_opts */
 $CHECK_DECL_HDRS
@@ -3306,7 +3666,7 @@ int main() {
 char *x = (char *)tgoto("")
 ; return 0; }
 EOF
-if { (eval echo configure:3310: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3670: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   test "$cf_cv_need_curses_h" = no && {
 	     cf_cv_need_curses_h=maybe
@@ -3319,7 +3679,7 @@ else
   rm -rf conftest*
   echo "Recompiling with corrected call (C:$cf_c_opts, T:$cf_t_opts)" >&5
 	cat > conftest.$ac_ext <<EOF
-#line 3323 "configure"
+#line 3683 "configure"
 #include "confdefs.h"
 
 $CHECK_DECL_HDRS
@@ -3327,7 +3687,7 @@ int main() {
 char *x = (char *)tgoto("",0,0)
 ; return 0; }
 EOF
-if { (eval echo configure:3331: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3691: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   cf_cv_need_curses_h=yes
 	 cf_ok_c_opts=$cf_c_opts
@@ -3403,7 +3763,7 @@ esac
 
 
 echo $ac_n "checking declaration of tputs 3rd param""... $ac_c" 1>&6
-echo "configure:3407: checking declaration of tputs 3rd param" >&5
+echo "configure:3767: checking declaration of tputs 3rd param" >&5
 if eval "test \"`echo '$''{'cf_cv_type_outchar'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3419,10 +3779,10 @@ for Q in int void; do
 for R in int char; do
 for S in "" const; do
 	
-echo "(line 3423) testing loop variables P:$P, Q:$Q, R:$R, S:$S ..." 1>&5
+echo "${as_me-configure}:3783: testing loop variables P:$P, Q:$Q, R:$R, S:$S ..." 1>&5
 
 	cat > conftest.$ac_ext <<EOF
-#line 3426 "configure"
+#line 3786 "configure"
 #include "confdefs.h"
 $CHECK_DECL_HDRS
 int main() {
@@ -3431,7 +3791,7 @@ extern $Q OutChar($R);
 	tputs("", 1, OutChar)
 ; return 0; }
 EOF
-if { (eval echo configure:3435: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3795: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   cf_cv_type_outchar="$Q OutChar($R)"
 	 cf_cv_found=yes
@@ -3513,7 +3873,7 @@ fi
 GCC_VERSION=none
 if test "$GCC" = yes ; then
 	echo $ac_n "checking version of $CC""... $ac_c" 1>&6
-echo "configure:3517: checking version of $CC" >&5
+echo "configure:3877: checking version of $CC" >&5
 	GCC_VERSION="`${CC} --version| sed -e '2,$d' -e 's/^.*(GCC) //' -e 's/^[^0-9.]*//' -e 's/[^0-9.].*//'`"
 	test -z "$GCC_VERSION" && GCC_VERSION=unknown
 	echo "$ac_t""$GCC_VERSION" 1>&6
@@ -3533,11 +3893,11 @@ if test "$GCC" = yes ; then
 	case $host_os in
 	linux*|gnu*)
 		echo $ac_n "checking if this is really Intel C compiler""... $ac_c" 1>&6
-echo "configure:3537: checking if this is really Intel C compiler" >&5
+echo "configure:3897: checking if this is really Intel C compiler" >&5
 		cf_save_CFLAGS="$CFLAGS"
 		CFLAGS="$CFLAGS -no-gcc"
 		cat > conftest.$ac_ext <<EOF
-#line 3541 "configure"
+#line 3901 "configure"
 #include "confdefs.h"
 
 int main() {
@@ -3549,7 +3909,7 @@ make an error
 
 ; return 0; }
 EOF
-if { (eval echo configure:3553: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3913: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   INTEL_COMPILER=yes
 cf_save_CFLAGS="$cf_save_CFLAGS -we147 -no-gcc"
@@ -3567,7 +3927,7 @@ fi
 
 
 cat > conftest.$ac_ext <<EOF
-#line 3571 "configure"
+#line 3931 "${as_me-configure}"
 int main(int argc, char *argv[]) { return (argv[argc-1] == 0) ; }
 EOF
 
@@ -3586,10 +3946,10 @@ then
 # warning #269: invalid format string conversion
 
 	echo "checking for $CC warning options" 1>&6
-echo "configure:3590: checking for $CC warning options" >&5
+echo "configure:3950: checking for $CC warning options" >&5
 	cf_save_CFLAGS="$CFLAGS"
 	EXTRA_CFLAGS="-Wall"
-	for cf_opt in  \
+	for cf_opt in \
 		wd1419 \
 		wd1682 \
 		wd1683 \
@@ -3602,7 +3962,7 @@ echo "configure:3590: checking for $CC warning options" >&5
 		wd981
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
-		if { (eval echo configure:3606: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+		if { (eval echo configure:3966: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
 			test -n "$verbose" && echo "$ac_t""... -$cf_opt" 1>&6
 			EXTRA_CFLAGS="$EXTRA_CFLAGS -$cf_opt"
 		fi
@@ -3612,7 +3972,7 @@ echo "configure:3590: checking for $CC warning options" >&5
 elif test "$GCC" = yes
 then
 	echo "checking for $CC warning options" 1>&6
-echo "configure:3616: checking for $CC warning options" >&5
+echo "configure:3976: checking for $CC warning options" >&5
 	cf_save_CFLAGS="$CFLAGS"
 	EXTRA_CFLAGS="-W -Wall"
 	cf_warn_CONST=""
@@ -3631,7 +3991,7 @@ echo "configure:3616: checking for $CC warning options" >&5
 		Wundef $cf_warn_CONST 
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
-		if { (eval echo configure:3635: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+		if { (eval echo configure:3995: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
 			test -n "$verbose" && echo "$ac_t""... -$cf_opt" 1>&6
 			case $cf_opt in #(vi
 			Wcast-qual) #(vi
@@ -3639,8 +3999,11 @@ echo "configure:3616: checking for $CC warning options" >&5
 				;;
 			Winline) #(vi
 				case $GCC_VERSION in
-				3.3*)
+				[34].*)
 					test -n "$verbose" && echo "	feature is broken in gcc $GCC_VERSION" 1>&6
+
+echo "${as_me-configure}:4006: testing feature is broken in gcc $GCC_VERSION ..." 1>&5
+
 
 					continue;;
 				esac
@@ -3660,12 +4023,12 @@ fi
 
 
 echo $ac_n "checking for size_t""... $ac_c" 1>&6
-echo "configure:3664: checking for size_t" >&5
+echo "configure:4027: checking for size_t" >&5
 if eval "test \"`echo '$''{'ac_cv_type_size_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3669 "configure"
+#line 4032 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #if STDC_HEADERS
@@ -3693,12 +4056,12 @@ EOF
 fi
 
 echo $ac_n "checking return type of signal handlers""... $ac_c" 1>&6
-echo "configure:3697: checking return type of signal handlers" >&5
+echo "configure:4060: checking return type of signal handlers" >&5
 if eval "test \"`echo '$''{'ac_cv_type_signal'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3702 "configure"
+#line 4065 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <signal.h>
@@ -3715,7 +4078,7 @@ int main() {
 int i;
 ; return 0; }
 EOF
-if { (eval echo configure:3719: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:4082: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_signal=void
 else
@@ -3743,12 +4106,12 @@ vfprintf \
 
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:3747: checking for $ac_func" >&5
+echo "configure:4110: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3752 "configure"
+#line 4115 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -3771,7 +4134,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:3775: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:4138: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -3801,7 +4164,7 @@ for td_type in char short int long
 do
 td_name="`echo $td_type |tr [a-z] [A-Z]`_TYPE_SIZE"
 echo $ac_n "checking size of $td_type""... $ac_c" 1>&6
-echo "configure:3805: checking size of $td_type" >&5
+echo "configure:4168: checking size of $td_type" >&5
 td_size="ac_cv_bits_$td_type"
 if eval "test \"`echo '$''{'$td_size'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -3811,21 +4174,21 @@ if test "$cross_compiling" = yes; then
   eval 'ac_cv_bits_'$td_type'=unknown'
 else
   cat > conftest.$ac_ext <<EOF
-#line 3815 "configure"
+#line 4178 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 main()
 {
 	FILE	*f = fopen("conftestval", "w");
 	int	count;
-	$td_type n;
+	unsigned $td_type n;
 	if (!f) exit(1);
 	for (n = 1, count = 0; n != 0; n = n+n, count++);
 	fprintf(f, "%d\n", count);
 	exit(0);
 }
 EOF
-if { (eval echo configure:3829: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:4192: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   eval 'ac_cv_bits_'$td_type'=`cat conftestval`'
 else
@@ -3868,7 +4231,7 @@ if test -n "$GCC"; then
 		td_dir1=`echo $td_temp | sed -e 's@/specs$@/include@'`
 		td_dir2=`echo $td_dir1 | sed -e 's@/lib/gcc-lib@@' -e s@/$td_vers/@/@`
 				echo $ac_n "checking for gcc tool-include""... $ac_c" 1>&6
-echo "configure:3872: checking for gcc tool-include" >&5
+echo "configure:4235: checking for gcc tool-include" >&5
 		if test "$td_dir1" != "$td_temp"; then
 			echo "$ac_t""$td_dir1" 1>&6
 			cat >> confdefs.h <<EOF
@@ -3879,7 +4242,7 @@ EOF
 			echo "$ac_t""no" 1>&6
 		fi
 		echo $ac_n "checking for gcc include""... $ac_c" 1>&6
-echo "configure:3883: checking for gcc include" >&5
+echo "configure:4246: checking for gcc include" >&5
 		if test "$td_dir2" != "$td_dir1"; then
 			echo "$ac_t""$td_dir2" 1>&6
 			cat >> confdefs.h <<EOF

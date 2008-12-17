@@ -17,7 +17,7 @@
 #endif
 
 #ifdef MVS
- #pragma csect (CODE, "scan$")
+#pragma csect (CODE, "scan$")
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
@@ -31,15 +31,18 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "list.h"
 #include "scan.h"
 #include "strtab.h"
-#include "tnode.h"	/* Pgram.h needs it */
+#include "tnode.h"		/* Pgram.h needs it */
 #include "Pgram.h"
 
 #define DEBUG 0
 
-static char const scan_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.16 1997/12/12 00:09:42 tom Exp $";
+static char const scan_c[] =
+"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.17 2008/12/17 01:07:56 tom Exp $";
 /*
 * $Log: scan.c,v $
+* Revision 3.17  2008/12/17 01:07:56  tom
+* convert to ANSI, indent'd
+*
 * Revision 3.16  1997/12/12 00:09:42  tom
 * make yylex() return a negative value on end-of-file, rather than bogus
 * ENDFILE symbol.
@@ -157,31 +160,32 @@ static char const scan_c[] =
 */
 
 /* forward declarations */
-int scan_popScope P_(( void ));
-int yylex P_(( void ));
-static int expandedMacro P_(( void ));
-static int scanAssignOp P_(( int c ));
-static int scanNumber P_(( FILE *srcin, size_t offset, int nextC ));
-static int scanSpaces P_(( int c ));
-static int scanWhiteSpace P_(( int c ));
-static void initCharTable P_(( void ));
-static void poundDirective P_(( void ));
-static void scanComment P_(( void ));
-static void scanQuotedString P_(( FILE *srcin, size_t offset, int quote ));
-void scan_end P_(( char **uprefix ));
-void scan_init P_(( FILE *srcfile ));
-void scan_pushScope P_(( void ));
-void scan_setType P_(( char *name ));
-void yyerror P_(( char *string ));
+int scan_popScope(void);
+int yylex(void);
+
+static int expandedMacro(void);
+static int scanAssignOp(int c);
+static int scanNumber(FILE *srcin, size_t offset, int nextC);
+static int scanSpaces(int c);
+static int scanWhiteSpace(int c);
+static void initCharTable(void);
+static void poundDirective(void);
+static void scanComment(void);
+static void scanQuotedString(FILE *srcin, size_t offset, int quote);
+void scan_end(char **uprefix);
+void scan_init(FILE *srcfile);
+void scan_pushScope(void);
+void scan_setType(char *name);
+void yyerror(char *string);
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
 #define BUF_MALLOC_SIZE	40
-#define MAX_DIRECTIVE_SIZE  20	  
+#define MAX_DIRECTIVE_SIZE  20
 
 typedef struct {
-    ID_TYPE		*idType;
-    int			oldType;
+    ID_TYPE *idType;
+    int oldType;
 } typeFix_t;
 
 #define BADCHAR		0
@@ -199,6 +203,7 @@ typedef struct {
 * inserted in sorted order because the search tree will degenerate to a
 * linked list.
 */
+/* *INDENT-OFF* */
 static struct {
 	char	*name;
 	int	type;
@@ -246,64 +251,66 @@ static struct {
 	{ "__asm__", ASM },			/* GCC: asm */
 	{ "__attribute__", ATTRIBUTE },		/* GCC */
 };
+/* *INDENT-ON* */
 
-static int		charTable[MAXCHAR + 1];	/* MAXCHAR is in portable.h */
+static int charTable[MAXCHAR + 1];	/* MAXCHAR is in portable.h */
 
-static FILE		*srcin  = NULL;		/* input file; */
-static char		*buf = NULL;
-static size_t		bufSize = 0;
-static struct strtab	*strtab = NULL;
-static SRCPOS 		src = {-1, 0, 0};
-static SRCPOS 		m_begin;
-static SRCPOS 		m_end;
-static 			macro_nesting = 0;
-static LIST *		scopeList;
-static LIST *		typeFixList;
+static FILE *srcin = NULL;	/* input file; */
+static char *buf = NULL;
+static size_t bufSize = 0;
+static struct strtab *strtab = NULL;
+static SRCPOS src =
+{-1, 0, 0};
+static SRCPOS m_begin;
+static SRCPOS m_end;
+static int macro_nesting = 0;
+static LIST *scopeList;
+static LIST *typeFixList;
 
 /*
 * initCharTable:  One time initialization of character table.
 *	Classifies each character.
 */
 static void
-initCharTable()
+initCharTable(void)
 {
     int i;
 
     /*
-    * Default: BADCHAR.
-    */
+       * Default: BADCHAR.
+     */
     for (i = 0; i <= MAXCHAR; ++i)
 	charTable[i] = BADCHAR;
 
     /*
-    * EOF or '\377'
-    */
+       * EOF or '\377'
+     */
     charTable[CHAR(EOF)] = ENDOFFILE;
 
     /*
-    * Whitespace.
-    */
+       * Whitespace.
+     */
     charTable[' '] = WHITESPACE;
     charTable['\t'] = WHITESPACE;
     charTable['\f'] = WHITESPACE;
     charTable['\b'] = WHITESPACE;
     charTable['\r'] = WHITESPACE;
 #ifdef __STDC__
-    charTable['\v'] = WHITESPACE;/* ANSI allows vertical tab as white space */
+    charTable['\v'] = WHITESPACE;	/* ANSI allows vertical tab as white space */
 #else /* not __STDC__ */
-    charTable['\013'] = WHITESPACE;/* ANSI allows vertical tab as white space */
+    charTable['\013'] = WHITESPACE;	/* ANSI allows vertical tab as white space */
 #endif /* not __STDC__ */
 
     /*
-    * Potential whitespace.  (Not including comments.)
-    */
+       * Potential whitespace.  (Not including comments.)
+     */
     charTable['\n'] = STARTWS;
     charTable['\\'] = STARTWS;
     charTable['@'] = STARTWS;
 
     /*
-    * Alphabetic.
-    */
+       * Alphabetic.
+     */
     charTable['_'] = LETTER;
     charTable['$'] = LETTER;	/* Some compilers permit this; why not? */
 
@@ -312,23 +319,23 @@ initCharTable()
     for (i = 'A'; i <= 'Z'; ++i)
 	charTable[i] = LETTER;
     /*
-    * Numeric.
-    */
+       * Numeric.
+     */
     for (i = '0'; i <= '9'; ++i)
 	charTable[i] = DIGIT;
 
     /*
-    * Quote Marks.
-    */
+       * Quote Marks.
+     */
     charTable['\''] = SINGLEQUOTE;
     charTable['"'] = DOUBLEQUOTE;
 
     /*
-    * Potential decimal point.
-    * OR Could be sign in floating number.
-    * OR Possible first character of "other" multiple character token.
-    * OR Always single character token.
-    */
+       * Potential decimal point.
+       * OR Could be sign in floating number.
+       * OR Possible first character of "other" multiple character token.
+       * OR Always single character token.
+     */
     charTable['('] = TOK_LPAREN;
     charTable[')'] = TOK_RPAREN;
     charTable['['] = TOK_LSQUARE;
@@ -354,8 +361,8 @@ initCharTable()
     charTable['.'] = TOK_PERIOD;
     charTable[';'] = TOK_SEMICOLON;
 #ifdef MVS
-    charTable[0x6a] = TOK_VERTICAL; /* EBCDIC representation of the broken bar, used
-                                       interchageably with the solid bar under C/370 */
+    charTable[0x6a] = TOK_VERTICAL;	/* EBCDIC representation of the broken bar, used
+					   interchageably with the solid bar under C/370 */
 #endif /* MVS */
 }
 
@@ -363,18 +370,18 @@ initCharTable()
 * scanComment: Skip input characters up to and including comment terminator.
 */
 static void
-scanComment()
+scanComment(void)
 {
-    int	prevC;
-    int	c;
+    int prevC;
+    int c;
 
     prevC = ' ';
 
     while (1) {
-	c = getc(srcin); ++src.col;
+	c = getc(srcin);
+	++src.col;
 
-	switch (c)
-	{
+	switch (c) {
 	case '/':
 	    if (prevC == '*')
 		return;
@@ -403,13 +410,12 @@ scanComment()
 *	On EOF return EOF.
 */
 static int
-expandedMacro()
+expandedMacro(void)
 {
     register int c;
 
     c = getc(srcin);
-    switch(c)
-    {
+    switch (c) {
     case '<':
 	if (macro_nesting == 0) {
 	    m_begin.file = src.file;
@@ -417,9 +423,10 @@ expandedMacro()
 	    m_begin.col = src.col;
 	    m_end.file = src.file;
 	    m_end.line = src.line;
-	    m_end.col = src.col - 1; /* Exclude @ */
+	    m_end.col = src.col - 1;	/* Exclude @ */
 	    while (1) {
-		c = getc(srcin); ++m_end.col;
+		c = getc(srcin);
+		++m_end.col;
 		if (c == EOF) {
 		    lexical_error(&m_end, "unexpected EOF");
 		    return EOF;
@@ -429,24 +436,29 @@ expandedMacro()
 		    m_end.col = 0;
 		    continue;
 		}
-		if (c != '@') continue;
-		c = getc(srcin); ++m_end.col;
+		if (c != '@')
+		    continue;
+		c = getc(srcin);
+		++m_end.col;
 		if (c == EOF) {
 		    lexical_error(&m_end, "unexpected EOF");
 		    return EOF;
 		}
-		if (c == '|') break;
-		else ungetc(c, srcin);	/* in case its an @ */
+		if (c == '|')
+		    break;
+		else
+		    ungetc(c, srcin);	/* in case its an @ */
 	    }
 	    m_end.col -= 2;	/* Exclude @| */
 	} else {
 	    while (1) {
-		if ((c=getc(srcin)) == '@') {
-		    if ((c=getc(srcin)) == '|')
+		if ((c = getc(srcin)) == '@') {
+		    if ((c = getc(srcin)) == '|')
 			break;
 		    else if (c == '>') {
 			--macro_nesting;
-		    } else ungetc(c, srcin); /* @ ? */
+		    } else
+			ungetc(c, srcin);	/* @ ? */
 		} else if (c == EOF) {
 		    lexical_error(&m_end, "unexpected EOF");
 		    return EOF;
@@ -462,7 +474,7 @@ expandedMacro()
 		    src.col = m_end.col + 1;
 		c = getc(srcin);
 	    } else {
-		ungetc(c, srcin); /* @ ? */
+		ungetc(c, srcin);	/* @ ? */
 		c = '@';
 	    }
 	}
@@ -470,19 +482,20 @@ expandedMacro()
     case '>':
 	if (--macro_nesting == 0) {
 	    /*
-	    * Now that we are outside the macro, where are we in the input?
-	    * Cpp provides line directives (or extra lines) to make sure that
-	    * src.line and src.file reflect the original source file input
-	    * position.  Src.col must be reset to reflect the column in the
-	    * original source file rather than the column in the replacement
-	    * text.
-	    */
+	       * Now that we are outside the macro, where are we in the input?
+	       * Cpp provides line directives (or extra lines) to make sure that
+	       * src.line and src.file reflect the original source file input
+	       * position.  Src.col must be reset to reflect the column in the
+	       * original source file rather than the column in the replacement
+	       * text.
+	     */
 	    src.col = m_end.col + 1;
 	}
 	c = getc(srcin);
 	return c;
     default:
-	ungetc(c, srcin); --src.col;
+	ungetc(c, srcin);
+	--src.col;
 	return '@';
     }
 }
@@ -492,21 +505,21 @@ expandedMacro()
 *	not whitespace (excluding newline).  On EOF return EOF.
 */
 static int
-scanSpaces(c)
-int c;
+scanSpaces(int c)
 {
     while (1) {
-	switch (c)
-	{
+	switch (c) {
 	case '@':
 	    c = expandedMacro();
 	    if (c == '@')
 		return c;
 	    continue;
 	case '/':
-	    c = getc(srcin); ++src.col;
+	    c = getc(srcin);
+	    ++src.col;
 	    if (c != '*') {
-		ungetc(c, srcin); --src.col;
+		ungetc(c, srcin);
+		--src.col;
 		return '/';
 	    }
 	    scanComment();
@@ -523,18 +536,20 @@ int c;
 #endif /* not __STDC__ */
 	    break;
 	case '\\':
-	    c = getc(srcin); ++src.col;
+	    c = getc(srcin);
+	    ++src.col;
 	    if (c == '\n') {
 		src.line++;
 		src.col = 0;
 		break;
-	    }
-	    else continue;	/* Ignore invalid backslash. */
+	    } else
+		continue;	/* Ignore invalid backslash. */
 	default:
 	    return (c);
 	}
 
-	c = getc(srcin); ++src.col;
+	c = getc(srcin);
+	++src.col;
     }
 }
 
@@ -552,13 +567,13 @@ int c;
 *	Always return with input at beginning of a line.
 */
 static void
-poundDirective()
+poundDirective(void)
 {
-    int		c;
-    int		token;
-    int		i;
-    char	directive[MAX_DIRECTIVE_SIZE];
-    int		charType;
+    int c;
+    int token;
+    int i;
+    char directive[MAX_DIRECTIVE_SIZE];
+    int charType;
 #ifdef MVS
     static FILE *altfile;
 #endif
@@ -578,7 +593,8 @@ poundDirective()
     if (charType == LETTER) {
 	directive[0] = c;
 	for (i = 1; i < MAX_DIRECTIVE_SIZE; ++i) {
-	    c = getc(srcin); ++src.col;
+	    c = getc(srcin);
+	    ++src.col;
 	    charType = charTable[CHAR(c)];
 	    if (charType == LETTER || charType == DIGIT) {
 		directive[i] = c;
@@ -589,39 +605,33 @@ poundDirective()
 	}
 	if (i == MAX_DIRECTIVE_SIZE) {
 	    lexical_error(&src, "unknown #-directive");
-	    while ((c = scanSpaces(' ')) != EOF && c != '\n')
-		;
+	    while ((c = scanSpaces(' ')) != EOF && c != '\n') ;
 	    src.line++;
 	    src.col = 0;
 	    return;
 	}
 
 	c = scanSpaces(c);
-	
+
 	if (strncmp(directive, "pragma", MAX_DIRECTIVE_SIZE) == 0) {
 #ifndef MVS
-	    while (c != '\n' && (c = scanSpaces(' ')) != EOF)
-		;
+	    while (c != '\n' && (c = scanSpaces(' ')) != EOF) ;
 #else /* MVS */
-	    if (altfile == NULL)
-		{
-		    altfile = fopen("DD:PRAGMAS", "w");
-		    if (altfile == NULL)
-			altfile = (FILE *) -1;
+	    if (altfile == NULL) {
+		altfile = fopen("DD:PRAGMAS", "w");
+		if (altfile == NULL)
+		    altfile = (FILE *) -1;
+	    }
+	    if (altfile == (FILE *) -1)
+		while (c != '\n' && (c = scanSpaces(' ')) != EOF) ;
+	    else {
+		fprintf(altfile, "%s", "#pragma ");
+		do {
+		    putc(c, altfile);
 		}
-	    if (altfile == (FILE *)-1)
-		while (c != '\n' && (c = scanSpaces(' ')) != EOF)
-		    ;
-	    else
-		{
-		    fprintf(altfile, "%s", "#pragma ");
-		    do
-			{
-			    putc(c, altfile);
-			}
-		    while (c != '\n' && (c=getc(srcin)) != EOF);
+		while (c != '\n' && (c = getc(srcin)) != EOF);
 
-		}
+	    }
 #endif /* MVS */
 	    src.line++;
 	    src.col = 0;
@@ -640,8 +650,7 @@ poundDirective()
 		    lexical_error(&src, "invalid #ident");
 
 		/* Skip the rest of this line.  */
-		while ((c = scanSpaces(' ')) != EOF && c != '\n')
-		    ;
+		while ((c = scanSpaces(' ')) != EOF && c != '\n') ;
 	    }
 	    src.line++;
 	    src.col = 0;
@@ -650,8 +659,7 @@ poundDirective()
 
 	if (strncmp(directive, "line", MAX_DIRECTIVE_SIZE) != 0) {
 	    lexical_error(&src, "unknown #-directive");
-	    while (c != '\n' && (c = scanSpaces(' ')) != EOF)
-		;
+	    while (c != '\n' && (c = scanSpaces(' ')) != EOF) ;
 	    src.line++;
 	    src.col = 0;
 	    return;
@@ -677,7 +685,7 @@ poundDirective()
 	ungetc(c, srcin);
 	if (c != '\n') {
 
-	    /* More follows: must be a string constant (filename).*/
+	    /* More follows: must be a string constant (filename). */
 
 	    token = yylex();
 	    if (token != STRING)
@@ -686,12 +694,11 @@ poundDirective()
 	    src.file = store_filename(yylval.token.text);
 	}
 	src.line = line - 1;
-    }
-    else lexical_error(&src, "invalid #line");
+    } else
+	lexical_error(&src, "invalid #line");
 
     /* skip the rest of this line.  */
-    while ((c = scanSpaces(' ')) != EOF && c != '\n')
-	;
+    while ((c = scanSpaces(' ')) != EOF && c != '\n') ;
     ++src.line;
     src.col = 0;
     return;
@@ -703,16 +710,14 @@ poundDirective()
 *	On EOF return EOF.
 */
 static int
-scanWhiteSpace(c)
-int c;
+scanWhiteSpace(int c)
 {
     int firstNonWhite = 0;
 
     while (1) {
 	c = scanSpaces(c);
 
-	switch (c)
-	{
+	switch (c) {
 	case '\n':
 	    firstNonWhite = 1;
 	    ++src.line;
@@ -727,20 +732,20 @@ int c;
 	    return c;
 	}
 
-	c = getc(srcin); ++src.col;
+	c = getc(srcin);
+	++src.col;
     }
 }
 
 void
-scan_setType(name)
-char	*name;
+scan_setType(char *name)
 {
-    ID_TYPE	*idType;
-    typeFix_t	*typeFix;
+    ID_TYPE *idType;
+    typeFix_t *typeFix;
 
     strtab_insert(strtab, name, &idType);
 
-    typeFix = (typeFix_t *)malloc(sizeof *typeFix);
+    typeFix = (typeFix_t *) malloc(sizeof *typeFix);
     CHECK_MALLOC(typeFix);
     typeFix->idType = idType;
     typeFix->oldType = *idType;
@@ -752,17 +757,17 @@ char	*name;
 }
 
 void
-scan_pushScope()
+scan_pushScope(void)
 {
     list_put(scopeList, typeFixList);
     typeFixList = 0;
 }
 
 int
-scan_popScope()
+scan_popScope(void)
 {
-    LIST *	t;
-    typeFix_t	*typeFix;
+    LIST *t;
+    typeFix_t *typeFix;
 
     if (typeFixList) {
 	for (t = 0; LIST_NEXT(typeFixList, &t, &typeFix);) {
@@ -787,17 +792,17 @@ scan_popScope()
 * scan_init: Initialize scanner.  Must be called before yylex().
 */
 void
-scan_init(srcfile)
-FILE		*srcfile;
+scan_init(
+	     FILE *srcfile)
 {
-    int		c;
-    ID_TYPE	*idType;
-    static int	firstCall = 1;
-    size_t	i;
+    int c;
+    ID_TYPE *idType;
+    static int firstCall = 1;
+    size_t i;
 
     if (firstCall) {
 	firstCall = 0;
-      
+
 	/*
 	 * Initialize char table.
 	 */
@@ -807,54 +812,53 @@ FILE		*srcfile;
     srcin = srcfile;
 
     bufSize = BUF_MALLOC_SIZE;
-    buf = (char *)malloc(bufSize);
+    buf = (char *) malloc(bufSize);
     CHECK_MALLOC(buf);
 
     /*
-    * Start line number at 0, because scanWhiteSpace() is
-    * called at the very beginning and will increment it to 1.
-    */
+       * Start line number at 0, because scanWhiteSpace() is
+       * called at the very beginning and will increment it to 1.
+     */
     src.line = 0;
     src.col = 0;
 
     /*
-    * Create type fix list and scope list.
-    */
+       * Create type fix list and scope list.
+     */
     typeFixList = 0;
     scopeList = list_create();
 
     /*
-    * Create string table.
-    */
-    strtab = (struct strtab *)strtab_create();
+       * Create string table.
+     */
+    strtab = (struct strtab *) strtab_create();
 
     /*
-    * Insert keywords in string table.
-    */
-    for (i = 0; i < (sizeof keyword/sizeof *keyword); ++i) {
+       * Insert keywords in string table.
+     */
+    for (i = 0; i < (sizeof keyword / sizeof *keyword); ++i) {
 	strtab_insert(strtab, keyword[i].name, &idType);
 	*idType = keyword[i].type;
     }
 
     /*
-    * Scan upto first token.
-    */
+       * Scan upto first token.
+     */
     c = scanWhiteSpace('\n');	/* Pretend first char was preceeded by \n */
-    ungetc(c, srcin); --src.col;
+    ungetc(c, srcin);
+    --src.col;
 }
 
 void
-scan_end(uprefix)
-char **uprefix;
+scan_end(char **uprefix)
 {
-	*uprefix = (char *)strtab_upfix(strtab);
+    *uprefix = (char *) strtab_upfix(strtab);
 
-	free(buf);
+    free(buf);
 
-	while(scan_popScope()) 
-	    ;	/* free all scopes. */
+    while (scan_popScope()) ;	/* free all scopes. */
 
-	list_free(scopeList, NULL);
+    list_free(scopeList, NULL);
 }
 
 /*
@@ -862,12 +866,12 @@ char **uprefix;
 *	matching "quote" is seen.  
 */
 static void
-scanQuotedString(srcin2, offset, quote)
-FILE	*srcin2;
-size_t	offset;
-int	quote;
+scanQuotedString(
+		    FILE *srcin2,
+		    size_t offset,
+		    int quote)
 {
-    int	c;
+    int c;
     size_t i;
     int escape;
 
@@ -875,11 +879,12 @@ int	quote;
     escape = 0;
 
     while (1) {
-	c = getc(srcin2); ++src.col;
+	c = getc(srcin2);
+	++src.col;
 	buf[i++] = c;
 	if (i == bufSize) {
 	    bufSize += BUF_MALLOC_SIZE;
-	    buf = (char *)realloc(buf, bufSize);
+	    buf = (char *) realloc(buf, bufSize);
 	    CHECK_MALLOC(buf);
 	}
 	if (c == EOF) {
@@ -890,27 +895,25 @@ int	quote;
 	if (c == '\n') {
 	    src.line++;
 	    src.col = 0;
-	}
-	else if (c == '\\') {
-	    if (escape) escape = 0;
-	    else escape = 1;
-	}
-	else if (c == quote && !escape) {
+	} else if (c == '\\') {
+	    if (escape)
+		escape = 0;
+	    else
+		escape = 1;
+	} else if (c == quote && !escape) {
 	    buf[i] = '\0';
 	    return;
-	}
-	else escape = 0;
+	} else
+	    escape = 0;
     }
 }
 
 static int
-scanAssignOp(c)
-int	c;
+scanAssignOp(int c)
 {
-    int	value;
+    int value;
 
-    switch (c)
-    {
+    switch (c) {
     case '<':
 	value = LT_EQ;
 	break;
@@ -941,7 +944,7 @@ int	c;
     case '|':
 #ifdef MVS
     case '\x6a':		/* EBCDIC representation of the broken bar, used
-                                   interchageably with the solid bar under C/370 */
+				   interchageably with the solid bar under C/370 */
 #endif /* MVS */
 	value = OR_EQ;
 	break;
@@ -965,33 +968,38 @@ int	c;
 *	anything else either.  They will get checked by semantic analysis.)
 */
 static int
-scanNumber(srcin2, offset, nextC)
-FILE	*srcin2;
-size_t	offset;
-int	nextC;
+scanNumber(
+	      FILE *srcin2,
+	      size_t offset,
+	      int nextC)
 {
-    int		c;
-    size_t	i;
-    int 	value;
-    int		charType;
+    int c;
+    size_t i;
+    int value;
+    int charType;
 
     i = offset;
     c = nextC;
 
-    switch(c)
-    {
-    case 'x': case 'X':
-    case 'l': case 'L':
-    case 'u': case 'U':
+    switch (c) {
+    case 'x':
+    case 'X':
+    case 'l':
+    case 'L':
+    case 'u':
+    case 'U':
 	value = ICON;
 	break;
     case '.':
-    case 'e': case 'E':
-    case 'f': case 'F':
+    case 'e':
+    case 'E':
+    case 'f':
+    case 'F':
 	value = FCON;
 	break;
     default:
-	ungetc(c, srcin2); --src.col;
+	ungetc(c, srcin2);
+	--src.col;
 	buf[i] = '\0';
 	return ICON;
     }
@@ -1000,16 +1008,19 @@ int	nextC;
 	buf[i++] = c;
 	if (i == bufSize) {
 	    bufSize += BUF_MALLOC_SIZE;
-	    buf = (char *)realloc(buf, bufSize);
+	    buf = (char *) realloc(buf, bufSize);
 	    CHECK_MALLOC(buf);
 	}
-	c = getc(srcin2); ++src.col;
-	if ((c == '+' || c == '-') && (buf[i-1] == 'e' || buf[i-1] == 'E'))
+	c = getc(srcin2);
+	++src.col;
+	if ((c == '+' || c == '-') && (buf[i - 1] == 'e' || buf[i - 1] == 'E'))
 	    charType = LETTER;
-	else charType = charTable[CHAR(c)];
+	else
+	    charType = charTable[CHAR(c)];
     } while (charType == DIGIT || charType == LETTER ||
 	     charType == TOK_PERIOD);
-    ungetc(c, srcin2); --src.col;
+    ungetc(c, srcin2);
+    --src.col;
     buf[i] = '\0';
 
     return value;
@@ -1021,22 +1032,23 @@ int	nextC;
 *	the original source position of the token.
 */
 int
-yylex()
+yylex(void)
 {
-    int		c;
-    int		charType;
-    ID_TYPE	*idType;
-    int		value = 0;
+    int c;
+    int charType;
+    ID_TYPE *idType;
+    int value = 0;
 
     yylval.token.text = NULL;
 
     /*
-    * Skip white space.
-    */
+       * Skip white space.
+     */
     do {
-	c = getc(srcin); ++src.col;
+	c = getc(srcin);
+	++src.col;
 	charType = charTable[CHAR(c)];
-    } while(charType == WHITESPACE);
+    } while (charType == WHITESPACE);
 
     if (charType == STARTWS || charType == TOK_SLASH) {
 	c = scanWhiteSpace(c);
@@ -1044,26 +1056,26 @@ yylex()
     }
 
     if (macro_nesting) {
-  	yylval.token.srcpos[LEFT_SRCPOS].file = m_begin.file;
-  	yylval.token.srcpos[LEFT_SRCPOS].line = m_begin.line;
-  	yylval.token.srcpos[LEFT_SRCPOS].col = m_begin.col;
+	yylval.token.srcpos[LEFT_SRCPOS].file = m_begin.file;
+	yylval.token.srcpos[LEFT_SRCPOS].line = m_begin.line;
+	yylval.token.srcpos[LEFT_SRCPOS].col = m_begin.col;
     } else {
 	yylval.token.srcpos[LEFT_SRCPOS].file = src.file;
 	yylval.token.srcpos[LEFT_SRCPOS].line = src.line;
 	yylval.token.srcpos[LEFT_SRCPOS].col = src.col;
     }
 
-    switch (charType)
-    {
+    switch (charType) {
     case LETTER:
-        {
+	{
 	    size_t i = 0;
 
 	    if (c == 'L') {
 		/*
 		 * Check for ANSI wide string or wide character constant.
 		 */
-		c = getc(srcin); ++src.col;
+		c = getc(srcin);
+		++src.col;
 		if (c == '\'') {
 		    buf[0] = 'L';
 		    buf[1] = c;
@@ -1072,8 +1084,7 @@ yylex()
 		    value = ICON;
 		    *idType = value;
 		    break;
-		}
-		else if (c == '"') {
+		} else if (c == '"') {
 		    buf[0] = 'L';
 		    buf[1] = c;
 		    scanQuotedString(srcin, 2, c);
@@ -1081,28 +1092,30 @@ yylex()
 		    value = STRING;
 		    *idType = value;
 		    break;
-		}
-		else {
-		    ungetc(c, srcin); --src.col;
+		} else {
+		    ungetc(c, srcin);
+		    --src.col;
 		    c = 'L';
 		}
 	    }
 	    /*
-	    * Get rest of identifier.
-	    */
+	       * Get rest of identifier.
+	     */
 	    do {
 		buf[i++] = c;
 		if (i == bufSize) {
 		    bufSize += BUF_MALLOC_SIZE;
-		    buf = (char *)realloc(buf, bufSize);
+		    buf = (char *) realloc(buf, bufSize);
 		    CHECK_MALLOC(buf);
 		}
-		c = getc(srcin); ++src.col;
+		c = getc(srcin);
+		++src.col;
 		charType = charTable[CHAR(c)];
 	    } while (charType == LETTER || charType == DIGIT);
-	    ungetc(c, srcin); --src.col;
+	    ungetc(c, srcin);
+	    --src.col;
 	    buf[i] = '\0';
-            yylval.token.text = strtab_insert(strtab, buf, &idType);
+	    yylval.token.text = strtab_insert(strtab, buf, &idType);
 	    value = *idType;
 
 	    if (value == 0) {
@@ -1111,9 +1124,9 @@ yylex()
 	    }
 	}
 	break;
-    /*
-    * Single character self representing tokens.
-    */
+	/*
+	   * Single character self representing tokens.
+	 */
     case TOK_LPAREN:
     case TOK_RPAREN:
     case TOK_COMMA:
@@ -1129,7 +1142,7 @@ yylex()
 	break;
 
     case DIGIT:
-        {
+	{
 	    size_t i = 0;
 
 	    /*
@@ -1139,21 +1152,23 @@ yylex()
 		buf[i++] = c;
 		if (i == bufSize) {
 		    bufSize += BUF_MALLOC_SIZE;
-		    buf = (char *)realloc(buf, bufSize);
+		    buf = (char *) realloc(buf, bufSize);
 		    CHECK_MALLOC(buf);
 		}
-		c = getc(srcin); ++src.col;
+		c = getc(srcin);
+		++src.col;
 		charType = charTable[CHAR(c)];
 	    } while (charType == DIGIT);
 
 	    /*
-	    * Check for suffix (x, X, l, L, u, U, ., e, E, f, F).
-	    */
+	       * Check for suffix (x, X, l, L, u, U, ., e, E, f, F).
+	     */
 	    if (charType == TOK_PERIOD || charType == LETTER) {
 		value = scanNumber(srcin, i, c);
 	    } else {
 		buf[i] = '\0';
-		ungetc(c, srcin); --src.col;
+		ungetc(c, srcin);
+		--src.col;
 		value = ICON;
 	    }
 	    yylval.token.text = strtab_insert(strtab, buf, &idType);
@@ -1162,18 +1177,21 @@ yylex()
 	break;
     case TOK_PERIOD:
 	/*
-	* Fractional part of floating point constant, just a dot, or ellipsis?
-	*/
-	c = getc(srcin); ++src.col;
+	   * Fractional part of floating point constant, just a dot, or ellipsis?
+	 */
+	c = getc(srcin);
+	++src.col;
 	if (c == '.') {
-	    c = getc(srcin); ++src.col;
+	    c = getc(srcin);
+	    ++src.col;
 	    if (c == '.') {
 		value = ELLIPSIS;
 	    } else {
 		lexical_error(&src, "extraneous or missing period");
 	    }
 	} else {
-	    ungetc(c, srcin); --src.col;
+	    ungetc(c, srcin);
+	    --src.col;
 	    if (charTable[CHAR(c)] == DIGIT) {
 		value = scanNumber(srcin, 0, '.');
 		yylval.token.text = strtab_insert(strtab, buf, &idType);
@@ -1184,9 +1202,9 @@ yylex()
 	}
 	break;
 
-    /*
-    * Character that may begin single or multi char token.
-    */
+	/*
+	   * Character that may begin single or multi char token.
+	 */
     case TOK_SLASH:		/* c is '/' but not a comment */
     case TOK_PLUS:
     case TOK_DASH:
@@ -1201,14 +1219,14 @@ yylex()
     case TOK_VERTICAL:
 	{
 	    int nextC;
-	    
+
 	    value = 0;
 
-	    nextC = getc(srcin); ++src.col;
+	    nextC = getc(srcin);
+	    ++src.col;
 
 	    if (c == nextC) {
-		switch (c)
-		{
+		switch (c) {
 		case '+':
 		    value = PLUSPLUS;
 		    break;
@@ -1223,40 +1241,43 @@ yylex()
 		    break;
 		case '|':
 #ifdef MVS
-    		case '\x6a':	/* EBCDIC representation of the broken bar, used
-               		           interchageably with the solid bar under C/370 */
+		case '\x6a':	/* EBCDIC representation of the broken bar, used
+				   interchageably with the solid bar under C/370 */
 #endif /* MVS */
 		    value = OROR;
 		    break;
 		case '<':
-		    nextC = getc(srcin); ++src.col;
+		    nextC = getc(srcin);
+		    ++src.col;
 		    if (nextC == '=') {
 			value = LS_EQ;
 		    } else {
 			value = LSHIFT;
-			ungetc(nextC, srcin); --src.col;
+			ungetc(nextC, srcin);
+			--src.col;
 		    }
 		    break;
 		case '>':
-		    nextC = getc(srcin); ++src.col;
+		    nextC = getc(srcin);
+		    ++src.col;
 		    if (nextC == '=') {
 			value = RS_EQ;
 		    } else {
 			value = RSHIFT;
-			ungetc(nextC, srcin); --src.col;
+			ungetc(nextC, srcin);
+			--src.col;
 		    }
 		    break;
 		}
-	    }
-	    else if (nextC == '=') {
+	    } else if (nextC == '=') {
 		value = scanAssignOp(c);
-	    }
-	    else if ((c == '-') && (nextC == '>')) {
+	    } else if ((c == '-') && (nextC == '>')) {
 		value = STREF;
 		break;
 	    }
 	    if (value == 0) {
-		ungetc(nextC, srcin); --src.col;
+		ungetc(nextC, srcin);
+		--src.col;
 		value = charType;
 	    }
 	}
@@ -1276,8 +1297,10 @@ yylex()
 	*idType = value;
 	break;
     case ENDOFFILE:
-	if (c == EOF) value = -1;
-	else lexical_error(&src, "invalid character");	/* '\0377' */
+	if (c == EOF)
+	    value = -1;
+	else
+	    lexical_error(&src, "invalid character");	/* '\0377' */
 	break;
     case BADCHAR:
     default:
@@ -1299,16 +1322,16 @@ yylex()
     fprintf(stderr, "parse %d:%s\n", value, yylval.token.text);
 #endif
     if (value == ASM || value == ATTRIBUTE) {
-	int	nest = 0;
-	int	done = FALSE;
+	int nest = 0;
+	int done = FALSE;
 #if DEBUG
 	fprintf(stderr, "IGNORING...\n");
 #endif
 	while (((value = yylex()) >= 0) && !done) {
-		if (value == TOK_LPAREN)
-			nest++;
-		else if (value == TOK_RPAREN)
-			done = (--nest <= 0);
+	    if (value == TOK_LPAREN)
+		nest++;
+	    else if (value == TOK_RPAREN)
+		done = (--nest <= 0);
 	}
 #if DEBUG
 	fprintf(stderr, "DONE, pass %d:%s\n", value, yylval.token.text);
@@ -1318,10 +1341,10 @@ yylex()
 }
 
 void
-yyerror (string)
-char *string;
+yyerror(char *string)
 {
-    if (yylval.token.text) 
+    if (yylval.token.text)
 	parse_error(&src, "%s at <%.20s>", string, buf);
-    else parse_error(&src, string, 0, 0);
+    else
+	parse_error(&src, string, 0, 0);
 }
