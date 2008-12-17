@@ -21,10 +21,13 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char tnode_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.5 1997/05/10 23:20:26 tom Exp $";
+static const char tnode_c[] =
+"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.6 2008/12/17 00:23:35 tom Exp $";
 /*
 * $Log: tnode.c,v $
+* Revision 3.6  2008/12/17 00:23:35  tom
+* convert to ANSI, indent'd
+*
 * Revision 3.5  1997/05/10 23:20:26  tom
 * absorb srcpos.h into error.h
 *
@@ -58,73 +61,80 @@ static const char tnode_c[] =
 #include "tnode.h"
 
 /* forward declarations */
-void check_malloc P_(( char *p ));
+void check_malloc(char *p);
 
-#define macro_n my_macro_n /* avoid compiler "shadow" warnings */
+#define macro_n my_macro_n	/* avoid compiler "shadow" warnings */
 
 TNODE *
-child0(n)
-TNODE *n;
+child0(TNODE * n)
 {
     TNODE *macro_n;
 
     return (macro_n = (n)->down,
-	    macro_n ? macro_n->over : (TNODE *)NULL);
+	    (macro_n
+	     ? macro_n->over
+	     : (TNODE *) NULL));
 }
 
 TNODE *
-child1(n)
-TNODE *n;
+child1(TNODE * n)
 {
     TNODE *macro_n;
 
     return (macro_n = (n)->down,
-	    macro_n ? macro_n->over->over : (TNODE *)NULL);
+	    (macro_n
+	     ? macro_n->over->over
+	     : (TNODE *) NULL));
 }
 
 TNODE *
-child2(n)
-TNODE *n;
+child2(TNODE * n)
 {
     TNODE *macro_n;
 
     return (macro_n = (n)->down,
-	macro_n ? macro_n->over->over->over : (TNODE *)NULL);
+	    (macro_n
+	     ? macro_n->over->over->over
+	     : (TNODE *) NULL));
 }
 
 TNODE *
-child3(n)
-TNODE *n;
+child3(TNODE * n)
 {
     TNODE *macro_n;
 
     return (macro_n = (n)->down,
-	macro_n ? macro_n->over->over->over->over : (TNODE *)NULL);
+	    (macro_n
+	     ? macro_n->over->over->over->over
+	     : (TNODE *) NULL));
 }
 
 TNODE *
-child4(n)
-TNODE *n;
+child4(TNODE * n)
 {
     TNODE *macro_n;
 
     return (macro_n = (n)->down,
-	macro_n ? macro_n->over->over->over->over->over : (TNODE *)NULL);
+	    (macro_n
+	     ? macro_n->over->over->over->over->over
+	     : (TNODE *) NULL));
 }
 
 TNODE *
-tnext(n)
-TNODE *n;
+tnext(TNODE * n)
 {
     TNODE *macro_n;
 
     return (macro_n = (n),
-	macro_n->up->down == macro_n ? (TNODE *)NULL : macro_n->over);
+	    ((macro_n->up->down == macro_n)
+	     ? (TNODE *) NULL
+	     : macro_n->over));
 }
 
 void
-check_malloc(p)
-char *p;
+check_malloc(char *p)
 {
-    if (p == NULL) internal_error(NULL, "Out of memory");
+    if (p == NULL) {
+	internal_error(NULL, "Out of memory");
+    }
 }

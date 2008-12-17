@@ -31,10 +31,13 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const lib_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/lib.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
+static char const lib_c[] =
+"$Header: /users/source/archives/atac.vcs/atacysis/RCS/lib.c,v 3.5 2008/12/17 01:15:09 tom Exp $";
 /*
 * $Log: lib.c,v $
+* Revision 3.5  2008/12/17 01:15:09  tom
+* converted to ANSI, indent'd
+*
 * Revision 3.4  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 * correct sign-extension in string-copy.
@@ -106,12 +109,11 @@ static char const lib_c[] =
 static int putLong P_((FILE *fp, long n));
 
 struct cfile *
-cf_openIn(path)
-char *path;
+cf_openIn(char *path)
 {
-    struct cfile	*cf;
+    struct cfile *cf;
 
-    cf = (struct cfile *)malloc(sizeof *cf);
+    cf = (struct cfile *) malloc(sizeof *cf);
     CHECK_MALLOC(cf);
 
     cf->fp = fopen(path, "r");
@@ -120,11 +122,11 @@ char *path;
 	return NULL;
     }
 
-    cf->fileName = (char *)malloc(strlen(path) + 1);
+    cf->fileName = (char *) malloc(strlen(path) + 1);
     CHECK_MALLOC(cf->fileName);
     strcpy(cf->fileName, path);
 
-    cf->mode = R_MODE;	/* read */
+    cf->mode = R_MODE;		/* read */
     cf->lineNo = 0;
     cf->pendingCount = 0;
     cf->pendingValue = -1;
@@ -134,12 +136,11 @@ char *path;
 }
 
 struct cfile *
-cf_openOut(path)
-char *path;
+cf_openOut(char *path)
 {
-    struct cfile	*cf;
+    struct cfile *cf;
 
-    cf = (struct cfile *)malloc(sizeof *cf);
+    cf = (struct cfile *) malloc(sizeof *cf);
     CHECK_MALLOC(cf);
 
     cf->fp = fopen(path, "w");
@@ -148,11 +149,11 @@ char *path;
 	return NULL;
     }
 
-    cf->fileName = (char *)malloc(strlen(path) + 1);
+    cf->fileName = (char *) malloc(strlen(path) + 1);
     CHECK_MALLOC(cf->fileName);
     strcpy(cf->fileName, path);
 
-    cf->mode = W_MODE;	/* read */
+    cf->mode = W_MODE;		/* read */
     cf->lineNo = 0;
     cf->pendingCount = 0;
     cf->pendingValue = -1;
@@ -162,16 +163,15 @@ char *path;
 }
 
 static int			/* EOF for error */
-putLong(fp, n)
-FILE		*fp;
-long		n;
+putLong(FILE *fp,
+	long n)
 {
-    register int	r;
-    char		buf[3 * sizeof(long) + 1];
-    register long	value;
-    register long	x;
-    long		y;
-    char		*p;
+    register int r;
+    char buf[3 * sizeof(long) + 1];
+    register long value;
+    register long x;
+    long y;
+    char *p;
 
     r = 0;
 
@@ -201,18 +201,17 @@ long		n;
 }
 
 void
-cf_close(cf)
-struct cfile *cf;
+cf_close(struct cfile *cf)
 {
-    int		r;
-    FILE	*fp;
+    int r;
+    FILE *fp;
 
     r = 0;
 
     fp = cf->fp;
 
     if (cf->mode == W_MODE && cf->atFirstChar == 0)
-	    cf_putNewline(cf);
+	cf_putNewline(cf);
 
     r |= fclose(fp);
     if (r == EOF) {
@@ -224,15 +223,13 @@ struct cfile *cf;
 }
 
 int
-cf_lineNo(cf)
-struct cfile *cf;
+cf_lineNo(struct cfile *cf)
 {
     return cf->lineNo;
 }
 
 char *
-cf_fileName(cf)
-struct cfile *cf;
+cf_fileName(struct cfile *cf)
 {
     return cf->fileName;
 }
@@ -242,38 +239,37 @@ struct cfile *cf;
 *	of a line.  (Empty lines are skipped.)  May return EOF.
 */
 int
-cf_getFirstChar(cf)
-struct cfile *cf;
+cf_getFirstChar(struct cfile *cf)
 {
-	int	c;
-	FILE	*fp;
+    int c;
+    FILE *fp;
 
-	if (cf->mode != R_MODE) {
-	    fprintf(stderr, "%s: not open for reading\n", cf->fileName);
-	    exit(1);
-	}
-	fp = cf->fp;
+    if (cf->mode != R_MODE) {
+	fprintf(stderr, "%s: not open for reading\n", cf->fileName);
+	exit(1);
+    }
+    fp = cf->fp;
 
-	cf->pendingCount = 0;	/* swallow pending values */
+    cf->pendingCount = 0;	/* swallow pending values */
 
-	if (cf->atFirstChar) {
-	    ++cf->lineNo;
-	    cf->atFirstChar = 0;
-	} else {
-	    do {
-		c = getc(fp);
-		if (c == EOF) {
-		    return c;
-		}
-	    } while (c != '\n');
-	    ++cf->lineNo;
-	}
+    if (cf->atFirstChar) {
+	++cf->lineNo;
+	cf->atFirstChar = 0;
+    } else {
+	do {
+	    c = getc(fp);
+	    if (c == EOF) {
+		return c;
+	    }
+	} while (c != '\n');
+	++cf->lineNo;
+    }
 
-	while ((c = getc(fp)) == '\n') {
-	    ++cf->lineNo;
-	}
+    while ((c = getc(fp)) == '\n') {
+	++cf->lineNo;
+    }
 
-	return c;
+    return c;
 }
 
 /*
@@ -283,99 +279,103 @@ struct cfile *cf;
 *	If at end of line, return null string.
 */
 void
-cf_getString(cf, pString, len)
-struct cfile	*cf;
-char		*pString;
-int		len;
+cf_getString(struct cfile *cf,
+	     char *pString,
+	     int len)
 {
-	register int	c;
-	register char	*p;
-	register char	*pEnd;
-	FILE		*fp;
-	char		buf[30];
+    register int c;
+    register char *p;
+    register char *pEnd;
+    FILE *fp;
+    char buf[30];
 
-	if (cf->mode != R_MODE) {
-	    fprintf(stderr, "%s: not open for reading\n", cf->fileName);
-	    exit(1);
+    if (cf->mode != R_MODE) {
+	fprintf(stderr, "%s: not open for reading\n", cf->fileName);
+	exit(1);
+    }
+    fp = cf->fp;
+
+    if (cf->pendingCount) {
+	--cf->pendingCount;
+	if (len > 0) {
+	    sprintf(buf, "%ld", cf->pendingValue);
+	    strncpy(pString, buf, (size_t) len);
+	    pString[len - 1] = '\0';
 	}
-	fp = cf->fp;
+	return;
+    }
+    if (cf->atFirstChar) {
+	if (len > 0)
+	    pString[0] = '\0';
+	return;
+    }
 
-	if (cf->pendingCount) {
-	    --cf->pendingCount;
-	    if (len > 0) {
-		sprintf(buf, "%ld", cf->pendingValue);
-		strncpy(pString, buf, (size_t)len);
-		pString[len - 1] = '\0';
-	    }
-	    return;
-	}
-	if (cf->atFirstChar) {
-	    if (len > 0) pString[0] = '\0';
-	    return;
-	}
+    do {
+	c = getc(fp);
+    } while (c == ' ' || c == '\t');
 
-	do {
-	    c = getc(fp);
-	} while (c == ' ' || c == '\t');
+    p = pString;
+    if (len == 0)
+	pEnd = p;
+    else
+	pEnd = pString + len - 1;
 
-	p = pString;
-	if (len == 0) pEnd = p;
-	else pEnd = pString + len - 1;
-
-	if (c == '"') {
-	    c = getc(fp);
-	    while (c != EOF && c != '"' && c != '\n') {
-		if (c == '\\') {
-		    c = getc(fp);
-		    if (c == EOF)
-			break;
-		}
-		if (p < pEnd) *p++ = c;
+    if (c == '"') {
+	c = getc(fp);
+	while (c != EOF && c != '"' && c != '\n') {
+	    if (c == '\\') {
 		c = getc(fp);
+		if (c == EOF)
+		    break;
 	    }
-	} else {
-	    while (c != EOF && (!isspace(c))) {
-		if (p < pEnd) *p++ = c;
-		c = getc(fp);
-	    }
+	    if (p < pEnd)
+		*p++ = c;
+	    c = getc(fp);
 	}
-
-	if (len) *p = '\0';
-
-	if (c == '\n') {
-	    cf->atFirstChar = 1;
+    } else {
+	while (c != EOF && (!isspace(c))) {
+	    if (p < pEnd)
+		*p++ = c;
+	    c = getc(fp);
 	}
+    }
+
+    if (len)
+	*p = '\0';
+
+    if (c == '\n') {
+	cf->atFirstChar = 1;
+    }
 }
 
 int
-cf_atFirstChar(cf)
-struct cfile *cf;
+cf_atFirstChar(struct cfile *cf)
 {
-	register int	c;
-	FILE		*fp;
+    register int c;
+    FILE *fp;
 
-	if (cf->mode != R_MODE) {
-	    return cf->atFirstChar;
-	}
+    if (cf->mode != R_MODE) {
+	return cf->atFirstChar;
+    }
 
-	fp = cf->fp;
+    fp = cf->fp;
 
-	if (cf->pendingCount)
-	    return 0;
-	if (cf->atFirstChar)
-	    return 1;
-
-	do {
-	    c = getc(fp);
-	} while (c == ' ' || c == '\t');
-
-	if (c == '\n') {
-	    cf->atFirstChar = 1;
-	    return 1;
-	}
-
-	ungetc(c, fp);
+    if (cf->pendingCount)
 	return 0;
+    if (cf->atFirstChar)
+	return 1;
+
+    do {
+	c = getc(fp);
+    } while (c == ' ' || c == '\t');
+
+    if (c == '\n') {
+	cf->atFirstChar = 1;
+	return 1;
+    }
+
+    ungetc(c, fp);
+    return 0;
 }
 
 /*
@@ -383,20 +383,20 @@ struct cfile *cf;
 *	a number, skip the whole string and return 0.
 */
 long
-cf_getLong(cf)
-struct cfile	*cf;
+cf_getLong(struct cfile *cf)
 {
-    register int	value;
-    register int	c;
-    int			sign;
-    FILE		*fp;
+    register int value;
+    register int c;
+    int sign;
+    FILE *fp;
 
     if (cf->pendingCount) {
 	--cf->pendingCount;
 	return cf->pendingValue;
     }
 
-    if (cf->atFirstChar) return 0; /* short cut. */
+    if (cf->atFirstChar)
+	return 0;		/* short cut. */
 
     fp = cf->fp;
 
@@ -411,7 +411,8 @@ struct cfile	*cf;
 	sign = 1;
     }
 
-    while (c == '0') c = getc(fp);
+    while (c == '0')
+	c = getc(fp);
 
     value = 0;
 
@@ -425,12 +426,13 @@ struct cfile	*cf;
 	}
     }
 
-    if (sign == -1) value = -value;
+    if (sign == -1)
+	value = -value;
     cf->pendingValue = value;
 
     /*
-    * Repeat count present.  Format m!n means n repeats of m.
-    */
+       * Repeat count present.  Format m!n means n repeats of m.
+     */
     if (c == '!') {
 	value = 0;
 	c = getc(fp);
@@ -449,18 +451,17 @@ struct cfile	*cf;
     while (c != EOF && (!isspace(c)))	/* swallow trailing stuff */
 	c = getc(fp);
 
-    if (c == '\n')			/* end of line ? */
+    if (c == '\n')		/* end of line ? */
 	cf->atFirstChar = 1;
 
     return cf->pendingValue;
 }
 
 void
-cf_putFirstChar(cf, c)
-struct cfile	*cf;
-int		c;
+cf_putFirstChar(struct cfile *cf,
+		int c)
 {
-    register int	r;
+    register int r;
 
     if (cf->mode != W_MODE) {
 	fprintf(stderr, "%s: not open for writing\n", cf->fileName);
@@ -482,11 +483,10 @@ int		c;
 }
 
 void
-cf_putNewline(cf)
-struct cfile	*cf;
+cf_putNewline(struct cfile *cf)
 {
-    register int	r;
-    FILE		*fp;
+    register int r;
+    FILE *fp;
 
     r = 0;
 
@@ -501,8 +501,7 @@ struct cfile	*cf;
 	    r |= putLong(fp, cf->pendingValue);
 	    if (cf->pendingCount > 1) {
 		if (cf->pendingCount == 2 &&
-		    cf->pendingValue < 10 && cf->pendingValue >= 0)
-		{
+		    cf->pendingValue < 10 && cf->pendingValue >= 0) {
 		    r |= putc(' ', fp);
 		    r |= putc(cf->pendingValue + '0', fp);
 		} else {
@@ -525,14 +524,13 @@ struct cfile	*cf;
 }
 
 void
-cf_putString(cf, s)
-struct cfile	*cf;
-char		*s;
+cf_putString(struct cfile *cf,
+	     char *s)
 {
-    register int	r;
-    FILE		*fp;
-    register char	*p;
-    int			c;
+    register int r;
+    FILE *fp;
+    register char *p;
+    int c;
 
     r = 0;
 
@@ -551,8 +549,7 @@ char		*s;
 	r |= putLong(fp, cf->pendingValue);
 	if (cf->pendingCount > 1) {
 	    if (cf->pendingCount == 2 &&
-		cf->pendingValue < 10 && cf->pendingValue >= 0)
-	    {
+		cf->pendingValue < 10 && cf->pendingValue >= 0) {
 		r |= putc(' ', fp);
 		r |= putc(cf->pendingValue + '0', fp);
 	    } else {
@@ -576,13 +573,11 @@ char		*s;
 }
 
 void
-cf_putLong(cf, n)
-struct cfile	*cf;
-long		n;
+cf_putLong(struct cfile *cf,
+	   long n)
 {
-    register int	r;
-    FILE		*fp;
-
+    register int r = 0;
+    FILE *fp;
 
     if (cf->mode != W_MODE) {
 	fprintf(stderr, "%s: not open for writing\n", cf->fileName);
@@ -609,8 +604,7 @@ long		n;
 		r |= putLong(fp, cf->pendingValue);
 	    }
 	    if (cf->pendingCount == 2 &&
-		cf->pendingValue < 10 && cf->pendingValue > 0)
-	    {
+		cf->pendingValue < 10 && cf->pendingValue > 0) {
 		r |= putc(' ', fp);
 		r |= putc(cf->pendingValue + '0', fp);
 	    } else {
