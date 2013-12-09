@@ -1,8 +1,9 @@
-MANIFEST for atac, version t20081216
+MANIFEST for atac, version t20131208
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 README                          atac3.3.13
 README-TOO                      additional notes
+VERSION                         version-file
 Version                         atac3.3.13
 aclocal.m4                      macros for autoconf script
 atac-tutorial.ps                atac3.3.13
@@ -21,7 +22,6 @@ configure                       configure-script
 configure.in                    configure-script template
 install-sh                      generic install-script
 makefile.in                     makefile-template, for auto-configure
-mkdirs.sh                       script to make directory-hierarchies
 portable.h                      atac3.3.13
 version.h                       atac3.3.13
 atac_cpp                        subdirectory

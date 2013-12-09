@@ -24,10 +24,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const gree_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/greedy.c,v 3.5 2005/08/14 13:47:59 tom Exp $";
+static char const gree_c[] = "$Id: greedy.c,v 3.7 2013/12/09 01:08:19 tom Exp $";
 /*
-* $Log: greedy.c,v $
+* @Log: greedy.c,v @
 * Revision 3.5  2005/08/14 13:47:59  tom
 * gcc warnings
 *
@@ -46,25 +45,18 @@ static char const gree_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static void unionCov
-	P_((int *covSoFar, int *covVector, int covCount));
-static int countCov
-	P_((int *covVector, int *covSoFar, int covCount));
-
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
 #ifdef DEBUG
 static void
-dumpVector(cov, covCount)
-int		*cov;
-int		covCount;
+dumpVector(
+	      int *cov,
+	      int covCount)
 {
-    int	i;
+    int i;
 
     for (i = 0; i < covCount; ++i) {
-	switch (cov[i])
-	{
+	switch (cov[i]) {
 	case -1:
 	    putc('-', stderr);
 	    break;
@@ -78,12 +70,11 @@ int		covCount;
 }
 
 static void
-dumpAll(nCov, covList, covCount)
-int		nCov;
-T_TESTLIST	*covList;
-int		covCount;
+dumpAll(int nCov,
+	T_TESTLIST * covList,
+	int covCount)
 {
-    int	i;
+    int i;
 
     for (i = 0; i < nCov; ++i) {
 	dumpVector(covList[i].cov, covCount);
@@ -97,13 +88,12 @@ int		covCount;
 * covered by covSoFar.
 */
 static int
-countCov(covSoFar, covVector, covCount)
-int		*covVector;
-int		*covSoFar;
-int		covCount;
+countCov(int *covSoFar,
+	 int *covVector,
+	 int covCount)
 {
-    int	i;
-    int	count;
+    int i;
+    int count;
 
     count = 0;
 
@@ -119,12 +109,11 @@ int		covCount;
 * unionCov:  Add to covSoFar items covered in covVector.
 */
 static void
-unionCov(covSoFar, covVector, covCount)
-int		*covSoFar;
-int		*covVector;
-int		covCount;
+unionCov(int *covSoFar,
+	 int *covVector,
+	 int covCount)
 {
-    int	i;
+    int i;
 
     for (i = 0; i < covCount; ++i) {
 	if (covSoFar[i] == 0 && covVector[i] != 0)
@@ -142,26 +131,25 @@ int		covCount;
 *	Otherwise item i is covered.
 */
 void
-greedyOrder(nCov, covList, covCount)
-int		nCov;
-T_TESTLIST	*covList;
-int		covCount;
+greedyOrder(int nCov,
+	    T_TESTLIST * covList,
+	    int covCount)
 {
-    int		*covSoFar;
-    int		i;
-    int		j;
-    float	bestCostPer;
-    float	costPer;
-    float	count;
-    int		best = 0;
-    int		*order;
-    T_TESTLIST	swapper;
+    int *covSoFar;
+    int i;
+    int j;
+    float bestCostPer;
+    float costPer;
+    float count;
+    int best = 0;
+    int *order;
+    T_TESTLIST swapper;
 
     /*
-    * Create vector of items covered so far.  Disregarded items are considered
-    * covered.
-    */
-    covSoFar = (int *)malloc(covCount * sizeof *covSoFar);
+       * Create vector of items covered so far.  Disregarded items are considered
+       * covered.
+     */
+    covSoFar = (int *) malloc((size_t) covCount * sizeof *covSoFar);
     CHECK_MALLOC(covSoFar);
     for (i = 0; i < covCount; ++i) {
 	covSoFar[i] = 0;
@@ -172,12 +160,12 @@ int		covCount;
     }
 
     /*
-    * Create order[] index.  Order[j] is the original index of covList[j]
-    * for unsorted vectors (j >= i).  For sorted vectors (j < i) order[]
-    * is garbage.  In case of equivalence, this is used to preserve original
-    * order.
-    */
-    order = (int *)malloc(covCount * sizeof *order);
+       * Create order[] index.  Order[j] is the original index of covList[j]
+       * for unsorted vectors (j >= i).  For sorted vectors (j < i) order[]
+       * is garbage.  In case of equivalence, this is used to preserve original
+       * order.
+     */
+    order = (int *) malloc((size_t) covCount * sizeof *order);
     CHECK_MALLOC(order);
     for (i = 0; i < nCov; ++i) {
 	order[i] = i;
@@ -186,25 +174,24 @@ int		covCount;
     for (i = 0; i < nCov - 1; ++i) {
 	bestCostPer = 1E15;	/* large number */
 	/*
-	* Find j such that cost per uncovered item covered by covList[j]
-	* is minimized.  In case of tie, pick j such that order[j] is minimized.
-	*/
+	   * Find j such that cost per uncovered item covered by covList[j]
+	   * is minimized.  In case of tie, pick j such that order[j] is minimized.
+	 */
 	for (j = i; j < nCov; ++j) {
 	    count = countCov(covSoFar, covList[j].cov, covCount);
 	    if (count == 0.0)
 		count = 0.5;	/* less than 1 */
 	    costPer = covList[j].cost / count;
 	    if (costPer < bestCostPer ||
-		(costPer == bestCostPer && order[j] < order[best]))
-	    {
+		(costPer == bestCostPer && order[j] < order[best])) {
 		bestCostPer = costPer;
 		best = j;
 	    }
 	}
 
 	/*
-	* Add items covered by covList[j].cov to covSoFar.
-	*/
+	   * Add items covered by covList[j].cov to covSoFar.
+	 */
 	unionCov(covSoFar, covList[best].cov, covCount);
 
 	/*

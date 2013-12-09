@@ -13,11 +13,12 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-#	$Header: /users/source/archives/atac.vcs/tools/RCS/loguse,v 3.5 1994/04/21 09:34:30 saul Exp $
 #
-#$Log: loguse,v $
-#Revision 3.5  1994/04/21 09:34:30  saul
-#FROM_KEYS
+# $Id: loguse,v 3.6 2013/12/08 17:14:14 tom Exp $
+#
+# @Log: loguse,v @
+# Revision 3.5  1994/04/21 09:34:30  saul
+# FROM_KEYS
 #
 # Revision 3.5  94/04/21  09:34:30  saul
 # Move #!/bin/sh directive back to first line
@@ -40,7 +41,7 @@
 #
 # loguse
 #
-MAILTO="atac-stats@bellcore.com"
+MAILTO="atac-stats@localhost"
 DAYS=30		#send log if last entry was more than this long ago
 SIZE=10		#send log if size was more than this many blocks (of 512)
 LIB=$1

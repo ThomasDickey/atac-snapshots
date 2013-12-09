@@ -25,9 +25,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char const_c[] =
-"$Header: /users/source/archives/atac.vcs/atac_i/RCS/const.c,v 3.9 2008/12/17 00:45:02 tom Exp $";
+"$Header: /users/source/archives/atac.vcs/atac_i/RCS/const.c,v 3.11 2013/12/09 00:19:57 tom Exp $";
 /*
-* $Log: const.c,v $
+* @Log: const.c,v @
 * Revision 3.9  2008/12/17 00:45:02  tom
 * converted to ANSI, indent'd.  Use childX() functions rather than CHILDx()
 * macros to quiet gcc 4.3.2 warnings.
@@ -87,7 +87,6 @@ static const char const_c[] =
 	((c) >= '0' && (c) <= '9') ? ((c) - '0') : -1)
 
 static int evalSizeof(SYM * sym);
-static void evalIcon(SRCPOS * srcpos, char *fulltext, CONST_VALUE * value);
 
 static int
 evalSizeof(SYM * sym)
@@ -176,11 +175,11 @@ evalSizeof(SYM * sym)
 
 static void
 evalIcon(SRCPOS * srcpos,
-	 char *fulltext,
+	 const char *fulltext,
 	 CONST_VALUE * value)
 {
     int v;
-    char *text;
+    const char *text;
 
     text = fulltext;
     value->type = CONST_VT;

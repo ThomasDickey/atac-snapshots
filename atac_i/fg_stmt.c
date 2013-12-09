@@ -22,9 +22,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char fg_stmt_c[] =
-"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.9 2008/12/17 00:36:29 tom Exp $";
+"$Header: /users/source/archives/atac.vcs/atac_i/RCS/fg_stmt.c,v 3.10 2013/12/08 18:52:27 tom Exp $";
 /*
-* $Log: fg_stmt.c,v $
+* @Log: fg_stmt.c,v @
 * Revision 3.9  2008/12/17 00:36:29  tom
 * convert to ANSI, indent'd.  Use childX() functions rather than CHILDx()
 * macros to eliminate gcc 4.3.2 warnings about reuse of macro_n variable

@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef atacysis_H
 #define atacysis_H
-static char const atacysis_h[] =
-"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atacysis.h,v 3.8 1995/12/27 20:51:25 tom Exp $";
+static char const atacysis_h[] = "$Id: atacysis.h,v 3.10 2013/12/09 01:05:03 tom Exp $";
 /*
-* $Log: atacysis.h,v $
+* @Log: atacysis.h,v @
 * Revision 3.8  1995/12/27 20:51:25  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -82,6 +81,8 @@ static char const atacysis_h[] =
 #endif /* not vms */
 #include "version.h"
 
+#include <stdio.h>
+
 #define DISPLAY_ALL	0x01	/* Display all uncovered constructs. */
 				/* (Even those in uncovered blocks.) */
 #define DISPLAY_COV	0x02	/* Highlight covered constructs. */
@@ -108,106 +109,106 @@ static char const atacysis_h[] =
 #define TESTNAME_SIZE	50
 
 typedef struct {
-    short		file;
-    short		col;
-    unsigned short	line;
+    short file;
+    short col;
+    unsigned short line;
 } POSITION;
 
 typedef struct {
-    POSITION		start;
-    POSITION		end;
+    POSITION start;
+    POSITION end;
 } SE_POSITION;
 
 typedef struct {
-	SE_POSITION	def;
-	SE_POSITION	use;
-	unsigned short	varno;
-	unsigned short	blk1;
-	unsigned short	blk2;
+    SE_POSITION def;
+    SE_POSITION use;
+    unsigned short varno;
+    unsigned short blk1;
+    unsigned short blk2;
 } T_CUSE;
 
 typedef struct {
-	SE_POSITION	def;
-	SE_POSITION	use;
-	unsigned short	varno;
-	unsigned short	blk1;
-	unsigned short	blk2;
-	unsigned short	blk3;
-	char		value[VALUE_SIZE];
+    SE_POSITION def;
+    SE_POSITION use;
+    unsigned short varno;
+    unsigned short blk1;
+    unsigned short blk2;
+    unsigned short blk3;
+    char value[VALUE_SIZE];
 } T_PUSE;
 
 typedef struct {
-	char		*vname;
-	unsigned short	cstart;
-	unsigned short	pstart;
+    char *vname;
+    unsigned short cstart;
+    unsigned short pstart;
 } T_VAR;
 
 typedef struct {
-	SE_POSITION	pos;
+    SE_POSITION pos;
 } T_BLK;
 
 typedef struct {
-	SE_POSITION	pos;
-	char		*fname;
-	T_BLK		*blk;
-	T_VAR		*var;
-	T_CUSE		*cuse;
-	T_PUSE		*puse;
-	int		blkCovStart;
-	int		cUseCovStart;
-	int		pUseCovStart;
-	short		decis_var;
-	unsigned short	n_blk;
-	unsigned short	n_var;
-	unsigned short	n_cuse;
-	unsigned short	formalN_cuse;
-	unsigned short	n_puse;
-	unsigned short	formalN_puse;
-	short		ignore;		/* not interested in this function */
+    SE_POSITION pos;
+    char *fname;
+    T_BLK *blk;
+    T_VAR *var;
+    T_CUSE *cuse;
+    T_PUSE *puse;
+    int blkCovStart;
+    int cUseCovStart;
+    int pUseCovStart;
+    short decis_var;
+    unsigned short n_blk;
+    unsigned short n_var;
+    unsigned short n_cuse;
+    unsigned short formalN_cuse;
+    unsigned short n_puse;
+    unsigned short formalN_puse;
+    short ignore;		/* not interested in this function */
 } T_FUNC;
 
 typedef struct {
-	char	*filename;
-	time_t	chgtime;
+    char *filename;
+    time_t chgtime;
 } T_FILE;
 
 #define DOT_ATAC_HEADING "A ATAC (.atac) file"
 
 typedef struct {
-    char		heading[sizeof DOT_ATAC_HEADING];
-    char		version[sizeof VERSION];
-    unsigned short	nFiles;
-    unsigned short	nFuncs;
-    unsigned int	fileOffset;
-    unsigned int	funcOffset;
-} T_HEADER;	/* Header for converted files. */
+    char heading[sizeof DOT_ATAC_HEADING];
+    char version[sizeof VERSION];
+    unsigned short nFiles;
+    unsigned short nFuncs;
+    unsigned int fileOffset;
+    unsigned int funcOffset;
+} T_HEADER;			/* Header for converted files. */
 
 typedef struct {
-        T_HEADER	*header;
-	char		*atacfile;
-	T_FILE		*file;
-	T_FUNC		*func;
-	unsigned short	n_file;
-	unsigned short	n_func;
-	short		ignore;		/* all in module func ignored */
+    T_HEADER *header;
+    const char *atacfile;
+    T_FILE *file;
+    T_FUNC *func;
+    unsigned short n_file;
+    unsigned short n_func;
+    short ignore;		/* all in module func ignored */
 } T_MODULE;
 
 typedef struct {
-    long	cost;
-    int		freq;		/* Frequency counts present. */
-    char	timeStamp[TIMESTAMP_SIZE];
-    char	name[TESTNAME_SIZE];
+    long cost;
+    int freq;			/* Frequency counts present. */
+    char timeStamp[TIMESTAMP_SIZE];
+    char name[TESTNAME_SIZE];
 } T_TEST;
-    
+
 typedef struct {
-    int		*cov;
-    long	cost;
-    char	name[TESTNAME_SIZE];
+    int *cov;
+    long cost;
+    char name[TESTNAME_SIZE];
 } T_TESTLIST;
 
 /** Shirley @ Purdue **/
-#define DO_U_CUSE       1       /* for the hili display of undefined cuses */
-#define DO_U_PUSE       2       /* for the hili display of undefined puses */
+#define DO_U_CUSE       1	/* for the hili display of undefined cuses */
+#define DO_U_PUSE       2	/* for the hili display of undefined puses */
 #define TD_NONE		0	/* no tabular display selected */
 #define TD_BLOCK	1	/* tabular display of blocks */
 #define TD_PUSE		2	/* tabular display of p-uses */
@@ -217,48 +218,49 @@ typedef struct {
 #define TD_NEITHER	0	/* neither decision branch uncovered */
 #define TD_TRUE		1	/* true decision branch uncovered */
 #define TD_FALSE	2	/* false decision branch uncovered */
-#define TD_BOTH		3	/* both decision branches uncovered */ 
-#define TD_CHECKED     -5       /* mark a =decis= p-use as checked */
+#define TD_BOTH		3	/* both decision branches uncovered */
+#define TD_CHECKED     -5	/* mark a =decis= p-use as checked */
 
-extern void covWeaker P_((T_MODULE *modules, int n_mod, int *covVector, int options));
-extern void covThreshold P_((int *cov, int covCount, int threshold));
+extern void covWeaker(T_MODULE * modules, int n_mod, int *covVector, int options);
+extern void covThreshold(int *cov, int covCount, int threshold);
 
 /* interface of 'bdisp.c' */
-extern void bdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+extern void bdisp(T_MODULE * modules, int n_mod, int *covVector, int displayMode);
 
 /* interface of 'cdisp.c' */
-extern void cdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+extern void cdisp(T_MODULE * modules, int n_mod, int *covVector, int displayMode);
 
 /* interface of 'columns.c' */
-extern void columnsEnd P_((void));
-extern void columns P_((char *p));
+extern void columnsEnd(void);
+extern void columns(char *p);
 
 /* interface of 'ddisp.c' */
-extern void ddisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+extern void ddisp(T_MODULE * modules, int n_mod, int *covVector, int displayMode);
 
 /* interface of 'eval.c' */
-extern int evalExpr P_(( char *s, char **traces, int n_traces, T_MODULE *mod,
-	int n_static, int covCount, int options, T_TESTLIST **selectListPtr, int
-	*nSelectPtr, int threshold, int weaker));
+extern int evalExpr(char *s, const char **traces, int n_traces, T_MODULE * mod,
+		    int n_static, int covCount, int options, T_TESTLIST **
+		    selectListPtr, int
+		    *nSelectPtr, int threshold, int weaker);
 
 /* interface of 'error.c' */
-extern void internal_error P_((char *s, char *arg1, char *arg2));
-extern void trace_error P_((char *filename, int recno));
+extern void internal_error(const char *s, const char *arg1, const char *arg2);
+extern void trace_error(const char *filename, int recno);
 
 /* interface of 'fdisp.c' */
-void fdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+void fdisp(T_MODULE * modules, int n_mod, int *covVector, int displayMode);
 
 /* interface of 'gmatch.c' */
-extern int gmatch P_((char *p, char *s));
+extern int gmatch(const char *p, const char *s, const char *e);
 
 /* interface of 'greedy.c' */
 void greedyOrder
-	P_((int nCov, T_TESTLIST *covList, int covCount));
+  (int nCov, T_TESTLIST * covList, int covCount);
 
 /* interface of 'highest.c' */
 void highest
-	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
-	covCount, int byFunc, int byFile, int options));
+  (T_MODULE * modules, int n_mod, int nCov, T_TESTLIST * covList, int
+   covCount, int byFunc, int byFile, int options);
 
 /* interface of 'lib.c' */
 typedef int rwMode;
@@ -266,62 +268,65 @@ typedef int rwMode;
 #define W_MODE ((rwMode)1)
 
 struct cfile {
-    FILE	*fp;
-    char	*fileName;
-    rwMode	mode;		/* read/write */
-    int		lineNo;
-    int		pendingCount;
-    long	pendingValue;
-    int		atFirstChar;
+    FILE *fp;
+    char *fileName;
+    rwMode mode;		/* read/write */
+    int lineNo;
+    int pendingCount;
+    long pendingValue;
+    int atFirstChar;
 };
 
-extern char *cf_fileName P_((struct cfile *cf));
-extern int cf_atFirstChar P_((struct cfile *cf));
-extern int cf_getFirstChar P_((struct cfile *cf));
-extern int cf_lineNo P_((struct cfile *cf));
-extern long int cf_getLong P_((struct cfile *cf));
-extern struct cfile *cf_openIn P_((char *path));
-extern struct cfile *cf_openOut P_((char *path));
-extern void cf_close P_((struct cfile *cf));
-extern void cf_getString P_((struct cfile *cf, char *pString, int len));
-extern void cf_putFirstChar P_((struct cfile *cf, int c));
-extern void cf_putLong P_((struct cfile *cf, long n));
-extern void cf_putNewline P_((struct cfile *cf));
-extern void cf_putString P_((struct cfile *cf, char *s));
+extern char *cf_fileName(struct cfile *cf);
+extern int cf_atFirstChar(struct cfile *cf);
+extern int cf_getFirstChar(struct cfile *cf);
+extern int cf_lineNo(struct cfile *cf);
+extern long int cf_getLong(struct cfile *cf);
+extern struct cfile *cf_openIn(const char *path);
+extern struct cfile *cf_openOut(const char *path);
+extern void cf_close(struct cfile *cf);
+extern void cf_getString(struct cfile *cf, char *pString, int len);
+extern void cf_putFirstChar(struct cfile *cf, int c);
+extern void cf_putLong(struct cfile *cf, long n);
+extern void cf_putNewline(struct cfile *cf);
+extern void cf_putString(struct cfile *cf, const char *s);
 
 /* interface of 'pat_match.c' */
-extern int patMatch P_((char *pat, char *name, int deselect));
+extern int patMatch(const char *pat, const char *name, int deselect);
 
 /* interface of 'pdisp.c' */
-extern void pdisp P_((T_MODULE *modules, int n_mod, int *covVector, int displayMode));
+extern void pdisp(T_MODULE * modules, int n_mod, int *covVector, int displayMode);
 
 /* interface of 'print.c' */
-extern void print_mod P_((T_MODULE *mod, int *covVector));
+extern void print_mod(T_MODULE * mod, int *covVector);
 
 /* interface of 'risk.c' */
-void risk P_((T_MODULE *modules, int n_mod, int *covVector, int options));
+void risk(T_MODULE * modules, int n_mod, int *covVector, int options);
 
 /* interface of 'static.c' */
-extern T_MODULE *static_data P_((int nfiles, char *files[], char *funcSelect, int options, int *covCount));
-extern void freeStatic P_((T_MODULE *mod, int n_mod));
+extern T_MODULE *static_data(int nfiles, char *files[], char *funcSelect,
+			     int options, int *covCount);
+extern void freeStatic(T_MODULE * mod, int n_mod);
 
 /* interface of 'summary.c' */
-void summary P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int covCount, int byFunc, int byFile, int options));
+void summary(T_MODULE * modules, int n_mod, int nCov,
+	     T_TESTLIST * covList, int covCount,
+	     int byFunc, int byFile, int options);
 
 /* interface of 'tab_disp.c' */
-void tab_disp P_((int td_flag, int global_cov, T_MODULE *modules, int n_mod, int *covVector));
+void tab_disp(int td_flag, int global_cov, T_MODULE * modules, int n_mod, int *covVector);
 
 /* interface of 'tmerror.c' */
-extern void memoryError P_((char *pMessage));
-extern void traceError P_((char *tracefile, int lineNo, char *testName));
+extern void memoryError(const char *pMessage);
+extern void traceError(const char *tracefile, int lineNo, const char *testName);
 
 /* interface of 'trace.c' */
 void trace_data
-	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
-	int nCov, int options, char *selectPattern, T_TESTLIST **selectListPtr,
-	int *nSelectPtr));
+  (struct cfile *cf, const char *filename, T_MODULE * t_module, int n_module,
+   int nCov, int options, char *selectPattern, T_TESTLIST ** selectListPtr,
+   int *nSelectPtr);
 
 /* interface of 'vector.c' */
-void vectorPut P_((T_MODULE *modules, int n_mod, int *covVector, int options));
+void vectorPut(T_MODULE * modules, int n_mod, int *covVector, int options);
 
 #endif /* atacysis_H */

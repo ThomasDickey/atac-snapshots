@@ -22,10 +22,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const vector_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/vector.c,v 3.6 1995/12/27 20:19:18 tom Exp $";
+static char const vector_c[] = "$Id: vector.c,v 3.7 2013/12/08 19:04:52 tom Exp $";
 /*
-* $Log: vector.c,v $
+* @Log: vector.c,v @
 * Revision 3.6  1995/12/27 20:19:18  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -65,28 +64,19 @@ static char const vector_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static void decisCov P_((T_FUNC *func, int *covVector));
-static void pUseCov P_((T_FUNC *func, int *covVector));
-static void cUseCov P_((T_FUNC *func, int *covVector));
-static void blkCov P_((T_FUNC *func, int *covVector));
-static void fEntryCov P_((T_FUNC *func, int *covVector));
-static void putBitEnd P_((void));
-
 #define putBit_0  putchar(' ')
 #define putBit_1  putchar('x')
 #define putBit(b) ((b)?putBit_1:putBit_0)
 
 static void
-putBitEnd()
+putBitEnd(void)
 {
     putchar('\n');
 }
 
 static void
-fEntryCov(func, covVector)
-T_FUNC	*func;
-int	*covVector;
+fEntryCov(T_FUNC * func,
+	  int *covVector)
 {
     if (covVector[func->blkCovStart] != -1) {
 	putBit(covVector[func->blkCovStart]);
@@ -94,15 +84,14 @@ int	*covVector;
 }
 
 static void
-blkCov(func, covVector)
-T_FUNC	*func;
-int	*covVector;
+blkCov(T_FUNC * func,
+       int *covVector)
 {
-    int	j;
-    int	*covPtr;
+    int j;
+    int *covPtr;
 
     covPtr = covVector + func->blkCovStart;
-    for (j = 0; j < (int)func->n_blk; ++j) {
+    for (j = 0; j < (int) func->n_blk; ++j) {
 	if (covPtr[j] != -1) {
 	    putBit(covPtr[j]);
 	}
@@ -110,13 +99,12 @@ int	*covVector;
 }
 
 static void
-cUseCov(func, covVector)
-T_FUNC	*func;
-int	*covVector;
+cUseCov(T_FUNC * func,
+	int *covVector)
 {
-    int	c;
-    int	j;
-    int	*covPtr;
+    int c;
+    int j;
+    int *covPtr;
 
     c = func->formalN_cuse - func->n_cuse;
 
@@ -129,7 +117,7 @@ int	*covVector;
     }
 
     covPtr = covVector + func->cUseCovStart;
-    for(j = 0; j < (int)func->n_cuse; ++j) {
+    for (j = 0; j < (int) func->n_cuse; ++j) {
 	if (covPtr[j] != -1) {
 	    putBit(covPtr[j]);
 	}
@@ -137,14 +125,13 @@ int	*covVector;
 }
 
 static void
-pUseCov(func, covVector)
-T_FUNC	*func;
-int	*covVector;
+pUseCov(T_FUNC * func,
+	int *covVector)
 {
-    int	c;
-    int	j;
-    int	*covPtr;
-    int	decis_var;
+    int c;
+    int j;
+    int *covPtr;
+    int decis_var;
 
     decis_var = func->decis_var;
 
@@ -159,7 +146,7 @@ int	*covVector;
     }
 
     covPtr = covVector + func->pUseCovStart;
-    for(j = 0; j < (int)func->n_puse; ++j) {
+    for (j = 0; j < (int) func->n_puse; ++j) {
 	if (func->puse[j].varno != decis_var && covPtr[j] != -1) {
 	    putBit(covPtr[j]);
 	}
@@ -167,19 +154,19 @@ int	*covVector;
 }
 
 static void
-decisCov(func, covVector)
-T_FUNC	*func;
-int	*covVector;
+decisCov(T_FUNC * func,
+	 int *covVector)
 {
-    int	j;
-    int	*covPtr;
-    int	decis_var;
+    int j;
+    int *covPtr;
+    int decis_var;
 
     decis_var = func->decis_var;
 
     covPtr = covVector + func->pUseCovStart;
-    for(j = 0; j < (int)func->n_puse; ++j) {
-	if (func->puse[j].varno != decis_var) break;
+    for (j = 0; j < (int) func->n_puse; ++j) {
+	if (func->puse[j].varno != decis_var)
+	    break;
 	if (covPtr[j] != -1) {
 	    putBit(covPtr[j]);
 	}
@@ -187,25 +174,26 @@ int	*covVector;
 }
 
 void
-vectorPut(modules, n_mod, covVector, options)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		options;
+vectorPut(T_MODULE * modules,
+	  int n_mod,
+	  int *covVector,
+	  int options)
 {
-    T_MODULE	*mod;
-    T_MODULE	*modEnd;
-    T_FUNC	*func;
-    T_FUNC	*funcEnd;
+    T_MODULE *mod;
+    T_MODULE *modEnd;
+    T_FUNC *func;
+    T_FUNC *funcEnd;
 
     mod = modules;
     modEnd = modules + n_mod;
     for (; mod < modEnd; ++mod) {
-	if (mod->ignore) continue;
+	if (mod->ignore)
+	    continue;
 	func = mod->func;
 	funcEnd = mod->func + mod->n_func;
 	for (; func < funcEnd; ++func) {
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    /*
 	     * Function entry.
 	     */

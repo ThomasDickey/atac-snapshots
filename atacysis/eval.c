@@ -27,10 +27,9 @@
 #include "portable.h"
 #include "atacysis.h"
 
-static char const eval_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/eval.c,v 3.5 1995/12/29 21:24:41 tom Exp $";
+static char const eval_c[] = "$Id: eval.c,v 3.7 2013/12/09 01:05:50 tom Exp $";
 /*
-* $Log: eval.c,v $
+* @Log: eval.c,v @
 * Revision 3.5  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -49,62 +48,47 @@ static char const eval_c[] =
 *-----------------------------------------------end of log
 */
 
-typedef int	*value;
+typedef int *value;
 
 struct tr {
-    char	**traces;
-    int		n_traces;
-    T_MODULE	*mod;
-    int		n_static;
-    int		covCount;
-    int		options;
-    int		threshold;
-    int		weaker;
+    const char **traces;
+    int n_traces;
+    T_MODULE *mod;
+    int n_static;
+    int covCount;
+    int options;
+    int threshold;
+    int weaker;
 };
 
 /* forward declarations */
 static int evalConj
-	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
-static int evalDisj
-	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
-static int evalTerm
-	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
-static int evalNames
-	P_((char *s, struct tr *tr, int *lenPtr, value *covPtr));
-static void doConj
-	P_((int *cov1, int *cov2, int covCount));
-static void doDisj
-	P_((int *cov1, int *cov2, int covCount));
-static void doNot
-	P_((int *cov, int covCount));
-static void readTrace
-	P_((struct tr *tr, char *names, value *covPtr));
+  (char *s, struct tr *tr, int *lenPtr, value * covPtr);
 
 static void
-readTrace(tr, names, covPtr)
-struct tr	*tr;
-char		*names;
-value		*covPtr;
+readTrace(struct tr *tr,
+	  char *names,
+	  value * covPtr)
 {
-    struct cfile	*cf;
-    int			nSelect;
-    T_TESTLIST		*selectList;
-    int			i;
-    value		cov;
+    struct cfile *cf;
+    int nSelect;
+    T_TESTLIST *selectList;
+    int i;
+    value cov;
 
-    nSelect = 0;	/* No tests seen so far. */
+    nSelect = 0;		/* No tests seen so far. */
 
     /*
-    * Read trace data and create selectList.
-    */
-    cf = (struct cfile *)cf_openIn(tr->traces[0]);
+     * Read trace data and create selectList.
+     */
+    cf = (struct cfile *) cf_openIn(tr->traces[0]);
     if (cf == NULL) {
 	fprintf(stderr, "can't open %s\n", tr->traces[0]);
 	exit(1);
     }
     selectList = NULL;
     trace_data(cf, tr->traces[0], tr->mod, tr->n_static, tr->covCount,
-	       tr->options,  names, &selectList, &nSelect);
+	       tr->options, names, &selectList, &nSelect);
     cf_close(cf);
     if (nSelect == 1) {
 	covThreshold(selectList[0].cov, tr->covCount, tr->threshold);
@@ -123,12 +107,13 @@ value		*covPtr;
 	    fprintf(stderr, "Warning: selectList not NULL\n");
 	    selectList = NULL;
 	}
-	cov = (value)malloc(tr->covCount * sizeof *cov);
+	cov = (value) malloc((size_t) tr->covCount * sizeof *cov);
 	if (cov == NULL) {
 	    fprintf(stderr, "Can't malloc\n");
 	    exit(1);
 	}
-	for (i = 0; i < tr->covCount; ++i) cov[i] = 0;
+	for (i = 0; i < tr->covCount; ++i)
+	    cov[i] = 0;
 	*covPtr = cov;
     }
 
@@ -136,9 +121,8 @@ value		*covPtr;
 }
 
 static void
-doNot(cov, covCount)
-int	*cov;
-int	covCount;
+doNot(int *cov,
+      int covCount)
 {
     int j;
 
@@ -150,10 +134,9 @@ int	covCount;
 }
 
 static void
-doDisj(cov1, cov2, covCount)
-int	*cov1;
-int	*cov2;
-int	covCount;
+doDisj(int *cov1,
+       int *cov2,
+       int covCount)
 {
     int j;
 
@@ -165,10 +148,9 @@ int	covCount;
 }
 
 static void
-doConj(cov1, cov2, covCount)
-int	*cov1;
-int	*cov2;
-int	covCount;
+doConj(int *cov1,
+       int *cov2,
+       int covCount)
 {
     int j;
 
@@ -180,31 +162,30 @@ int	covCount;
 }
 
 static int
-evalNames(s, tr, lenPtr, covPtr)
-char		*s;
-struct tr	*tr;
-int		*lenPtr;
-value		*covPtr;
+evalNames(char *s,
+	  struct tr *tr,
+	  int *lenPtr,
+	  value * covPtr)
 {
-    int		len;
-    int		namesStart;
-    char	tmpC;
+    int len;
+    int namesStart;
+    char tmpC;
 
     len = 0;
 
-    while (isspace(s[len])) ++len;
+    while (isspace(s[len]))
+	++len;
 
     namesStart = len;
-    while(!isspace(s[len])
-	  && s[len] != '\0'
-	  && s[len] != '('
-	  && s[len] != ')'
-	  && s[len] != '!'
-	  && s[len] != '&'
-	  && s[len] != '+')
-    {
-	if (s[len] == '[' && s[len+1] == '!')
-	    ++len; /* In this context '!' is name matching, not set comp. */
+    while (!isspace(s[len])
+	   && s[len] != '\0'
+	   && s[len] != '('
+	   && s[len] != ')'
+	   && s[len] != '!'
+	   && s[len] != '&'
+	   && s[len] != '+') {
+	if (s[len] == '[' && s[len + 1] == '!')
+	    ++len;		/* In this context '!' is name matching, not set comp. */
 	++len;
     }
 
@@ -223,21 +204,20 @@ value		*covPtr;
 }
 
 static int
-evalTerm(s, tr, lenPtr, covPtr)
-char		*s;
-struct tr	*tr;
-int		*lenPtr;
-value		*covPtr;
+evalTerm(char *s,
+	 struct tr *tr,
+	 int *lenPtr,
+	 value * covPtr)
 {
-    int		len;
-    int		skip;
+    int len;
+    int skip;
 
     len = 0;
 
-    while (isspace(s[len])) ++len;
+    while (isspace(s[len]))
+	++len;
 
-    switch (s[len])
-    {
+    switch (s[len]) {
     case '\0':
 	fprintf(stderr, "empty subexpression\n");
 	return -1;
@@ -246,7 +226,8 @@ value		*covPtr;
 	if (evalConj(s + len, tr, &skip, covPtr) == -1)
 	    return -1;
 	len += skip;
-	while (isspace(s[len])) ++len;
+	while (isspace(s[len]))
+	    ++len;
 	if (s[len] != ')') {
 	    fprintf(stderr, "unballanced parenthesis\n");
 	    free(*covPtr);
@@ -274,16 +255,15 @@ value		*covPtr;
 }
 
 static int
-evalDisj(s, tr, lenPtr, covPtr)
-char		*s;
-struct tr	*tr;
-int		*lenPtr;
-value		*covPtr;
+evalDisj(char *s,
+	 struct tr *tr,
+	 int *lenPtr,
+	 value * covPtr)
 {
-    int		len;
-    int		skip;
-    value	cov1;
-    value	cov2;
+    int len;
+    int skip;
+    value cov1;
+    value cov2;
 
     len = 0;
 
@@ -291,7 +271,8 @@ value		*covPtr;
 	return -1;
     len += skip;
 
-    while (isspace(s[len])) ++len;
+    while (isspace(s[len]))
+	++len;
 
     while (s[len] == '&') {
 	++len;
@@ -302,7 +283,8 @@ value		*covPtr;
 	len += skip;
 	doDisj(cov1, cov2, tr->covCount);
 	free(cov2);
-	while (isspace(s[len])) ++len;
+	while (isspace(s[len]))
+	    ++len;
     }
 
     *covPtr = cov1;
@@ -311,16 +293,15 @@ value		*covPtr;
 }
 
 static int
-evalConj(s, tr, lenPtr, covPtr)
-char		*s;
-struct tr	*tr;
-int		*lenPtr;
-value		*covPtr;
+evalConj(char *s,
+	 struct tr *tr,
+	 int *lenPtr,
+	 value * covPtr)
 {
-    int		len;
-    int		skip;
-    value	cov1;
-    value	cov2;
+    int len;
+    int skip;
+    value cov1;
+    value cov2;
 
     len = 0;
 
@@ -328,7 +309,8 @@ value		*covPtr;
 	return -1;
     len += skip;
 
-    while (isspace(s[len])) ++len;
+    while (isspace(s[len]))
+	++len;
 
     while (s[len] == '+') {
 	++len;
@@ -339,7 +321,8 @@ value		*covPtr;
 	len += skip;
 	doConj(cov1, cov2, tr->covCount);
 	free(cov2);
-	while (isspace(s[len])) ++len;
+	while (isspace(s[len]))
+	    ++len;
     }
 
     *covPtr = cov1;
@@ -348,24 +331,22 @@ value		*covPtr;
 }
 
 int
-evalExpr(s, traces, n_traces, mod, n_static, covCount, options, selectListPtr,
-	 nSelectPtr, threshold, weaker)
-char		*s;
-char		**traces;
-int		n_traces;
-T_MODULE	*mod;
-int		n_static;
-int		covCount;
-int		options;
-T_TESTLIST	**selectListPtr;   	/* return selectList */
-int		*nSelectPtr;
-int		threshold;
-int		weaker;
+evalExpr(char *s,
+	 const char **traces,
+	 int n_traces,
+	 T_MODULE * mod,
+	 int n_static,
+	 int covCount,
+	 int options,
+	 T_TESTLIST ** selectListPtr,	/* return selectList */
+	 int *nSelectPtr,
+	 int threshold,
+	 int weaker)
 {
-    int		skip;
-    struct tr	tr;
-    value	cov;
-    T_TESTLIST	*selectList;
+    int skip;
+    struct tr tr;
+    value cov;
+    T_TESTLIST *selectList;
 
     tr.traces = traces;
     tr.n_traces = n_traces;
@@ -384,7 +365,7 @@ int		weaker;
 	return -1;
     }
 
-    selectList = (T_TESTLIST *)malloc(sizeof *selectList);
+    selectList = (T_TESTLIST *) malloc(sizeof *selectList);
     if (selectList == NULL) {
 	fprintf(stderr, "Can't malloc\n");
 	exit(1);

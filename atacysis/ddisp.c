@@ -21,10 +21,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "atacysis.h"
 #include "disp.h"
 
-static char const ddisp_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ddisp.c,v 3.7 2005/08/14 13:47:16 tom Exp $";
+static char const ddisp_c[] = "$Id: ddisp.c,v 3.9 2013/12/09 01:03:38 tom Exp $";
 /*
-* $Log: ddisp.c,v $
+* @Log: ddisp.c,v @
 * Revision 3.7  2005/08/14 13:47:16  tom
 * gcc warnings
 *
@@ -82,52 +81,52 @@ static char const ddisp_c[] =
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
-typedef int	RLIST;
+typedef int RLIST;
 
 typedef struct {
-	RLIST	**rlist;
-	int	notcov;
-	int	tot;
+    RLIST **rlist;
+    int notcov;
+    int tot;
 } COV_LIST;
 
 /* forward declarations */
 static void dispDecis
-	P_((char *srcfile, int start_line, int end_line, SE_POSITION *to,
-	char *t_str));
+  (char *srcfile, int start_line, int end_line, SE_POSITION * to,
+   char *t_str);
 static void display
-	P_((T_FILE *file, char *atacfile, char *funcname, SE_POSITION *to,
-	SE_POSITION *func, char *value, int displayMode));
+  (T_FILE * file, const char *atacfile, const char *funcname, SE_POSITION * to,
+   SE_POSITION * func, char *value, int displayMode);
 static void print_header
-	P_((char *srcfile, char *func, int line, int displayMode));
+  (char *srcfile, const char *func, int line, int displayMode);
 
 void
-ddisp(modules, n_mod, covVector, displayMode)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		displayMode;
+ddisp(T_MODULE * modules,
+      int n_mod,
+      int *covVector,
+      int displayMode)
 {
-    int		i;
-    T_FUNC		*func;
-    T_MODULE	*mod;
-    T_PUSE		*puse;
-    int		decis_var;
-    int		none = 1; /* 0 if no decis to be printed; 1 otherwise */
+    int i;
+    T_FUNC *func;
+    T_MODULE *mod;
+    T_PUSE *puse;
+    int decis_var;
+    int none = 1;		/* 0 if no decis to be printed; 1 otherwise */
 
     for (mod = modules; mod < modules + n_mod; ++mod) {
 	for (func = mod->func; func < mod->func + mod->n_func; ++func) {
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    /*
-	    * Find and display not covered decisions.
-	    */
+	       * Find and display not covered decisions.
+	     */
 	    decis_var = func->decis_var;
 	    if (decis_var == -1)	/* No decisions at all */
-		    continue;
-	    for (i = 0; i < (int)func->n_puse; ++i) {
+		continue;
+	    for (i = 0; i < (int) func->n_puse; ++i) {
 		puse = func->puse + i;
-		if (puse->varno != decis_var) break;
-		if (covVector[func->pUseCovStart + i] != 0)
-		{
+		if (puse->varno != decis_var)
+		    break;
+		if (covVector[func->pUseCovStart + i] != 0) {
 		    continue;
 		}
 		if (puse->use.start.file != puse->use.end.file)
@@ -140,8 +139,7 @@ int		displayMode;
 	}
     }
     if (none) {
-	switch (displayMode & (DISPLAY_ALL | DISPLAY_COV))
-	{
+	switch (displayMode & (DISPLAY_ALL | DISPLAY_COV)) {
 	case DISPLAY_COV | DISPLAY_ALL:
 	    disp_str("No covered decisions.", DISP_NEWLINE);
 	    break;
@@ -160,73 +158,71 @@ int		displayMode;
 }
 
 static void
-print_header(srcfile, func, line, displayMode)
-char	*srcfile;
-char	*func;
-int	line;
-int	displayMode;
+print_header(char *srcfile,
+	     const char *func,
+	     int line,
+	     int displayMode)
 {
-	char	buf[MAX_HEADER];
-	char 	*not;
+    char buf[MAX_HEADER];
+    const char *not;
 
-	if (displayMode & DISPLAY_COV) {
-	    not = "";
-	} else {
-	    not = "not ";
-	}
+    if (displayMode & DISPLAY_COV) {
+	not = "";
+    } else {
+	not = "not ";
+    }
 
-	sprintf(buf, "%s:%s decision %scovered at line %d",
-		srcfile, func, not, line);
+    sprintf(buf, "%s:%s decision %scovered at line %d",
+	    srcfile, func, not, line);
 
-	disp_title(buf, 0, 0);
+    disp_title(buf, 0, 0);
 }
 
 static void
-display(file, atacfile, funcname, to, func, value, displayMode)
-T_FILE		*file;
-char		*atacfile;
-char		*funcname;
-SE_POSITION	*to;
-SE_POSITION	*func;
-char		*value;
-int		displayMode;
+display(T_FILE * file,
+	const char *atacfile,
+	const char *funcname,
+	SE_POSITION * to,
+	SE_POSITION * func,
+	char *value,
+	int displayMode)
 {
-	int		start;
-	int		end;
-	char		*srcfile;
-	char		v[9];
-	int		vLen;
+    int start;
+    int end;
+    char *srcfile;
+    char v[9];
+    int vLen;
 
-	vLen = strlen(value);
+    vLen = (int) strlen(value);
 
-	srcfile = srcfile_name(file->filename, &file->chgtime, atacfile);
-	start = to->start.line - SRC_CONTEXT_LINES;
-	if (start <= 0) start = 1;
-	if (func->start.file == to->end.file && start < (int)func->start.line)
-	    start = func->start.line;
-	end = to->end.line + SRC_CONTEXT_LINES;
-	if (func->end.file == to->end.file && end > (int)func->end.line) 
-		end = func->end.line;
-	print_header(srcfile, funcname, start, displayMode);
-	sprintf(v, "%.7s%.*s>", value, MAX(7-vLen,0), "=======");
-	dispDecis(srcfile, start, end, to, v);
+    srcfile = srcfile_name(file->filename, &file->chgtime, atacfile);
+    start = to->start.line - SRC_CONTEXT_LINES;
+    if (start <= 0)
+	start = 1;
+    if (func->start.file == to->end.file && start < (int) func->start.line)
+	start = func->start.line;
+    end = to->end.line + SRC_CONTEXT_LINES;
+    if (func->end.file == to->end.file && end > (int) func->end.line)
+	end = func->end.line;
+    print_header(srcfile, funcname, start, displayMode);
+    sprintf(v, "%.7s%.*s>", value, MAX(7 - vLen, 0), "=======");
+    dispDecis(srcfile, start, end, to, v);
 }
 
 static void
-dispDecis(srcfile, start_line, end_line, to, t_str)
-char		*srcfile;
-int		start_line;
-int		end_line;
-SE_POSITION	*to;
-char		*t_str;
+dispDecis(char *srcfile,
+	  int start_line,
+	  int end_line,
+	  SE_POSITION * to,
+	  char *t_str)
 {
-	disp_file(srcfile, start_line, 1, to->start.line, 0, DISP_INDENT);
-	disp_str(t_str, DISP_HILI);
-	if (to->start.col != 1)
-		disp_file(srcfile, to->start.line, 1, to->start.line,
-			  to->start.col - 1, 0);
-	disp_file(srcfile, to->start.line, to->start.col, to->end.line,
-		  to->end.col, DISP_HILI);
-	disp_file(srcfile, to->end.line, to->end.col + 1, end_line, -1, 0);
-	disp_end();
+    disp_file(srcfile, start_line, 1, to->start.line, 0, DISP_INDENT);
+    disp_str(t_str, DISP_HILI);
+    if (to->start.col != 1)
+	disp_file(srcfile, to->start.line, 1, to->start.line,
+		  to->start.col - 1, 0);
+    disp_file(srcfile, to->start.line, to->start.col, to->end.line,
+	      to->end.col, DISP_HILI);
+    disp_file(srcfile, to->end.line, to->end.col + 1, end_line, -1, 0);
+    disp_end();
 }

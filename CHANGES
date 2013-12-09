@@ -1,3 +1,38 @@
+2013-12-08  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* configure: regen
+
+	* portable.h:
+	adding CF_XOPEN_SOURCE broke the nested mess of ifdef's - hack it for now.
+
+	* aclocal.m4, configure.in: add CF_XOPEN_SOURCE
+
+	* portable.h: remove K&R stuff
+
+	* VERSION: RCS_BASE
+
+	* configure: regen
+
+	* aclocal.m4: use CF_PROG_CC
+	remove unused macros
+
+	* configure.in: use CF_PROG_CC
+	drop long-obsolete check for td_config
+
+	* aclocal.m4: resync with my-autoconf
+
+	* configure.in: bump prerequisites
+
+	* makefile.in: use "mkdir -p" rather than "mkdirs.sh" script
+
+2013-10-25  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* config.sub: 2013-10-01
+
+2013-09-07  Thomas E. Dickey  <dickey@invisible-island.net>
+
+	* config.guess: 2013-06-10
+
 2008-12-16  Thomas E. Dickey  <dickey@invisible-island.net>
 
 	* configure: regen'd

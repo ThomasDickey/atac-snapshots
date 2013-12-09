@@ -21,10 +21,9 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char tree_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.c,v 3.7 1997/05/11 20:26:01 tom Exp $";
+static const char tree_c[] = "$Id: tree.c,v 3.10 2013/12/09 00:19:10 tom Exp $";
 /*
-* $Log: tree.c,v $
+* @Log: tree.c,v @
 * Revision 3.7  1997/05/11 20:26:01  tom
 * moved prototypes to tnode.h
 *
@@ -86,288 +85,283 @@ static const char tree_c[] =
 #include "tnode.h"
 #include "sym.h"
 #include "tree.h"
-#include "hook.h"	/* for tree_print of GEN_HOOK */
-
-/* forward declarations */
-static char *genstr P_(( int token ));
+#include "hook.h"		/* for tree_print of GEN_HOOK */
 
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
 TNODE *
-tmkleaf(genus, species, srcpos, text)
-int	genus;
-int	species;
-SRCPOS	*srcpos;
-char	*text;
+tmkleaf(
+	   int genus,
+	   int species,
+	   SRCPOS * srcpos,
+	   char *text)
 {
-	TNODE *t;
+    TNODE *t;
 
-	t = (TNODE *)malloc(sizeof *t);
-	CHECK_MALLOC(t);
-	t->genus = genus;
-	t->species = species;
-	t->srcpos[LEFT_SRCPOS].file = srcpos[LEFT_SRCPOS].file;
-	t->srcpos[LEFT_SRCPOS].line = srcpos[LEFT_SRCPOS].line;
-	t->srcpos[LEFT_SRCPOS].col = srcpos[LEFT_SRCPOS].col;
-	t->srcpos[RIGHT_SRCPOS].file = srcpos[RIGHT_SRCPOS].file;
-	t->srcpos[RIGHT_SRCPOS].line = srcpos[RIGHT_SRCPOS].line;
-	t->srcpos[RIGHT_SRCPOS].col = srcpos[RIGHT_SRCPOS].col;
-	t->text = text;
-	t->sym.symtab = NULL;
-	t->sym.sym = NULL;
+    t = (TNODE *) malloc(sizeof *t);
+    CHECK_MALLOC(t);
+    t->genus = genus;
+    t->species = species;
+    t->srcpos[LEFT_SRCPOS].file = srcpos[LEFT_SRCPOS].file;
+    t->srcpos[LEFT_SRCPOS].line = srcpos[LEFT_SRCPOS].line;
+    t->srcpos[LEFT_SRCPOS].col = srcpos[LEFT_SRCPOS].col;
+    t->srcpos[RIGHT_SRCPOS].file = srcpos[RIGHT_SRCPOS].file;
+    t->srcpos[RIGHT_SRCPOS].line = srcpos[RIGHT_SRCPOS].line;
+    t->srcpos[RIGHT_SRCPOS].col = srcpos[RIGHT_SRCPOS].col;
+    t->text = text;
+    t->sym.symtab = NULL;
+    t->sym.sym = NULL;
 
-	t->up = NULL;
+    t->up = NULL;
+    t->down = NULL;
+    t->over = t;
+
+    return t;
+}
+
+TNODE *
+tmknode(
+	   int genus,
+	   int species,
+	   TNODE * Child0,
+	   TNODE * Child1)
+{
+    TNODE *t;
+
+    t = (TNODE *) malloc(sizeof *t);
+    CHECK_MALLOC(t);
+    t->genus = genus;
+    t->species = species;
+    t->up = NULL;
+    t->over = t;
+    t->text = NULL;
+    t->sym.symtab = NULL;
+    t->sym.sym = NULL;
+
+    if (Child0 == NULL) {
+	t->srcpos[LEFT_SRCPOS].file = -1;
+	t->srcpos[LEFT_SRCPOS].line = 0;
+	t->srcpos[LEFT_SRCPOS].col = 0;
+	t->srcpos[RIGHT_SRCPOS].file = -1;
+	t->srcpos[RIGHT_SRCPOS].line = 0;
+	t->srcpos[RIGHT_SRCPOS].col = 0;
 	t->down = NULL;
-	t->over = t;
-
 	return t;
+    }
+
+    t->srcpos[LEFT_SRCPOS].file = Child0->srcpos[LEFT_SRCPOS].file;
+    t->srcpos[LEFT_SRCPOS].line = Child0->srcpos[LEFT_SRCPOS].line;
+    t->srcpos[LEFT_SRCPOS].col = Child0->srcpos[LEFT_SRCPOS].col;
+
+    Child0->up = t;
+
+    if (Child1) {
+	Child1->up = t;
+	Child0->over = Child1;
+	Child1->over = Child0;
+	t->down = Child1;
+	t->srcpos[RIGHT_SRCPOS].file =
+	    Child1->srcpos[RIGHT_SRCPOS].file;
+	t->srcpos[RIGHT_SRCPOS].line =
+	    Child1->srcpos[RIGHT_SRCPOS].line;
+	t->srcpos[RIGHT_SRCPOS].col =
+	    Child1->srcpos[RIGHT_SRCPOS].col;
+    } else {
+	t->down = Child0;
+	t->srcpos[RIGHT_SRCPOS].file =
+	    Child0->srcpos[RIGHT_SRCPOS].file;
+	t->srcpos[RIGHT_SRCPOS].line =
+	    Child0->srcpos[RIGHT_SRCPOS].line;
+	t->srcpos[RIGHT_SRCPOS].col =
+	    Child0->srcpos[RIGHT_SRCPOS].col;
+    }
+
+    return t;
 }
 
 TNODE *
-tmknode(genus, species, Child0, Child1)
-int	genus;
-int	species;
-TNODE	*Child0;
-TNODE	*Child1;
+tlist_add(
+	     TNODE * list,
+	     TNODE * next)
 {
-	TNODE *t;
-
-	t = (TNODE *)malloc(sizeof *t);
-	CHECK_MALLOC(t);
-	t->genus = genus;
-	t->species = species;
-	t->up = NULL;
-	t->over = t;
-	t->text = NULL;
-	t->sym.symtab = NULL;
-	t->sym.sym = NULL;
-
-	if (Child0 == NULL) {
-		t->srcpos[LEFT_SRCPOS].file = -1;
-		t->srcpos[LEFT_SRCPOS].line = 0;
-		t->srcpos[LEFT_SRCPOS].col = 0;
-		t->srcpos[RIGHT_SRCPOS].file = -1;
-		t->srcpos[RIGHT_SRCPOS].line = 0;
-		t->srcpos[RIGHT_SRCPOS].col = 0;
-		t->down = NULL;
-		return t;
-	}
-
-	t->srcpos[LEFT_SRCPOS].file = Child0->srcpos[LEFT_SRCPOS].file;
-	t->srcpos[LEFT_SRCPOS].line = Child0->srcpos[LEFT_SRCPOS].line;
-	t->srcpos[LEFT_SRCPOS].col = Child0->srcpos[LEFT_SRCPOS].col;
-
-	Child0->up = t;
-
-	if (Child1) {
-		Child1->up = t;
-		Child0->over = Child1;
-		Child1->over = Child0;
-		t->down = Child1;
-		t->srcpos[RIGHT_SRCPOS].file =
-			Child1->srcpos[RIGHT_SRCPOS].file;
-		t->srcpos[RIGHT_SRCPOS].line =
-			Child1->srcpos[RIGHT_SRCPOS].line;
-		t->srcpos[RIGHT_SRCPOS].col =
-			Child1->srcpos[RIGHT_SRCPOS].col;
-	} else {
-		t->down = Child0;
-		t->srcpos[RIGHT_SRCPOS].file =
-			Child0->srcpos[RIGHT_SRCPOS].file;
-		t->srcpos[RIGHT_SRCPOS].line =
-			Child0->srcpos[RIGHT_SRCPOS].line;
-		t->srcpos[RIGHT_SRCPOS].col =
-			Child0->srcpos[RIGHT_SRCPOS].col;
-	}
-
-	return t;
-}
-
-TNODE *
-tlist_add(list, next)
-TNODE	*list;
-TNODE	*next;
-{
-	if (list->down == NULL) {
-		list->srcpos[LEFT_SRCPOS].file = next->srcpos[LEFT_SRCPOS].file;
-		list->srcpos[LEFT_SRCPOS].line = next->srcpos[LEFT_SRCPOS].line;
-		list->srcpos[LEFT_SRCPOS].col = next->srcpos[LEFT_SRCPOS].col;
-		/* assume: next->over == next */
-	} else {
-		next->over = list->down->over;
-		list->down->over = next;
-	}
-	next->up = list;
-	list->down = next;
-	list->srcpos[RIGHT_SRCPOS].file = next->srcpos[RIGHT_SRCPOS].file;
-	list->srcpos[RIGHT_SRCPOS].line = next->srcpos[RIGHT_SRCPOS].line;
-	list->srcpos[RIGHT_SRCPOS].col = next->srcpos[RIGHT_SRCPOS].col;
-	
-	return list;
-}
-
-TNODE *
-tlist_ladd(list, next)
-TNODE	*list;
-TNODE	*next;
-{
-	if (list->down == NULL) {
-		list->srcpos[RIGHT_SRCPOS].file =
-			next->srcpos[RIGHT_SRCPOS].file;
-		list->srcpos[RIGHT_SRCPOS].line =
-			next->srcpos[RIGHT_SRCPOS].line;
-		list->srcpos[RIGHT_SRCPOS].col =
-			next->srcpos[RIGHT_SRCPOS].col;
-		list->down = next;
-		/* assume: next->over == next */
-	} else {
-		next->over = list->down->over;
-		list->down->over = next;
-	}
-	next->up = list;
+    if (list->down == NULL) {
 	list->srcpos[LEFT_SRCPOS].file = next->srcpos[LEFT_SRCPOS].file;
 	list->srcpos[LEFT_SRCPOS].line = next->srcpos[LEFT_SRCPOS].line;
 	list->srcpos[LEFT_SRCPOS].col = next->srcpos[LEFT_SRCPOS].col;
-	
-	return list;
+	/* assume: next->over == next */
+    } else {
+	next->over = list->down->over;
+	list->down->over = next;
+    }
+    next->up = list;
+    list->down = next;
+    list->srcpos[RIGHT_SRCPOS].file = next->srcpos[RIGHT_SRCPOS].file;
+    list->srcpos[RIGHT_SRCPOS].line = next->srcpos[RIGHT_SRCPOS].line;
+    list->srcpos[RIGHT_SRCPOS].col = next->srcpos[RIGHT_SRCPOS].col;
+
+    return list;
 }
 
 TNODE *
-tsrc_pos(node, begin, end)
-TNODE	*node;
-SRCPOS	*begin;
-SRCPOS	*end;
+tlist_ladd(
+	      TNODE * list,
+	      TNODE * next)
 {
-	if (begin) {
-		node->srcpos[LEFT_SRCPOS].file = begin[LEFT_SRCPOS].file;
-		node->srcpos[LEFT_SRCPOS].line = begin[LEFT_SRCPOS].line;
-		node->srcpos[LEFT_SRCPOS].col = begin[LEFT_SRCPOS].col;
-	}
+    if (list->down == NULL) {
+	list->srcpos[RIGHT_SRCPOS].file =
+	    next->srcpos[RIGHT_SRCPOS].file;
+	list->srcpos[RIGHT_SRCPOS].line =
+	    next->srcpos[RIGHT_SRCPOS].line;
+	list->srcpos[RIGHT_SRCPOS].col =
+	    next->srcpos[RIGHT_SRCPOS].col;
+	list->down = next;
+	/* assume: next->over == next */
+    } else {
+	next->over = list->down->over;
+	list->down->over = next;
+    }
+    next->up = list;
+    list->srcpos[LEFT_SRCPOS].file = next->srcpos[LEFT_SRCPOS].file;
+    list->srcpos[LEFT_SRCPOS].line = next->srcpos[LEFT_SRCPOS].line;
+    list->srcpos[LEFT_SRCPOS].col = next->srcpos[LEFT_SRCPOS].col;
 
-	if (end) {
-		node->srcpos[RIGHT_SRCPOS].file = end[RIGHT_SRCPOS].file;
-		node->srcpos[RIGHT_SRCPOS].line = end[RIGHT_SRCPOS].line;
-		node->srcpos[RIGHT_SRCPOS].col = end[RIGHT_SRCPOS].col;
-	}
+    return list;
+}
 
-	return node;
+TNODE *
+tsrc_pos(
+	    TNODE * node,
+	    SRCPOS * begin,
+	    SRCPOS * end)
+{
+    if (begin) {
+	node->srcpos[LEFT_SRCPOS].file = begin[LEFT_SRCPOS].file;
+	node->srcpos[LEFT_SRCPOS].line = begin[LEFT_SRCPOS].line;
+	node->srcpos[LEFT_SRCPOS].col = begin[LEFT_SRCPOS].col;
+    }
+
+    if (end) {
+	node->srcpos[RIGHT_SRCPOS].file = end[RIGHT_SRCPOS].file;
+	node->srcpos[RIGHT_SRCPOS].line = end[RIGHT_SRCPOS].line;
+	node->srcpos[RIGHT_SRCPOS].col = end[RIGHT_SRCPOS].col;
+    }
+
+    return node;
 }
 
 void
-tfreenode(node)
-TNODE	*node;
+tfreenode(
+	     TNODE * node)
 {
-	if (node == NULL) return;
-	free(node);
+    if (node == NULL)
+	return;
+    free(node);
 }
 
-#ifdef __STDC__	/* ANSI */
 #define GENSTR(s) case s: return #s;
-#else /* Non ANSI */
-/* This trick doesn't work in ANSI. */
-#define GENSTR(s) case s: return "s";
-#endif
 
-static char *
-genstr(token)
-int token;
+static const char *
+genstr(int token)
 {
-	static char buf[20];
+    static char buf[20];
 
-	switch (token)
-	{
+    switch (token) {
 	GENSTR(GEN_MODULE)
-	GENSTR(GEN_MODULE_ITEM)
-	GENSTR(GEN_FUNCTION)
-	GENSTR(GEN_FUNC_SPEC)
-	GENSTR(GEN_CLASSTYPES)
-	GENSTR(GEN_CLASSTYPE)
-	GENSTR(GEN_PARAM_DCLS)
-	GENSTR(GEN_PARAM_DCL)
-	GENSTR(GEN_PARAM_DEFS)
-	GENSTR(GEN_STARS)
-	GENSTR(GEN_STAR)
-	GENSTR(GEN_STMT_LIST)
-	GENSTR(GEN_ENUM_DCL)
-	GENSTR(GEN_ENUM_REF)
-	GENSTR(GEN_MOE_LIST)
-	GENSTR(GEN_MOE)
-	GENSTR(GEN_STRUCT_DCL)
-	GENSTR(GEN_STRUCT_REF)
-	GENSTR(GEN_MEM_LIST)
-	GENSTR(GEN_MEMBER)
-	GENSTR(GEN_MEM_DCLS)
-	GENSTR(GEN_MEM_DCL)
-	GENSTR(GEN_NAMES)
-	GENSTR(GEN_INIT_DCL)
-	GENSTR(GEN_INDATA_DCLS)
-	GENSTR(GEN_INDATA_DCL)
-	GENSTR(GEN_DATA_SPECS)
-	GENSTR(GEN_DATA_SPEC)
-	GENSTR(GEN_DATA_ITEMS)
-	GENSTR(GEN_DATA_ITEM)
-	GENSTR(GEN_INIT_LIST)
-	GENSTR(GEN_INIT_ITEM)
-	GENSTR(GEN_INITIALIZER)
-	GENSTR(GEN_COMPSTMT)
-	GENSTR(GEN_STMT)
-	GENSTR(GEN_EXP_LIST)
-	GENSTR(GEN_EXPR)
-	GENSTR(GEN_FUNC_LP)
-	GENSTR(GEN_CAST_TYPE)
-	GENSTR(GEN_NULL_DCL)
-	GENSTR(GEN_BINOP)
-	GENSTR(GEN_INCOP)
-	GENSTR(GEN_UNOP)
-	GENSTR(GEN_ANSI_PARAMS)
-	GENSTR(GEN_ANSI_PARAM)
-	GENSTR(GEN_QUALS)
-	GENSTR(GEN_QUAL)
-	GENSTR(GEN_FCON)
-	GENSTR(GEN_ICON)
-	GENSTR(GEN_STRING)
-	GENSTR(GEN_NAME)
-	GENSTR(GEN_TNAME)
-	GENSTR(GEN_FNAME)
-	default: sprintf(buf, "%d", token);
-		return buf;
-	}
+	    GENSTR(GEN_MODULE_ITEM)
+	    GENSTR(GEN_FUNCTION)
+	    GENSTR(GEN_FUNC_SPEC)
+	    GENSTR(GEN_CLASSTYPES)
+	    GENSTR(GEN_CLASSTYPE)
+	    GENSTR(GEN_PARAM_DCLS)
+	    GENSTR(GEN_PARAM_DCL)
+	    GENSTR(GEN_PARAM_DEFS)
+	    GENSTR(GEN_STARS)
+	    GENSTR(GEN_STAR)
+	    GENSTR(GEN_STMT_LIST)
+	    GENSTR(GEN_ENUM_DCL)
+	    GENSTR(GEN_ENUM_REF)
+	    GENSTR(GEN_MOE_LIST)
+	    GENSTR(GEN_MOE)
+	    GENSTR(GEN_STRUCT_DCL)
+	    GENSTR(GEN_STRUCT_REF)
+	    GENSTR(GEN_MEM_LIST)
+	    GENSTR(GEN_MEMBER)
+	    GENSTR(GEN_MEM_DCLS)
+	    GENSTR(GEN_MEM_DCL)
+	    GENSTR(GEN_NAMES)
+	    GENSTR(GEN_INIT_DCL)
+	    GENSTR(GEN_INDATA_DCLS)
+	    GENSTR(GEN_INDATA_DCL)
+	    GENSTR(GEN_DATA_SPECS)
+	    GENSTR(GEN_DATA_SPEC)
+	    GENSTR(GEN_DATA_ITEMS)
+	    GENSTR(GEN_DATA_ITEM)
+	    GENSTR(GEN_INIT_LIST)
+	    GENSTR(GEN_INIT_ITEM)
+	    GENSTR(GEN_INITIALIZER)
+	    GENSTR(GEN_COMPSTMT)
+	    GENSTR(GEN_STMT)
+	    GENSTR(GEN_EXP_LIST)
+	    GENSTR(GEN_EXPR)
+	    GENSTR(GEN_FUNC_LP)
+	    GENSTR(GEN_CAST_TYPE)
+	    GENSTR(GEN_NULL_DCL)
+	    GENSTR(GEN_BINOP)
+	    GENSTR(GEN_INCOP)
+	    GENSTR(GEN_UNOP)
+	    GENSTR(GEN_ANSI_PARAMS)
+	    GENSTR(GEN_ANSI_PARAM)
+	    GENSTR(GEN_QUALS)
+	    GENSTR(GEN_QUAL)
+	    GENSTR(GEN_FCON)
+	    GENSTR(GEN_ICON)
+	    GENSTR(GEN_STRING)
+	    GENSTR(GEN_NAME)
+	    GENSTR(GEN_TNAME)
+	    GENSTR(GEN_FNAME)
+    default:
+	sprintf(buf, "%d", token);
+	return buf;
+    }
 }
 
 int
-print_tree(node, id, parent, level)
-TNODE *node;
-int id;
-int parent;
-int level;
+print_tree(
+	      TNODE * node,
+	      int id,
+	      int parent,
+	      int level)
 {
-	TNODE	*p;
-	int	next;
-	int	i;
+    TNODE *p;
+    int next;
+    int i;
 
-	if (node == NULL) return id;
+    if (node == NULL)
+	return id;
 
-	printf("%3.3d/%3.3d:", id, parent);
-	for (i = 0; i < level; ++i) {
-		putchar('|');
-		putchar(' ');
-	}
-	printf("%s.%d", genstr(node->genus), node->species);
-	if (node->text) printf(" <%s>\n", node->text);
-	else putchar('\n');
+    printf("%3.3d/%3.3d:", id, parent);
+    for (i = 0; i < level; ++i) {
+	putchar('|');
+	putchar(' ');
+    }
+    printf("%s.%d", genstr(node->genus), node->species);
+    if (node->text)
+	printf(" <%s>\n", node->text);
+    else
+	putchar('\n');
 
-	if (node->down == NULL)
-		return id + 1;
-		
-	p = node->down;
+    if (node->down == NULL)
+	return id + 1;
 
-	next = id + 1;
-	do {
-		p = p->over;
-		next = print_tree(p, next, id, level + 1);
-	} while (p != node->down);
+    p = node->down;
 
-	return next;
+    next = id + 1;
+    do {
+	p = p->over;
+	next = print_tree(p, next, id, level + 1);
+    } while (p != node->down);
+
+    return next;
 }
 
 /*
@@ -381,26 +375,26 @@ int level;
 *	o non-ansi parmeter - return just the name.
 */
 TNODE *
-tFindDef(n)
-TNODE	*n;
+tFindDef(
+	    TNODE * n)
 {
-    TNODE	*p;
+    TNODE *p;
 
-    if (n == NULL) return NULL;
+    if (n == NULL)
+	return NULL;
 
     for (p = n; p; p = PARENT(p)) {
-	switch (p->genus)
-	{
+	switch (p->genus) {
 	case GEN_EXPR:
-	    if (p->species == EXPR_INCOP) return p;
+	    if (p->species == EXPR_INCOP)
+		return p;
 	    if (p->species == EXPR_UNOP) {
-	        if (CHILD0(p)->species == UNOP_INC) return p;
-	        if (CHILD0(p)->species == UNOP_DEC) return p;
-	    }
-	    else 
-	    if (p->species == EXPR_BINOP) {
-	        switch (CHILD1(p)->species)
-		{
+		if (CHILD0(p)->species == UNOP_INC)
+		    return p;
+		if (CHILD0(p)->species == UNOP_DEC)
+		    return p;
+	    } else if (p->species == EXPR_BINOP) {
+		switch (CHILD1(p)->species) {
 		case BINOP_ASGN:
 		case BINOP_APLUS:
 		case BINOP_AMINUS:
@@ -419,14 +413,14 @@ TNODE	*n;
 	case GEN_INIT_DCL:
 	case GEN_INDATA_DCL:
 	case GEN_ANSI_PARAM:
-        case GEN_PARAM_DCL:
+	case GEN_PARAM_DCL:
 	    return p;
-        case GEN_NAMES:	/* non-ANSI style parameter list */
+	case GEN_NAMES:	/* non-ANSI style parameter list */
 	    return n;
 	}
     }
     internal_error(n->srcpos, "tFindDef: can't find def");
-    /*NOTREACHED*/
+    /*NOTREACHED */
 }
 
 /*
@@ -434,20 +428,20 @@ TNODE	*n;
 *	data-flow return the value being assigned in *value.
 */
 void
-tFindVDef(n, value)
-TNODE		*n;
-CONST_VALUE	*value;
+tFindVDef(
+	     TNODE * n,
+	     CONST_VALUE * value)
 {
-    TNODE	*p;
+    TNODE *p;
 
     value->type = CONST_VT_UNDETERMINED;
 
     p = tFindDef(n);
-    if (p == NULL) return;
+    if (p == NULL)
+	return;
 
     if (p->genus == GEN_EXPR && p->species == EXPR_BINOP &&
-	CHILD1(p)->species == BINOP_ASGN)
-    {
+	CHILD1(p)->species == BINOP_ASGN) {
 	evalConstExpr(CHILD2(p), value);
 	return;
     }
@@ -455,12 +449,14 @@ CONST_VALUE	*value;
     if (p->genus == GEN_INDATA_DCL) {
 	for (p = n; p; p = PARENT(p)) {
 	    if (p->genus == GEN_DATA_SPEC) {
-		if (p->species != DATA_SPEC_INIT) return;
+		if (p->species != DATA_SPEC_INIT)
+		    return;
 		p = CHILD1(p);
 		if (p->genus != GEN_INITIALIZER)
 		    internal_error(p->srcpos,
 				   "tFindVDef: can't find INITIALIZER");
-		if (p->species != INITIALIZER_EXPR) return;
+		if (p->species != INITIALIZER_EXPR)
+		    return;
 		evalConstExpr(CHILD0(p), value);
 		return;
 	    }
@@ -479,58 +475,64 @@ CONST_VALUE	*value;
 *	returns "c>d").
 */
 TNODE *
-tFindPred(n)
-TNODE	*n;
+tFindPred(
+	     TNODE * n)
 {
-    TNODE	*p;
-    TNODE	*prev;
-    int		species;
+    TNODE *p;
+    TNODE *prev;
+    int species;
 
     /*
-    * EXPR handling.
-    */
+     * EXPR handling.
+     */
     if (n->genus == GEN_EXPR) {
 	p = n;
 	while (1) {
 	    species = p->species;
 	    if (p->genus == GEN_HOOK)
-	    	p = CHILD0(p);
+		p = CHILD0(p);
 	    else if (p->genus != GEN_EXPR)
-	    	internal_error(p->srcpos, "tFindPred1: expected GEN_EXPR; %s\n",
+		internal_error(p->srcpos,
+			       "tFindPred1: expected GEN_EXPR; %s\n",
 			       genstr(p->genus));
 	    else if (species == EXPR_INHERIT)
-	    	p = CHILD0(p);
+		p = CHILD0(p);
 	    else if (species == EXPR_INCOP)
-	    	p = CHILD0(p);
+		p = CHILD0(p);
 	    else if (species == EXPR_COMMA)
-	    	p = CHILD1(p);
+		p = CHILD1(p);
 	    else if (species == EXPR_BINOP) {
 		species = CHILD1(p)->species;
-		if (species == BINOP_ASGN) p = CHILD2(p);
-		else if (species == BINOP_ANDAND) p = CHILD2(p);
-		else if (species == BINOP_OROR) p = CHILD2(p);
-		else return p;
-	     }
-	    else return p;
-	} /* while */
+		if (species == BINOP_ASGN)
+		    p = CHILD2(p);
+		else if (species == BINOP_ANDAND)
+		    p = CHILD2(p);
+		else if (species == BINOP_OROR)
+		    p = CHILD2(p);
+		else
+		    return p;
+	    } else
+		return p;
+	}			/* while */
     }
 
     /*
-    * NAME handling.
-    */
+     * NAME handling.
+     */
     prev = n;
     for (p = n; p; prev = p, p = PARENT(p)) {
-	switch (p->genus)
-	{
-        case GEN_HOOK:
+	switch (p->genus) {
+	case GEN_HOOK:
 	    continue;
 	case GEN_EXPR:
 	    species = p->species;
 	    if (species == EXPR_QCOLON) {
-	        if (CHILD0(p) == prev) break;
+		if (CHILD0(p) == prev)
+		    break;
 	    } else if (species == EXPR_BINOP) {
 		species = CHILD1(p)->species;
-		if (species == BINOP_ANDAND || species == BINOP_OROR) break;
+		if (species == BINOP_ANDAND || species == BINOP_OROR)
+		    break;
 	    }
 	    continue;
 	case GEN_STMT:
@@ -540,28 +542,31 @@ TNODE	*n;
 	}
 	p = prev;
 	/*
-	* Found predicate parse node.  Go back down over irrelevant stuff.
-	*/
+	 * Found predicate parse node.  Go back down over irrelevant stuff.
+	 */
 	while (1) {
 	    species = p->species;
 	    if (p->genus == GEN_HOOK)
-	    	p = CHILD0(p);
+		p = CHILD0(p);
 	    else if (p->genus != GEN_EXPR)
-	    	internal_error(p->srcpos, "tFindPred2: expected GEN_EXPR; %s\n",
+		internal_error(p->srcpos,
+			       "tFindPred2: expected GEN_EXPR; %s\n",
 			       genstr(p->genus));
 	    else if (species == EXPR_INHERIT)
-	    	p = CHILD0(p);
+		p = CHILD0(p);
 	    else if (species == EXPR_INCOP)
-	    	p = CHILD0(p);
+		p = CHILD0(p);
 	    else if (species == EXPR_COMMA)
-	    	p = CHILD1(p);
+		p = CHILD1(p);
 	    else if (species == EXPR_BINOP &&
-		     CHILD1(p)->species == BINOP_ASGN) p = CHILD2(p);
-	    else return p;
-	} /* while */
-    } /* for */
+		     CHILD1(p)->species == BINOP_ASGN)
+		p = CHILD2(p);
+	    else
+		return p;
+	}			/* while */
+    }				/* for */
     internal_error(n->srcpos, "tFindPred: can't find Pred\n");
-    /*NOTREACHED*/
+    /*NOTREACHED */
 }
 
 /*
@@ -569,10 +574,10 @@ TNODE	*n;
 *	a pointer to the switch expression node.  If not found, return NULL;
 */
 TNODE *
-tFindSwitch(n)
-TNODE	*n;
+tFindSwitch(
+	       TNODE * n)
 {
-    TNODE	*p;
+    TNODE *p;
 
     for (p = n; p; p = PARENT(p)) {
 	if (p->genus == GEN_STMT && p->species == STMT_SWITCH)

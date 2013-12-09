@@ -28,10 +28,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "ramfile.h"
 #include "man.h"
 
-static char const tmerror_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/tmerror.c,v 3.4 1996/11/13 01:31:01 tom Exp $";
+static char const tmerror_c[] = "$Id: tmerror.c,v 3.6 2013/12/09 00:30:56 tom Exp $";
 /*
-* $Log: tmerror.c,v $
+* @Log: tmerror.c,v @
 * Revision 3.4  1996/11/13 01:31:01  tom
 * include <config.h> to declare 'const'
 *
@@ -60,24 +59,22 @@ static char const tmerror_c[] =
 */
 
 void
-memoryError(pMessage)
-char *pMessage;
+memoryError(const char *pMessage)
 {
-    fprintf(stderr,"out of memory : %s\n",pMessage);
+    fprintf(stderr, "out of memory : %s\n", pMessage);
     exit(1);
 }
 
 void
-traceError(tracefile, lineNo, testName)
-char	*tracefile;
-int	lineNo;
-char	*testName;
+traceError(const char *tracefile,
+	   int lineNo,
+	   const char *testName)
 {
     if (testName == NULL) {
-	fprintf(stderr,"%s: corrupted, line %d. Cannot continue.\n",
+	fprintf(stderr, "%s: corrupted, line %d. Cannot continue.\n",
 		tracefile, lineNo);
     } else {
-	fprintf(stderr,"%s: corrupted, line %d, test case %s.\n",
+	fprintf(stderr, "%s: corrupted, line %d, test case %s.\n",
 		tracefile, lineNo, testName);
-    }	
+    }
 }

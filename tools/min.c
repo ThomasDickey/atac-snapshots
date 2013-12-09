@@ -21,13 +21,12 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char min_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/min.c,v 3.13 1998/08/23 19:44:46 tom Exp $";
+static const char min_c[] = "$Id: min.c,v 3.14 2013/12/08 21:44:59 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-* $Log: min.c,v $
+* @Log: min.c,v @
 * Revision 3.13  1998/08/23 19:44:46  tom
 * fix most gcc warnings (except some cost stuff that will take study)
 *
@@ -95,82 +94,42 @@ static const char bellcoreCopyRight[] =
 *	the output list may not be minimal.
 */
 
-
-#define ALLOC_SIZE 512			/* number of longs per allocation */
+#define ALLOC_SIZE 512		/* number of longs per allocation */
 
 typedef struct setVector {
-	char		*sv_name;
-	long		sv_cost;
-	int		sv_contentsSize;
-	unsigned long	sv_contents[1];
+    char *sv_name;
+    long sv_cost;
+    int sv_contentsSize;
+    unsigned long sv_contents[1];
 } setVector;
 
 typedef struct setList {
-	setVector	**sl_sets;
-	size_t		sl_alloc;
-	size_t		sl_count;
-	long		sl_cost;
+    setVector **sl_sets;
+    size_t sl_alloc;
+    size_t sl_count;
+    long sl_cost;
 } setList;
 
 /*
 * Globals.
 */
-static char		*g_nodeId;
-static int		g_maxLevel;
-static unsigned long	g_visited;
-static unsigned long	g_recursionLimit;
-static unsigned long	g_printFreq;
-static int		g_allMin = 0;
-static boolean		g_greedyFlag = FALSE;
-static boolean		g_gBNFlag = FALSE;
-static boolean		g_quiet = FALSE;
+static char *g_nodeId;
+static int g_maxLevel;
+static unsigned long g_visited;
+static unsigned long g_recursionLimit;
+static unsigned long g_printFreq;
+static int g_allMin = 0;
+static boolean g_greedyFlag = FALSE;
+static boolean g_gBNFlag = FALSE;
+static boolean g_quiet = FALSE;
 
-#define VOIDPTR void*	/* FIXME */
-
-/* forward declarations */
-static VOIDPTR ckMalloc P_((size_t n));
-static VOIDPTR ckRealloc P_((VOIDPTR q, size_t n));
-static float sl_normalizeCost P_((setList *list));
-static int sl_1stGBN P_((setList *list, setVector *selection));
-static int sl_coveredByOthers P_((setVector *set, setList *list, setVector *selection));
-static int sl_firstGreedy P_((setList *list, setVector *selection));
-static int sl_mustKeep P_((setList *list, setVector *selection, long costLimit, setList *keep));
-static int sv_card P_((setVector *set, setVector *selection));
-static int sv_empty P_((setVector *set, setVector *selection));
-static int sv_subset P_((setVector *setA, setVector *setB, setVector *selection));
-static struct setList *sl_Rminimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
-static struct setList *sl_copy P_((setList *list));
-static struct setList *sl_cost0 P_((setList *list));
-static struct setList *sl_create P_((size_t initAlloc));
-static struct setList *sl_get P_((FILE *f, int *pSetSize));
-static struct setList *sl_minimize P_((setList *listArg, setVector *selectArg, long costLimit, long costSoFar));
-static struct setList *sl_reduce P_((setList *list, setVector *selection, long costLimit));
-static struct setVector *sl_union P_((setList *list, char *name));
-static struct setVector *sv_copy P_((setVector *set));
-static struct setVector *sv_get P_((FILE *f, int *pSetSize));
-static void sl_append P_((setList *list, setVector *set));
-static void sl_combine P_((setList *listA, setList *listB));
-static void sl_compress P_((setList *list, setVector *selection));
-static void sl_cumPrint P_((setList *list, int setSize, double normFactor, boolean header));
-static void sl_dontNeed P_((setList *list, setVector *selection));
-static void sl_dump P_((setList *list));
-static void sl_free P_((setList *list));
-static void sl_freeAll P_((setList *list));
-static void sl_gBN P_((setList *listArg, setVector *selectArg, setList *keep));
-static void sl_greedy P_((setList *listArg, setVector *selectArg, setList *keep));
-static void sl_print P_((setList *list));
-static void sl_realloc P_((setList *list, size_t newAlloc));
-static void sv_compress P_((setVector *set, setVector *selection));
-static void sv_dump P_((setVector *set));
-static void sv_free P_((setVector *set));
-static void sv_subtract P_((setVector *setA, setVector *setB));
-static void usage P_((char *cmd));
+#define VOIDPTR void*		/* FIXME */
 
 static void
-usage(cmd)
-char	*cmd;
+usage(char *cmd)
 {
-    fprintf(stderr, "Usage: %s [-aCgGhnqrs] [-l limit] [-c cost] [-p pfreq] [-R restart] [sets]\n", cmd);
+    fprintf(stderr,
+	    "Usage: %s [-aCgGhnqrs] [-l limit] [-c cost] [-p pfreq] [-R restart] [sets]\n", cmd);
     fprintf(stderr, "\t -a print locations of all minimums.\n");
     fprintf(stderr, "\t -c Solution must cost less than this.\n");
     fprintf(stderr, "\t -C Compress for efficiency. (output order random)\n");
@@ -179,7 +138,8 @@ char	*cmd;
     fprintf(stderr, "\t -h Suppress header (with -s).\n");
     fprintf(stderr, "\t -n for names only.\n");
     fprintf(stderr, "\t -l sets recursion limit.\n");
-    fprintf(stderr, "\t -p log2 of number of nodes visited between prints.\n");
+    fprintf(stderr,
+	    "\t -p log2 of number of nodes visited between prints.\n");
     fprintf(stderr, "\t -q quiet.  Don't print stats.\n");
     fprintf(stderr, "\t -r Try keep branch before discard branch.\n");
     fprintf(stderr, "\t -R restart from restart vector.\n");
@@ -187,12 +147,11 @@ char	*cmd;
 }
 
 static VOIDPTR
-ckMalloc(n)
-size_t	n;
+ckMalloc(size_t n)
 {
     register VOIDPTR p;
 
-    p = (VOIDPTR)malloc(n);
+    p = (VOIDPTR) malloc(n);
     if (p == NULL) {
 	fprintf(stderr, "can't malloc\n");
 	exit(1);
@@ -201,10 +160,10 @@ size_t	n;
     return p;
 }
 
-static VOIDPTR 
-ckRealloc(q, n)
-VOIDPTR q;
-size_t	n;
+static VOIDPTR
+ckRealloc(
+	     VOIDPTR q,
+	     size_t n)
 {
     register VOIDPTR p;
 
@@ -215,7 +174,7 @@ size_t	n;
 	    exit(1);
 	}
     } else {
-	p = (VOIDPTR)realloc(q, n);
+	p = (VOIDPTR) realloc(q, n);
 	if (p == NULL) {
 	    fprintf(stderr, "can't realloc\n");
 	    exit(1);
@@ -229,186 +188,185 @@ size_t	n;
 * sv_get: Read in a set.
 */
 static setVector *
-sv_get(f, pSetSize)
-FILE	*f;
-int	*pSetSize;
+sv_get(FILE *f,
+       int *pSetSize)
 {
-	static unsigned long	*contents = NULL;
-	static int		contentsSize = 0;
-	int		c;
-	int		i;
-	int		index;
-	unsigned long	guide;
-	unsigned long	vector;
-	setVector	*set;
-	char		name[200];
-	int		nameLen;
-	long		cost;
-	int		setSize;
+    static unsigned long *contents = NULL;
+    static int contentsSize = 0;
+    int c;
+    int i;
+    int indx2;
+    unsigned long guide;
+    unsigned long vector;
+    setVector *set;
+    char name[200];
+    int nameLen;
+    long cost;
+    int setSize;
 
-	/*
-	 * Read set name.
-	 */
-	nameLen = 0;
-	while ((c=getc(f)) != ':') {
-		if (c == EOF) {
-			if (nameLen == 0) {
-			    free(contents);
-			    contentsSize = 0;
-			    return NULL;
-			}
-			fprintf(stderr, "missing colon after name\n");
-			exit(1);
-		}
-		if (c == '\n') {
-			fprintf(stderr, "missing colon after name\n");
-			exit(1);
-		}
-		name[nameLen++] = c;
-		if (nameLen == sizeof name) --nameLen;	/* Too long, truncate.*/
+    /*
+     * Read set name.
+     */
+    nameLen = 0;
+    while ((c = getc(f)) != ':') {
+	if (c == EOF) {
+	    if (nameLen == 0) {
+		free(contents);
+		contentsSize = 0;
+		return NULL;
+	    }
+	    fprintf(stderr, "missing colon after name\n");
+	    exit(1);
 	}
-	name[nameLen++] = '\0';
+	if (c == '\n') {
+	    fprintf(stderr, "missing colon after name\n");
+	    exit(1);
+	}
+	name[nameLen++] = (char) c;
+	if (nameLen == sizeof name)
+	    --nameLen;		/* Too long, truncate. */
+    }
+    name[nameLen++] = '\0';
 
-	/*
-	 * Read set cost.
-	 */
-	cost = 0;
-	while ((c=getc(f)) != ':') {
-		if (c == EOF || c == '\n') {
-			fprintf(stderr, "missing colon after cost\n");
-			exit(1);
-		}
-		cost = cost * 10 + c - '0';
+    /*
+     * Read set cost.
+     */
+    cost = 0;
+    while ((c = getc(f)) != ':') {
+	if (c == EOF || c == '\n') {
+	    fprintf(stderr, "missing colon after cost\n");
+	    exit(1);
 	}
-	
-	/*
-	 * Read set vector.  Vector collects bits until full.  Then vector is
-	 * copied into contents[] and set back to 0.  Guide indicates the next
-	 * bit position in vector to get set. Vector is full when guide
-	 * becomes 0 (the 1 gets shifted off the end).  (This should work
-	 * for any size long.)
-	 */
-	for (i = 0; i < contentsSize; ++i)
+	cost = cost * 10 + c - '0';
+    }
+
+    /*
+     * Read set vector.  Vector collects bits until full.  Then vector is
+     * copied into contents[] and set back to 0.  Guide indicates the next
+     * bit position in vector to get set. Vector is full when guide
+     * becomes 0 (the 1 gets shifted off the end).  (This should work
+     * for any size long.)
+     */
+    for (i = 0; i < contentsSize; ++i)
+	contents[i] = 0;
+    setSize = 0;
+    indx2 = 0;
+    guide = 1;
+    vector = 0;
+    while ((c = getc(f)) != '\n') {
+	++setSize;
+	switch (c) {
+	case ' ':
+	    break;
+	case 'x':
+	    vector |= guide;
+	    break;
+	case EOF:
+	    fprintf(stderr, "unexpected end of file\n");
+	    exit(1);
+	default:
+	    fprintf(stderr, "bad character: %c\n", c);
+	    exit(1);
+	}
+	guide <<= 1;
+	if (guide == 0) {
+	    /*
+	     * Alloc more space if necessary.
+	     */
+	    while (contentsSize <= indx2) {
+		contentsSize += ALLOC_SIZE;
+		contents = (unsigned long *)
+		    ckRealloc(contents, contentsSize * sizeof *contents);
+		for (i = contentsSize - ALLOC_SIZE; i < contentsSize; ++i)
+		    contents[i] = 0;
+	    }
+	    /*
+	     * Store vector in contents[].
+	     */
+	    contents[indx2++] = vector;
+	    guide = 1;
+	    vector = 0;
+	}
+    }
+    /*
+     * Alloc more space if necessary.
+     */
+    while (contentsSize <= indx2) {
+	contentsSize += ALLOC_SIZE;
+	contents = (unsigned long *)
+	    ckRealloc(contents, contentsSize * sizeof *contents);
+	for (i = contentsSize - ALLOC_SIZE; i < contentsSize; ++i)
 	    contents[i] = 0;
-	setSize = 0;
-	index = 0;
-	guide = 1;
-	vector = 0;
-	while ((c=getc(f)) != '\n') {
-	    ++setSize;
-	    switch (c)
-	    {
-	    case ' ':
-		break;
-	    case 'x':
-		vector |= guide;
-		break;
-	    case EOF:
-		fprintf(stderr, "unexpected end of file\n");
-		exit(1);
-	    default:
-		fprintf(stderr, "bad character: %c\n", c);
-		exit(1);
-	    }
-	    guide <<= 1;
-	    if (guide == 0) {
-		/*
-		 * Alloc more space if necessary.
-		 */
-		while (contentsSize <= index) {
-		    contentsSize += ALLOC_SIZE;
-		    contents = (unsigned long *)
-			ckRealloc(contents, contentsSize * sizeof *contents);
-		    for (i = contentsSize - ALLOC_SIZE; i < contentsSize; ++i)
-			contents[i] = 0;
-		}
-		/*
-		 * Store vector in contents[].
-		 */
-		contents[index++] = vector;
-		guide = 1;
-		vector = 0;
-	    }
-	}
-	/*
-	 * Alloc more space if necessary.
-	 */
-	while (contentsSize <= index) {
-	    contentsSize += ALLOC_SIZE;
-	    contents = (unsigned long *)
-		ckRealloc(contents, contentsSize * sizeof *contents);
-	    for (i = contentsSize - ALLOC_SIZE; i < contentsSize; ++i)
-		contents[i] = 0;
-	}
-	/*
-	 * Store vector in contents[].
-	 */
-	contents[index++] = vector;
-	while (index > 0 && contents[index - 1] == 0)
-	    --index;
-	
-	/*
-	 * Allocate set and copy contents into it.
-	 */
-	set = NULL;
-	set = (setVector *)ckMalloc((size_t)(&set->sv_contents[index]));
-	set->sv_name = (char *)ckMalloc(strlen(name) + 1);
-	strcpy(set->sv_name, name);
-	set->sv_cost = cost;
-	set->sv_contentsSize = index;
-	for (i = 0; i < index; ++i)
-		set->sv_contents[i] = contents[i];
+    }
+    /*
+     * Store vector in contents[].
+     */
+    contents[indx2++] = vector;
+    while (indx2 > 0 && contents[indx2 - 1] == 0)
+	--indx2;
 
-	if (pSetSize != NULL) *pSetSize = setSize;
+    /*
+     * Allocate set and copy contents into it.
+     */
+    set = NULL;
+    set = (setVector *) ckMalloc((size_t) (&set->sv_contents[indx2]));
+    set->sv_name = (char *) ckMalloc(strlen(name) + 1);
+    strcpy(set->sv_name, name);
+    set->sv_cost = cost;
+    set->sv_contentsSize = indx2;
+    for (i = 0; i < indx2; ++i)
+	set->sv_contents[i] = contents[i];
 
-	return set;
+    if (pSetSize != NULL)
+	*pSetSize = setSize;
+
+    return set;
 }
 
 static void
-sv_free(set)
-setVector *set;
+sv_free(setVector * set)
 {
-	free(set->sv_name);
-	free(set);
+    free(set->sv_name);
+    free(set);
 }
 
 static setVector *
-sv_copy(set)
-setVector *set;
+sv_copy(setVector * set)
 {
-	int		i;
-	setVector	*new;
+    int i;
+    setVector *new;
 
-	new = NULL;
-	new = (setVector *)ckMalloc((size_t)(&new->sv_contents[set->sv_contentsSize]));
+    new = NULL;
+    new = (setVector *) ckMalloc((size_t) (&new->sv_contents[set->sv_contentsSize]));
 
-	new->sv_name = (char *)ckMalloc(strlen(set->sv_name) + 1);
-	strcpy(new->sv_name, set->sv_name);
-	new->sv_cost = set->sv_cost;
-	new->sv_contentsSize = set->sv_contentsSize;
-	for (i = 0; i < new->sv_contentsSize; ++i)
-		new->sv_contents[i] = set->sv_contents[i];
+    new->sv_name = (char *) ckMalloc(strlen(set->sv_name) + 1);
+    strcpy(new->sv_name, set->sv_name);
+    new->sv_cost = set->sv_cost;
+    new->sv_contentsSize = set->sv_contentsSize;
+    for (i = 0; i < new->sv_contentsSize; ++i)
+	new->sv_contents[i] = set->sv_contents[i];
 
-	return new;
+    return new;
 }
 
 /*
 * sv_subtract: Remove members of setB from setA.
 */
 static void
-sv_subtract(setA, setB)
-setVector *setA;
-setVector *setB;
+sv_subtract(
+	       setVector * setA,
+	       setVector * setB)
 {
-	int	i;
-	int	size;
+    int i;
+    int size;
 
-	if (setA->sv_contentsSize < setB->sv_contentsSize)
-		size = setA->sv_contentsSize;
-	else size = setB->sv_contentsSize;
+    if (setA->sv_contentsSize < setB->sv_contentsSize)
+	size = setA->sv_contentsSize;
+    else
+	size = setB->sv_contentsSize;
 
-	for (i = 0; i < size; ++i)
-		setA->sv_contents[i] &= ~setB->sv_contents[i];
+    for (i = 0; i < size; ++i)
+	setA->sv_contents[i] &= ~setB->sv_contents[i];
 }
 
 /*
@@ -416,44 +374,44 @@ setVector *setB;
 * is equal to or a subset of the intersection of setA and "selection".
 */
 static boolean
-sv_subset(setA, setB, selection)
-setVector *setA;
-setVector *setB;
-setVector *selection;
+sv_subset(setVector * setA,
+	  setVector * setB,
+	  setVector * selection)
 {
-	unsigned long	a;
-	int		i;
-	int		size;
+    unsigned long a;
+    int i;
+    int size;
 
-	size = setB->sv_contentsSize;
+    size = setB->sv_contentsSize;
 
-	for (i = 0; i < size; ++i) {
-		if (i < selection->sv_contentsSize) {
-			a = ~selection->sv_contents[i];
-			if (i < setA->sv_contentsSize)
-			    a |= setA->sv_contents[i];
-		}
-		else a = 0;
-		if (setB->sv_contents[i] & ~a) return FALSE;
-	}
-	return TRUE;
+    for (i = 0; i < size; ++i) {
+	if (i < selection->sv_contentsSize) {
+	    a = ~selection->sv_contents[i];
+	    if (i < setA->sv_contentsSize)
+		a |= setA->sv_contents[i];
+	} else
+	    a = 0;
+	if (setB->sv_contents[i] & ~a)
+	    return FALSE;
+    }
+    return TRUE;
 }
 
-
 static void
-sv_dump(set)
-setVector *set;
+sv_dump(setVector * set)
 {
     int i;
-    unsigned long	guide;
-    unsigned long	vector;
+    unsigned long guide;
+    unsigned long vector;
 
-    fprintf(stdout, "%s:%ld:", set->sv_name, set->sv_cost); 
+    fprintf(stdout, "%s:%ld:", set->sv_name, set->sv_cost);
     for (i = 0; i < set->sv_contentsSize; ++i) {
 	vector = set->sv_contents[i];
 	for (guide = 1; guide != 0; guide <<= 1) {
-	    if (vector & 1) putc('x', stdout);
-	    else putc(' ', stdout);
+	    if (vector & 1)
+		putc('x', stdout);
+	    else
+		putc(' ', stdout);
 	    vector >>= 1;	/* (Sign extension doesn't matter here.) */
 	}
     }
@@ -464,21 +422,21 @@ setVector *set;
 * sv_compress: Squeeze out bit positions in set that are 0 in "selection".
 */
 static void
-sv_compress(set, selection)
-setVector *set;
-setVector *selection;
+sv_compress(setVector * set,
+	    setVector * selection)
 {
-    int			i;
-    int			nIndex;
-    unsigned long	guide;
-    unsigned long	nGuide;
-    unsigned long	vector;
+    int i;
+    int nIndex;
+    unsigned long guide;
+    unsigned long nGuide;
+    unsigned long vector;
 
     nIndex = 0;
     nGuide = 1;
 
     for (i = 0; i < selection->sv_contentsSize; ++i) {
-	if (i >= set->sv_contentsSize) break;
+	if (i >= set->sv_contentsSize)
+	    break;
 	vector = set->sv_contents[i];
 	set->sv_contents[i] = 0;
 	for (guide = 1; guide != 0; guide <<= 1) {
@@ -495,7 +453,8 @@ setVector *selection;
 	}
     }
 
-    if (nGuide != 1) ++nIndex;
+    if (nGuide != 1)
+	++nIndex;
 
     set->sv_contentsSize = nIndex;
 
@@ -512,37 +471,39 @@ setVector *selection;
 * sv_card: Return the number of bits set in both set and selection.
 */
 static int
-sv_card(set, selection)
-setVector *set;
-setVector *selection;
+sv_card(setVector * set,
+	setVector * selection)
 {
-    unsigned	i;
-    long	card;
-    unsigned	guide;
-    byte	*setContents;
-    byte	*selectContents;
-    byte	*end;
-    int		c;
-    static byte	cardCounter[LOBYTE(~0) + 1] = {0, 0};
+    unsigned i;
+    long card;
+    unsigned guide;
+    byte *setContents;
+    byte *selectContents;
+    byte *end;
+    int c;
+    static byte cardCounter[LOBYTE(~0) + 1] =
+    {0, 0};
 
     /*
-    * Initialize cardCounter[i] to number of bits in i.
-    */
+     * Initialize cardCounter[i] to number of bits in i.
+     */
     if (cardCounter[1] == 0) {
 	for (i = 0; i < sizeof cardCounter; ++i) {
 	    card = 0;
 	    for (guide = 1; guide <= i; guide <<= 1)
-		if (i & guide) ++card;
+		if (i & guide)
+		    ++card;
 	    cardCounter[i] = card;
 	}
     }
 
-    setContents = (byte *)set->sv_contents;
-    selectContents = (byte *)selection->sv_contents;
+    setContents = (byte *) set->sv_contents;
+    selectContents = (byte *) selection->sv_contents;
 
     if (selection->sv_contentsSize < set->sv_contentsSize)
-	end = (byte *)&selection->sv_contents[selection->sv_contentsSize];
-    else end = (byte *)&selection->sv_contents[set->sv_contentsSize];
+	end = (byte *) & selection->sv_contents[selection->sv_contentsSize];
+    else
+	end = (byte *) & selection->sv_contents[set->sv_contentsSize];
 
     card = 0;
 
@@ -555,36 +516,34 @@ setVector *selection;
 }
 
 static boolean
-sv_empty(set, selection)
-setVector *set;
-setVector *selection;
+sv_empty(setVector * set,
+	 setVector * selection)
 {
-	int		i;
+    int i;
 
-	for (i = 0; i < set->sv_contentsSize; ++i) {
-		if (i < selection->sv_contentsSize) {
-			if (set->sv_contents[i] & selection->sv_contents[i])
-				return FALSE;
-		}
-		else if (set->sv_contents[i])
-			return FALSE;
-	}
+    for (i = 0; i < set->sv_contentsSize; ++i) {
+	if (i < selection->sv_contentsSize) {
+	    if (set->sv_contents[i] & selection->sv_contents[i])
+		return FALSE;
+	} else if (set->sv_contents[i])
+	    return FALSE;
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 static setList *
-sl_create(initAlloc)
-size_t	initAlloc;
+sl_create(size_t initAlloc)
 {
-    setList	*list;
+    setList *list;
 
-    list = (setList *)ckMalloc(sizeof *list);
+    list = (setList *) ckMalloc(sizeof *list);
 
     if (initAlloc != 0) {
 	list->sl_sets = (setVector **)
 	    ckMalloc(initAlloc * sizeof *list->sl_sets);
-    } else list->sl_sets = NULL;
+    } else
+	list->sl_sets = NULL;
 
     list->sl_alloc = initAlloc;
     list->sl_count = 0;
@@ -594,17 +553,16 @@ size_t	initAlloc;
 }
 
 static void
-sl_realloc(list, newAlloc)
-setList *list;
-size_t	newAlloc;
+sl_realloc(setList * list,
+	   size_t newAlloc)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
+    register setVector **sets;
+    register setVector **setsEnd;
 
     /*
-    * If allocation is being reduced and sets must be removed, subtract
-    * their costs.
-    */
+     * If allocation is being reduced and sets must be removed, subtract
+     * their costs.
+     */
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets + newAlloc;
     while (sets < setsEnd) {
@@ -626,8 +584,7 @@ size_t	newAlloc;
 * sl_free: free a list.  Sets are not freed.
 */
 static void
-sl_free(list)
-setList *list;
+sl_free(setList * list)
 {
     if (list->sl_alloc != 0)
 	free(list->sl_sets);
@@ -638,11 +595,10 @@ setList *list;
 * sl_freeAll: free a list.  Sets are also freed.
 */
 static void
-sl_freeAll(list)
-setList *list;
+sl_freeAll(setList * list)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
+    register setVector **sets;
+    register setVector **setsEnd;
 
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
@@ -653,18 +609,16 @@ setList *list;
     sl_free(list);
 }
 
-
 /*
 * sl_copy: Allocate a copy of the list.  Sets are not copied.
 */
 static setList *
-sl_copy(list)
-setList *list;
+sl_copy(setList * list)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
-    register setVector	**newSets;
-    setList		*newList;
+    register setVector **sets;
+    register setVector **setsEnd;
+    register setVector **newSets;
+    setList *newList;
 
     newList = sl_create(list->sl_count);
 
@@ -685,13 +639,12 @@ setList *list;
 * sl_combine: Add entries from listB to listA. Free listB.
 */
 static void
-sl_combine(listA, listB)
-setList *listA;
-setList *listB;
+sl_combine(setList * listA,
+	   setList * listB)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
-    register setVector	**newSets;
+    register setVector **sets;
+    register setVector **setsEnd;
+    register setVector **newSets;
 
     if (listA->sl_count + listB->sl_count > listA->sl_alloc) {
 	sl_realloc(listA, listA->sl_count + listB->sl_count);
@@ -714,9 +667,8 @@ setList *listB;
 * sl_append: Add "set" to end of "list".
 */
 static void
-sl_append(list, set)
-setList *list;
-setVector *set;
+sl_append(setList * list,
+	  setVector * set)
 {
     if (list->sl_count + 1 > list->sl_alloc) {
 	sl_realloc(list, list->sl_count + 1);
@@ -731,12 +683,11 @@ setVector *set;
 * sl_compress: Remove from each set all elements that are not in "selection".
 */
 static void
-sl_compress(list, selection)
-setList *list;
-setVector *selection;
+sl_compress(setList * list,
+	    setVector * selection)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
+    register setVector **sets;
+    register setVector **setsEnd;
 
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
@@ -747,45 +698,44 @@ setVector *selection;
 }
 
 static setList *
-sl_get(f, pSetSize)
-FILE	*f;
-int	*pSetSize;
+sl_get(FILE *f,
+       int *pSetSize)
 {
-	setList		*list;
-	setVector	*set;
-	static size_t	allocSize = 8;
-	int		setSize;
-	int		maxSetSize = 0;
+    setList *list;
+    setVector *set;
+    static size_t allocSize = 8;
+    int setSize;
+    int maxSetSize = 0;
 
-	list = sl_create(allocSize);
+    list = sl_create(allocSize);
 
-	while ((set = sv_get(f, &setSize)) != 0) {
-	    if (setSize > maxSetSize)
-		maxSetSize = setSize;
-	    if (list->sl_count >= allocSize) {
-		allocSize += allocSize;		/* double it */
-		sl_realloc(list, allocSize);
-	    }
-	    list->sl_sets[list->sl_count] = set;
-	    ++list->sl_count;
-	    list->sl_cost += set->sv_cost;
+    while ((set = sv_get(f, &setSize)) != 0) {
+	if (setSize > maxSetSize)
+	    maxSetSize = setSize;
+	if (list->sl_count >= allocSize) {
+	    allocSize += allocSize;	/* double it */
+	    sl_realloc(list, allocSize);
 	}
+	list->sl_sets[list->sl_count] = set;
+	++list->sl_count;
+	list->sl_cost += set->sv_cost;
+    }
 
-	allocSize = list->sl_count;
-	sl_realloc(list, allocSize);	/* get exact fit */
-	if (pSetSize != NULL) *pSetSize = maxSetSize;
-	return list;
+    allocSize = list->sl_count;
+    sl_realloc(list, allocSize);	/* get exact fit */
+    if (pSetSize != NULL)
+	*pSetSize = maxSetSize;
+    return list;
 }
 
 static float
-sl_normalizeCost(list)
-setList		*list;
+sl_normalizeCost(setList * list)
 {
-    setVector	**sets;
-    setVector	**setsEnd;
-    long	maxCost;
-    int		costLimit;
-    float	normFactor;
+    setVector **sets;
+    setVector **setsEnd;
+    long maxCost;
+    int costLimit;
+    float normFactor;
 
     maxCost = 0;
 
@@ -799,16 +749,17 @@ setList		*list;
 
     costLimit = LOWORD(~0);	/* maximum half word */
 
-    if (maxCost <= costLimit) return 1.0;
+    if (maxCost <= costLimit)
+	return 1.0;
 
     fprintf(stderr, "Warning: normalizing costs\n");
-    normFactor = costLimit / (float)maxCost;
-    
+    normFactor = costLimit / (float) maxCost;
+
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
     while (sets < setsEnd) {
 	(*sets)->sv_cost *= normFactor;
-	 ++sets;
+	++sets;
     }
 
     return normFactor;
@@ -820,25 +771,24 @@ setList		*list;
 *	with respect to "selection", return -1.
 */
 static int
-sl_firstGreedy(list, selection)
-setList		*list;
-setVector	*selection;
+sl_firstGreedy(setList * list,
+	       setVector * selection)
 {
-    setVector		*set;
-    int			best;
-    int			card;
-    unsigned long	value;
-    unsigned long	minValue;
-    unsigned		i;
+    setVector *set;
+    int best;
+    int card;
+    unsigned long value;
+    unsigned long minValue;
+    unsigned i;
 
-    minValue = (unsigned long)(~0L);
+    minValue = (unsigned long) (~0L);
     best = -1;
 
     for (i = 0; i < list->sl_count; ++i) {
 	set = list->sl_sets[i];
 	card = sv_card(set, selection);
 	if (card != 0) {
-	    value = (set->sv_cost * (LOWORD(~0) + 1))/ card;
+	    value = (set->sv_cost * (LOWORD(~0) + 1)) / card;
 	    if (value < minValue) {
 		minValue = value;
 		best = i;
@@ -855,15 +805,14 @@ setVector	*selection;
 *	considering only elements that are present in "selectArg".
 */
 static void
-sl_greedy(listArg, selectArg, keep)
-setList		*listArg;
-setVector	*selectArg;
-setList		*keep;
+sl_greedy(setList * listArg,
+	  setVector * selectArg,
+	  setList * keep)
 {
-    setVector	*selection;
-    setVector	*bestSet;
-    setList	*list;
-    int		best;
+    setVector *selection;
+    setVector *bestSet;
+    setList *list;
+    int best;
 
     /*
      * Copy arguments so the originals are not modified.
@@ -895,54 +844,54 @@ setList		*keep;
 *	return -1.
 */
 static int
-sl_1stGBN(list, selection)
-setList		*list;
-setVector	*selection;
+sl_1stGBN(setList * list,
+	  setVector * selection)
 {
-    setVector		*set;
-    int			best;
-    int			card;
-    unsigned long	value;
-    unsigned long	maxValue;
-    unsigned		i;
-    int			j;
-    register int	k;
-    unsigned long	vector;
-    unsigned long	sVector;
-    register unsigned long	guide;
-    static int		*cols = NULL;
-    static int		colsSize = 0;
+    setVector *set;
+    int best;
+    int card;
+    unsigned long value;
+    unsigned long maxValue;
+    unsigned i;
+    int j;
+    register int k;
+    unsigned long vector;
+    unsigned long sVector;
+    register unsigned long guide;
+    static int *cols = NULL;
+    static int colsSize = 0;
 
     if (list == NULL) {
 	colsSize = 0;
 	free(cols);
 	cols = NULL;
-	return  -1;
+	return -1;
     }
-	
+
     card = sv_card(selection, selection);
 
     if (card > colsSize) {
 	colsSize = card;
-	cols = (int *)ckRealloc(cols, colsSize * sizeof *cols);
+	cols = (int *) ckRealloc(cols, colsSize * sizeof *cols);
     }
 
     /*
      * Set cols[k] to number of sets containing the k'th element in "selection".
      */
     for (k = 0; k < card; ++k)	/* ?unknown? should be card, not colSize */
-	cols[k] = 0;				/* Init to 0. */
+	cols[k] = 0;		/* Init to 0. */
     for (i = 0; i < list->sl_count; ++i) {
 	set = list->sl_sets[i];
 	k = 0;
 	for (j = 0; j < selection->sv_contentsSize; ++j) {
-	    if (j >= set->sv_contentsSize) break;
+	    if (j >= set->sv_contentsSize)
+		break;
 	    vector = set->sv_contents[j];
 	    sVector = selection->sv_contents[j];
 	    for (guide = 1; guide != 0; guide <<= 1) {
 		if (sVector & guide) {
 		    if (vector & guide)
-			++cols[k];			/* increment */
+			++cols[k];	/* increment */
 		    ++k;
 		}
 	    }
@@ -957,7 +906,8 @@ setVector	*selection;
 	k = 0;
 	value = 0;
 	for (j = 0; j < selection->sv_contentsSize; ++j) {
-	    if (j >= set->sv_contentsSize) break;
+	    if (j >= set->sv_contentsSize)
+		break;
 	    vector = set->sv_contents[j];
 	    sVector = selection->sv_contents[j];
 	    for (guide = 1; guide != 0; guide <<= 1) {
@@ -984,15 +934,14 @@ setVector	*selection;
 *	considering only elements that are present in "selectArg".
 */
 static void
-sl_gBN(listArg, selectArg, keep)
-setList		*listArg;
-setVector	*selectArg;
-setList		*keep;
+sl_gBN(setList * listArg,
+       setVector * selectArg,
+       setList * keep)
 {
-    setVector	*selection;
-    setVector	*bestSet;
-    setList	*list;
-    int		best;
+    setVector *selection;
+    setVector *bestSet;
+    setList *list;
+    int best;
 
     /*
      * Copy arguments so the originals are not modified.
@@ -1021,15 +970,14 @@ setList		*keep;
 *	which are in "selection".
 */
 static boolean
-sl_coveredByOthers(set, list, selection)
-setVector *set;
-setList *list;
-setVector *selection;
+sl_coveredByOthers(setVector * set,
+		   setList * list,
+		   setVector * selection)
 {
-    register setVector	**sets;
-    setVector		**setsEnd;
-    register int	i;
-    register unsigned long	bunch;
+    register setVector **sets;
+    setVector **setsEnd;
+    register int i;
+    register unsigned long bunch;
 
     /*
      * For each contents index, take the sv_contents[i] of "set" and remove
@@ -1038,7 +986,8 @@ setVector *selection;
      * Otherwise it is covered.
      */
     for (i = 0; i < set->sv_contentsSize; ++i) {
-	if (i >= selection->sv_contentsSize) break;
+	if (i >= selection->sv_contentsSize)
+	    break;
 	bunch = set->sv_contents[i];
 	bunch &= selection->sv_contents[i];
 
@@ -1053,7 +1002,8 @@ setVector *selection;
 	    }
 	    bunch &= ~(*sets)->sv_contents[i];
 	}
-	if (bunch) return FALSE;
+	if (bunch)
+	    return FALSE;
     }
     return TRUE;
 }
@@ -1065,19 +1015,20 @@ setVector *selection;
 *	"selection" by removing any element that is in a set added to the "keep"
 *	list.  If cost reaches "costLimit" return FAIL.  Otherwise SUCCEED.
 */
-static int				/* FAIL or SUCCEED */
-sl_mustKeep(list, selection, costLimit, keep)
-setList		*list;
-setVector	*selection;
-long		costLimit;
-setList		*keep;
+static int			/* FAIL or SUCCEED */
+sl_mustKeep(setList * list,
+	    setVector * selection,
+	    long costLimit,
+	    setList * keep)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
-    setVector		**newSets;
-    static setVector	empty = { "", 0, 0, {0} };
-    int			keepCount = 0;
-    long		keepCost = 0;
+    register setVector **sets;
+    register setVector **setsEnd;
+    setVector **newSets;
+    static setVector empty =
+    {"", 0, 0,
+     {0}};
+    int keepCount = 0;
+    long keepCost = 0;
 
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
@@ -1090,8 +1041,8 @@ setList		*keep;
 	    }
 	    ++keepCount;
 	    keepCost += (*sets)->sv_cost;	/* Adjust list->sl_cost later */
-	    sv_subtract(selection, *sets);		/* ... to avoid messing up */
-	    *sets = &empty;			/* ... sl_coveredByOthers. */
+	    sv_subtract(selection, *sets);	/* ... to avoid messing up */
+	    *sets = &empty;	/* ... sl_coveredByOthers. */
 	} else {
 	    if (newSets != sets) {
 		*newSets = *sets;
@@ -1113,15 +1064,16 @@ setList		*keep;
 *	with lower cost, considering only elements that are in "selection".
 */
 static void
-sl_dontNeed(list, selection)
-setList *list;
-setVector *selection;
+sl_dontNeed(setList * list,
+	    setVector * selection)
 {
-    setVector		**sets;
-    setVector		**newSets;
-    register setVector	**sets2;
-    register setVector	**setsEnd;
-    static setVector	empty = { "", 0, 0, {0} };
+    setVector **sets;
+    setVector **newSets;
+    register setVector **sets2;
+    register setVector **setsEnd;
+    static setVector empty =
+    {"", 0, 0,
+     {0}};
 
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
@@ -1129,8 +1081,10 @@ setVector *selection;
     while (sets < setsEnd) {
 	sets2 = list->sl_sets;
 	for (; sets2 < setsEnd; ++sets2) {
-	    if (sets == sets2) continue;
-	    if ((*sets)->sv_cost < (*sets2)->sv_cost) continue;
+	    if (sets == sets2)
+		continue;
+	    if ((*sets)->sv_cost < (*sets2)->sv_cost)
+		continue;
 	    if (sv_subset(*sets2, *sets, selection))
 		break;
 	}
@@ -1166,17 +1120,16 @@ setVector *selection;
 *	covering list.
 */
 static setList *
-sl_reduce(list, selection, costLimit)
-setList		*list;
-setVector	*selection;
-long		costLimit;
+sl_reduce(setList * list,
+	  setVector * selection,
+	  long costLimit)
 {
-    setList	*keep;
-    unsigned	prevCount;
-    boolean	doMustKeep;
-    boolean	doDontNeed;
-    int		status;
-    
+    setList *keep;
+    unsigned prevCount;
+    boolean doMustKeep;
+    boolean doDontNeed;
+    int status;
+
     /*
      * Create "keep" list.
      */
@@ -1228,11 +1181,10 @@ long		costLimit;
 }
 
 static void
-sl_print(list)
-setList *list;
+sl_print(setList * list)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
+    register setVector **sets;
+    register setVector **setsEnd;
 
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
@@ -1242,20 +1194,18 @@ setList *list;
     }
 }
 
-
 /*
 * sl_union:  Return a set that is the union of all the sets on list.
 */
 static setVector *
-sl_union(list, name)
-setList *list;
-char	*name;
+sl_union(setList * list,
+	 char *name)
 {
-    int		contentsSize;
-    setVector	*uSet;
-    int		i;
-    register setVector	**sets;
-    register setVector	**setsEnd;
+    int contentsSize;
+    setVector *uSet;
+    int i;
+    register setVector **sets;
+    register setVector **setsEnd;
 
     /*
      * Calculate the size of the union.
@@ -1273,8 +1223,8 @@ char	*name;
      * Allocate an empty set of the correct size.
      */
     uSet = NULL;
-    uSet = (setVector *)ckMalloc((size_t)(&uSet->sv_contents[contentsSize]));
-    uSet->sv_name = (char *)ckMalloc(strlen(name) + 1);
+    uSet = (setVector *) ckMalloc((size_t) (&uSet->sv_contents[contentsSize]));
+    uSet->sv_name = (char *) ckMalloc(strlen(name) + 1);
     strcpy(uSet->sv_name, name);
     uSet->sv_contentsSize = contentsSize;
     for (i = 0; i < uSet->sv_contentsSize; ++i)
@@ -1295,19 +1245,18 @@ char	*name;
 }
 
 static void
-sl_cumPrint(list, setSize, normFactor, header)
-setList	*list;
-int	setSize;
-double	normFactor;
-boolean	header;
+sl_cumPrint(setList * list,
+	    int setSize,
+	    double normFactor,
+	    boolean header)
 {
-    long		cov;
-    long		cost;
-    register setVector	**sets;
-    register setVector	**setsEnd;
-    setVector		*listUnion;
-    int			unionCard;
-    int			z;
+    long cov;
+    long cost;
+    register setVector **sets;
+    register setVector **setsEnd;
+    setVector *listUnion;
+    int unionCard;
+    int z;
 
     if (header) {
 	printf("coverage\tcost\ttest (cumulative)\n");
@@ -1326,25 +1275,26 @@ boolean	header;
 	cov = unionCard - sv_card(listUnion, listUnion);
 	cost += (*sets)->sv_cost / normFactor;
 	if (setSize == 0) {
-	    z = 100;				/* 0 of 0 is 100% */
+	    z = 100;		/* 0 of 0 is 100% */
 	} else {
-	    z = (cov*100 + setSize/2) / setSize;/* % of setSize rounded. */
+	    z = (cov * 100 + setSize / 2) / setSize;	/* % of setSize rounded. */
 	    if (z == 100 && cov != setSize)	/* 99% < x < 100% round down. */
 		z = 99;
 	}
-	if (z < 100) printf("%2d(%ld/%d)", z, cov, setSize);
-	else printf("100(%d)", setSize);
+	if (z < 100)
+	    printf("%2d(%ld/%d)", z, cov, setSize);
+	else
+	    printf("100(%d)", setSize);
 	printf("\t%ld\t%s\n", cost, (*sets)->sv_name);
 	++sets;
     }
 }
 
 static void
-sl_dump(list)
-setList *list;
+sl_dump(setList * list)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
+    register setVector **sets;
+    register setVector **setsEnd;
 
     setsEnd = list->sl_sets + list->sl_count;
     sets = list->sl_sets;
@@ -1353,43 +1303,6 @@ setList *list;
 	++sets;
     }
 }
-
-#if 0
-/*
-* sl_select:  Return a set 
-*/
-static setVector *
-sl_select(list, name)
-setList *list;
-char	*name;
-{
-    int		contentsSize;
-    setVector	*set;
-    int		i;
-    register setVector	**sets;
-    register setVector	**setsEnd;
-
-    contentsSize = 0;
-
-    setsEnd = list->sl_sets + list->sl_count;
-    sets = list->sl_sets;
-    while (sets < setsEnd) {
-	if ((*sets)->sv_contentsSize > contentsSize)
-	    contentsSize = (*sets)->sv_contentsSize;
-	++sets;
-    }
-
-    set = NULL;
-    set = (setVector *)ckMalloc(&set->sv_contents[contentsSize]);
-    set->sv_name = (char *)ckMalloc(strlen(name) + 1);
-    strcpy(set->sv_name, name);
-    set->sv_contentsSize = contentsSize;
-    for (i = 0; i < set->sv_contentsSize; ++i)
-	set->sv_contents[i] = ~0;
-
-    return set;
-}
-#endif /* 0 */
 
 /*
 * sl_minimize: Return a sub-list of "listArg" containing a minimal
@@ -1401,20 +1314,19 @@ char	*name;
 *	(This will result in a covering list that is not minimal.)
 */
 static setList *
-sl_minimize(listArg, selectArg, costLimit, costSoFar)
-setList		*listArg;
-setVector	*selectArg;
-long		costLimit;
-long		costSoFar;
+sl_minimize(setList * listArg,
+	    setVector * selectArg,
+	    long costLimit,
+	    long costSoFar)
 {
-    setVector	*selection;
-    setList	*list;
-    setList	*keep;
-    setList	*prevBest;
-    setList	*best;
-    setVector	*dropSet;
-    int		dropIndex;
-    static int	level = 0;
+    setVector *selection;
+    setList *list;
+    setList *keep;
+    setList *prevBest;
+    setList *best;
+    setVector *dropSet;
+    int dropIndex;
+    static int level = 0;
 
     ++level;
     if (level > g_maxLevel) {
@@ -1460,9 +1372,10 @@ long		costSoFar;
      * Done?
      */
     if (list->sl_count == 0) {
-	if (!g_quiet) fprintf(stderr,
-			      "solution of cost %ld at visit %ld level %d\n",
-			      costSoFar + keep->sl_cost, g_visited, level);
+	if (!g_quiet)
+	    fprintf(stderr,
+		    "solution of cost %ld at visit %ld level %d\n",
+		    costSoFar + keep->sl_cost, g_visited, level);
 	sv_free(selection);
 	sl_free(list);
 	--level;
@@ -1471,9 +1384,9 @@ long		costSoFar;
 
     /*
      * At this point:
-     * 	1. "list" must contain at least three sets.
-     *	2. At least one of the sets is needed to cover "selection".
-     *	3. "list" minus any one set will still cover "selection".
+     *  1. "list" must contain at least three sets.
+     *  2. At least one of the sets is needed to cover "selection".
+     *  3. "list" minus any one set will still cover "selection".
      * (3 is true because otherwise mustKeep would have put on the keep
      * list the set that is needed to cover.  2 is true because otherwise
      * dontNeed would have removed all the sets.  1 is true because
@@ -1488,14 +1401,15 @@ long		costSoFar;
 	dropIndex = sl_firstGreedy(list, selection);
     else if (g_gBNFlag)
 	dropIndex = sl_1stGBN(list, selection);
-    else dropIndex = 0;
+    else
+	dropIndex = 0;
     dropSet = list->sl_sets[dropIndex];
     --list->sl_count;
     list->sl_sets[dropIndex] = list->sl_sets[list->sl_count];
     list->sl_cost -= dropSet->sv_cost;
-	
+
     if (g_nodeId[level - 1] == '1') {
-	prevBest = NULL;		/* Already taken this route. */
+	prevBest = NULL;	/* Already taken this route. */
     } else {
 	/*
 	 * Find minimum after discarding one set.
@@ -1563,21 +1477,20 @@ long		costSoFar;
 *	(This will result in a covering list that is not minimal.)
 */
 static setList *
-sl_Rminimize(listArg, selectArg, costLimit, costSoFar)
-setList		*listArg;
-setVector	*selectArg;
-long		costLimit;
-long		costSoFar;
+sl_Rminimize(setList * listArg,
+	     setVector * selectArg,
+	     long costLimit,
+	     long costSoFar)
 {
-    setVector	*selection;
-    setList	*list;
-    setList	*keep;
-    setList	*prevBest;
-    setList	*best;
-    setVector	*dropSet;
-    setVector	*dropSelect = NULL;
-    int		dropIndex;
-    static int	level = 0;
+    setVector *selection;
+    setList *list;
+    setList *keep;
+    setList *prevBest;
+    setList *best;
+    setVector *dropSet;
+    setVector *dropSelect = NULL;
+    int dropIndex;
+    static int level = 0;
 
     ++level;
     if (level > g_maxLevel) {
@@ -1594,9 +1507,9 @@ long		costSoFar;
 	}
     }
     ++g_visited;
-   if ((g_visited & g_printFreq) == 0) {
-       fprintf(stderr, "At node <%s> visit %ld\n", g_nodeId, g_visited);
-   }
+    if ((g_visited & g_printFreq) == 0) {
+	fprintf(stderr, "At node <%s> visit %ld\n", g_nodeId, g_visited);
+    }
 
     /*
      * Copy arguments so the originals are not modified.
@@ -1623,9 +1536,10 @@ long		costSoFar;
      * Done?
      */
     if (list->sl_count == 0) {
-	if (!g_quiet) fprintf(stderr,
-			      "solution of cost %ld at visit %ld level %d\n",
-			      costSoFar + keep->sl_cost, g_visited, level);
+	if (!g_quiet)
+	    fprintf(stderr,
+		    "solution of cost %ld at visit %ld level %d\n",
+		    costSoFar + keep->sl_cost, g_visited, level);
 	sv_free(selection);
 	sl_free(list);
 	--level;
@@ -1634,9 +1548,9 @@ long		costSoFar;
 
     /*
      * At this point:
-     * 	1. "list" must contain at least three sets.
-     *	2. At least one of the sets is needed to cover "selection".
-     *	3. "list" minus any one set will still cover "selection".
+     *  1. "list" must contain at least three sets.
+     *  2. At least one of the sets is needed to cover "selection".
+     *  3. "list" minus any one set will still cover "selection".
      * (3 is true because otherwise mustKeep would have put on the keep
      * list the set that is needed to cover.  2 is true because otherwise
      * dontNeed would have removed all the sets.  1 is true because
@@ -1651,12 +1565,13 @@ long		costSoFar;
 	dropIndex = sl_firstGreedy(list, selection);
     else if (g_gBNFlag)
 	dropIndex = sl_1stGBN(list, selection);
-    else dropIndex = 0;
+    else
+	dropIndex = 0;
     dropSet = list->sl_sets[dropIndex];
     --list->sl_count;
     list->sl_sets[dropIndex] = list->sl_sets[list->sl_count];
     list->sl_cost -= dropSet->sv_cost;
-	
+
     if (g_nodeId[level - 1] == '0') {
 	prevBest = NULL;
     } else {
@@ -1670,8 +1585,8 @@ long		costSoFar;
 	dropSelect = sv_copy(selection);
 	sv_subtract(selection, dropSet);
 	prevBest = sl_Rminimize(list,
-			selection, costLimit - keep->sl_cost - dropSet->sv_cost,
-			costSoFar + keep->sl_cost + dropSet->sv_cost);
+				selection, costLimit - keep->sl_cost - dropSet->sv_cost,
+				costSoFar + keep->sl_cost + dropSet->sv_cost);
 	sv_free(selection);
 	g_nodeId[level - 1] = '1';
     }
@@ -1682,7 +1597,7 @@ long		costSoFar;
     selection = dropSelect;
     if (prevBest == NULL) {
 	best = sl_Rminimize(list, selection, costLimit - keep->sl_cost,
-			   costSoFar + keep->sl_cost);
+			    costSoFar + keep->sl_cost);
 	if (best == NULL) {
 	    sv_free(selection);
 	    sl_free(list);
@@ -1693,7 +1608,7 @@ long		costSoFar;
 	}
     } else {
 	best = sl_Rminimize(list, selection, prevBest->sl_cost,
-			   costSoFar + keep->sl_cost);
+			    costSoFar + keep->sl_cost);
 	if (best == NULL) {
 	    best = prevBest;
 	    sl_append(keep, dropSet);
@@ -1721,12 +1636,11 @@ long		costSoFar;
 * sl_cost0:  Return a list of 0 cost sets removed from list.
 */
 static setList *
-sl_cost0(list)
-setList	*list;
+sl_cost0(setList * list)
 {
-    register setVector	**sets;
-    register setVector	**setsEnd;
-    setList		*keep;
+    register setVector **sets;
+    register setVector **setsEnd;
+    setList *keep;
 
     keep = sl_create(list->sl_count);
 
@@ -1737,149 +1651,150 @@ setList	*list;
 	    sl_append(keep, *sets);
 	    --list->sl_count;
 	    *sets = list->sl_sets[list->sl_count];
-	} else ++sets;
+	} else
+	    ++sets;
     }
 
     return keep;
 }
 
 int
-main(argc, argv)
-int	argc;
-char	*argv[];
+main(int argc,
+     char *argv[])
 {
-    FILE	*f;
-    char	*p;
-    int		i;
-    unsigned long	costLimit;
-    unsigned long	userCost;
-    boolean	namesOnly = FALSE;
-    boolean	cumPrint = FALSE;
-    boolean	header = TRUE;
-    boolean	compress = FALSE;
-    boolean	keepFirst = FALSE;
-    char	*restartNodeId = 0;
-    setVector	*selection;
-    setList	*list;
-    setList	*keep;
-    setList	*greedy;
-    setList	*gBN;
-    setList	*cost0;
-    setList	*reduceList;
-    setList	*freeList;
-    time_t	startTime;
-    time_t	endTime;
-    float	normFactor;
-    int		setSize;
+    FILE *f;
+    char *p;
+    int i;
+    unsigned long costLimit;
+    unsigned long userCost;
+    boolean namesOnly = FALSE;
+    boolean cumPrint = FALSE;
+    boolean header = TRUE;
+    boolean compress = FALSE;
+    boolean keepFirst = FALSE;
+    char *restartNodeId = 0;
+    setVector *selection;
+    setList *list;
+    setList *keep;
+    setList *greedy;
+    setList *gBN;
+    setList *cost0;
+    setList *reduceList;
+    setList *freeList;
+    time_t startTime;
+    time_t endTime;
+    float normFactor;
+    int setSize;
 
     g_visited = 0;
     g_maxLevel = 0;
     g_recursionLimit = 0;
-    g_printFreq = (unsigned long)(~0L);
+    g_printFreq = (unsigned long) (~0L);
     g_quiet = FALSE;
 
-    userCost = (unsigned long)(~0L);		/* big number */
+    userCost = (unsigned long) (~0L);	/* big number */
 
     /*
      * Collect options.
      */
     for (i = 1; i < argc; ++i) {
 	p = argv[i];
-	if (*p != '-') break;
-	while (*++p) switch(*p)
-	{
-	case 'a':
-	    /*
-	     * This hack attempts to cause all minimums found to print.
-	     */
-	    g_allMin = 1;
+	if (*p != '-')
 	    break;
-	case 'c':
-	    if (*++p == '\0') {
-		if (++i == argc) {
-		    fprintf(stderr, "argument missing for -%c\n", *--p);
-		    usage(argv[0]);
-		    exit(1);
+	while (*++p)
+	    switch (*p) {
+	    case 'a':
+		/*
+		 * This hack attempts to cause all minimums found to print.
+		 */
+		g_allMin = 1;
+		break;
+	    case 'c':
+		if (*++p == '\0') {
+		    if (++i == argc) {
+			fprintf(stderr, "argument missing for -%c\n", *--p);
+			usage(argv[0]);
+			exit(1);
+		    }
+		    p = argv[i];
 		}
-		p = argv[i];
-	    }
-	    userCost = atol(p);
-	    p += strlen(p) - 1;	/* setup for next arg */
-	    break;
-	case 'C':
-	    compress = TRUE;
-	    break;
-	case 'g':
-	    g_greedyFlag = TRUE;
-	    break;
-	case 'G':
-	    g_gBNFlag = TRUE;
-	    break;
-	case 'h':
-	    header = FALSE;
-	    break;
-	case 'l':
-	    if (*++p == '\0') {
-		if (++i == argc) {
-		    fprintf(stderr, "argument missing for -%c\n", *--p);
-		    usage(argv[0]);
-		    exit(1);
+		userCost = atol(p);
+		p += strlen(p) - 1;	/* setup for next arg */
+		break;
+	    case 'C':
+		compress = TRUE;
+		break;
+	    case 'g':
+		g_greedyFlag = TRUE;
+		break;
+	    case 'G':
+		g_gBNFlag = TRUE;
+		break;
+	    case 'h':
+		header = FALSE;
+		break;
+	    case 'l':
+		if (*++p == '\0') {
+		    if (++i == argc) {
+			fprintf(stderr, "argument missing for -%c\n", *--p);
+			usage(argv[0]);
+			exit(1);
+		    }
+		    p = argv[i];
 		}
-		p = argv[i];
-	    }
-	    g_recursionLimit = atoi(p);
-	    p += strlen(p) - 1;	/* setup for next arg */
-	    break;
-	case 'n':
-	    namesOnly = TRUE;
-	    break;
-	case 'p':
-	    if (*++p == '\0') {
-		if (++i == argc) {
-		    fprintf(stderr, "argument missing for -%c\n", *--p);
-		    usage(argv[0]);
-		    exit(1);
+		g_recursionLimit = atoi(p);
+		p += strlen(p) - 1;	/* setup for next arg */
+		break;
+	    case 'n':
+		namesOnly = TRUE;
+		break;
+	    case 'p':
+		if (*++p == '\0') {
+		    if (++i == argc) {
+			fprintf(stderr, "argument missing for -%c\n", *--p);
+			usage(argv[0]);
+			exit(1);
+		    }
+		    p = argv[i];
 		}
-		p = argv[i];
-	    }
-	    g_printFreq = (1 << atoi(p)) - 1;
-	    fprintf(stderr, "print progress every %ld\n", g_printFreq);
-	    p += strlen(p) - 1;	/* setup for next arg */
-	    break;
-	case 'q':
-	    g_quiet = TRUE;
-	    break;
-	case 'r':
-	    keepFirst = TRUE;
-	    break;
-	case 'R':
-	    if (*++p == '\0') {
-		if (++i == argc) {
-		    fprintf(stderr, "argument missing for -%c\n", *--p);
-		    usage(argv[0]);
-		    exit(1);
+		g_printFreq = (1 << atoi(p)) - 1;
+		fprintf(stderr, "print progress every %ld\n", g_printFreq);
+		p += strlen(p) - 1;	/* setup for next arg */
+		break;
+	    case 'q':
+		g_quiet = TRUE;
+		break;
+	    case 'r':
+		keepFirst = TRUE;
+		break;
+	    case 'R':
+		if (*++p == '\0') {
+		    if (++i == argc) {
+			fprintf(stderr, "argument missing for -%c\n", *--p);
+			usage(argv[0]);
+			exit(1);
+		    }
+		    p = argv[i];
 		}
-		p = argv[i];
+		restartNodeId = p;
+		p += strlen(p) - 1;	/* setup for next arg */
+		break;
+	    case 's':
+		cumPrint = TRUE;
+		namesOnly = TRUE;	/* don't dump sets */
+		break;
+	    case '?':
+		usage(argv[0]);
+		exit(1);
+		break;
+	    default:
+		fprintf(stderr, "unknown option: -%c\n", *p);
+		usage(argv[0]);
+		exit(1);
+		break;
 	    }
-	    restartNodeId = p;
-	    p += strlen(p) - 1;	/* setup for next arg */
-	    break;
-	case 's':
-	    cumPrint = TRUE;
-	    namesOnly = TRUE;	/* don't dump sets */
-	    break;
-	case '?':
-	    usage(argv[0]);
-	    exit(1);
-	    break;
-	default:
-	    fprintf(stderr, "unknown option: -%c\n", *p);
-	    usage(argv[0]);
-	    exit(1);
-	    break;
-	}
     }
-	
+
     if (i + 1 < argc) {
 	usage(argv[0]);
 	exit(1);
@@ -1911,7 +1826,7 @@ char	*argv[];
      */
     selection = sl_union(list, "selection");
     sl_compress(list, selection);
-    sv_free(selection);			/* Doesn't apply to compressed set. */
+    sv_free(selection);		/* Doesn't apply to compressed set. */
 
     /*
      * Cost 0 sets are always selected.
@@ -1933,29 +1848,31 @@ char	*argv[];
      */
     if (compress) {
 	sl_compress(list, selection);
-	sv_free(selection);		/* Doesn't apply to reduced set. */
+	sv_free(selection);	/* Doesn't apply to reduced set. */
 	selection = sl_union(list, "selection");
     }
 
     normFactor = sl_normalizeCost(list);
 
     /*
-    * Try greedy.
-    */
+       * Try greedy.
+     */
     greedy = sl_create(list->sl_count);
     sl_greedy(list, selection, greedy);
-    if (!g_quiet) fprintf(stderr, "greedy cost: %ld\n",
-			  greedy->sl_cost + reduceList->sl_cost);
+    if (!g_quiet)
+	fprintf(stderr, "greedy cost: %ld\n",
+		greedy->sl_cost + reduceList->sl_cost);
     if (costLimit > greedy->sl_cost)
 	costLimit = greedy->sl_cost;
 
     /*
-    * Try greedy on bottle necks (GBN).
-    */
+       * Try greedy on bottle necks (GBN).
+     */
     gBN = sl_create(list->sl_count);
     sl_gBN(list, selection, gBN);
-    if (!g_quiet) fprintf(stderr, "GBN cost: %ld\n",
-			  gBN->sl_cost + reduceList->sl_cost);
+    if (!g_quiet)
+	fprintf(stderr, "GBN cost: %ld\n",
+		gBN->sl_cost + reduceList->sl_cost);
     if (costLimit > gBN->sl_cost) {
 	costLimit = gBN->sl_cost;
 	sl_free(greedy);
@@ -1965,7 +1882,7 @@ char	*argv[];
     /*
      * Set up node ID.
      */
-    g_nodeId = (char *)ckMalloc(list->sl_count + 1);
+    g_nodeId = (char *) ckMalloc(list->sl_count + 1);
     if (restartNodeId != NULL) {
 	if (strlen(restartNodeId) > list->sl_count) {
 	    fprintf(stderr, "%s: invalid restart node ID\n", restartNodeId);
@@ -1978,37 +1895,40 @@ char	*argv[];
 	    }
 	}
 	strcpy(g_nodeId, restartNodeId);
-    }
-    else g_nodeId[0] = '\0';
+    } else
+	g_nodeId[0] = '\0';
 
     if (costLimit > list->sl_cost)
 	costLimit = list->sl_cost;
-    startTime = (time_t)time((time_t *)NULL);
+    startTime = (time_t) time((time_t *) NULL);
 
     /*
      * Minimize the list of set vectors.
      */
-    if (keepFirst) 
+    if (keepFirst)
 	keep = sl_Rminimize(list, selection, costLimit, reduceList->sl_cost);
-    else keep = sl_minimize(list, selection, costLimit, reduceList->sl_cost);
-    endTime = (time_t)time((time_t *)NULL);
+    else
+	keep = sl_minimize(list, selection, costLimit, reduceList->sl_cost);
+    endTime = (time_t) time((time_t *) NULL);
     if (g_visited == g_recursionLimit) {
 	if (g_recursionLimit != 0) {
 	    fprintf(stderr, "recursion limit %ld exceeded\n", g_recursionLimit);
 	}
     }
     free(g_nodeId);
-	
+
     sv_free(selection);
     sl_free(list);
 
-    if (keep == NULL && greedy->sl_cost < userCost) 
+    if (keep == NULL && greedy->sl_cost < userCost)
 	keep = greedy;
-    else sl_free(greedy);
+    else
+	sl_free(greedy);
 
     if (keep) {
-    if (!g_quiet) fprintf(stderr, "cost: %ld\n",
-			  keep->sl_cost + reduceList->sl_cost);
+	if (!g_quiet)
+	    fprintf(stderr, "cost: %ld\n",
+		    keep->sl_cost + reduceList->sl_cost);
 	sl_combine(cost0, reduceList);
 	sl_combine(cost0, keep);
 	keep = cost0;
@@ -2022,8 +1942,7 @@ char	*argv[];
 	}
 	if (cumPrint && !compress) {
 	    sl_cumPrint(keep, setSize, normFactor, header);
-	}
-	else if (namesOnly || compress) {
+	} else if (namesOnly || compress) {
 	    sl_print(keep);
 	} else {
 	    sl_dump(keep);
@@ -2040,10 +1959,10 @@ char	*argv[];
 	fprintf(stderr, "%d levels visited\n", g_maxLevel);
 	fprintf(stderr, "total recursion time: %ld\n", endTime - startTime);
 	fprintf(stderr, "recursion time per node: %f\n",
-		(endTime - startTime)/(float)g_visited);
+		(endTime - startTime) / (float) g_visited);
     }
 
-    startTime = (time_t)time((time_t *)NULL);
+    startTime = (time_t) time((time_t *) NULL);
 
     /*
      * Clean up.
@@ -2051,5 +1970,5 @@ char	*argv[];
     sl_freeAll(freeList);
 
     exit(0);
-    /*NOTREACHED*/
+    /*NOTREACHED */
 }

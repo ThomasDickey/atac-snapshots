@@ -21,10 +21,9 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char filestamp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/filestamp.c,v 3.5 1997/12/09 00:46:12 tom Exp $";
+static const char filestamp_c[] = "$Id: filestamp.c,v 3.6 2013/12/08 18:25:41 tom Exp $";
 /*
-* $Log: filestamp.c,v $
+* @Log: filestamp.c,v @
 * Revision 3.5  1997/12/09 00:46:12  tom
 * move 'filestamp()' prototype to srcpos.h
 *
@@ -75,16 +74,16 @@ static const char filestamp_c[] =
 #include "srcpos.h"
 
 int
-filestamp(path)
-char	*path;
+filestamp(char *path)
 {
 #ifdef MVS
-	return 0;
+    return 0;
 #else /* not MVS */
-	struct	stat	buf;
+    struct stat buf;
 
-	if (stat(path, &buf) != 0) return 0;
+    if (stat(path, &buf) != 0)
+	return 0;
 
-	return (int)buf.st_mtime;
+    return (int) buf.st_mtime;
 #endif /* not MVS */
 }

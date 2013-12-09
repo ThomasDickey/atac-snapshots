@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef disp_H
 #define disp_H
-static char const disp_h[] =
-"$Header: /users/source/archives/atac.vcs/atacysis/RCS/disp.h,v 3.2 1995/12/27 19:32:48 tom Exp $";
+static char const disp_h[] = "$Id: disp.h,v 3.4 2013/12/09 01:02:23 tom Exp $";
 /*
-* $Log: disp.h,v $
+* @Log: disp.h,v @
 * Revision 3.2  1995/12/27 19:32:48  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -44,6 +43,17 @@ static char const disp_h[] =
 * 
 *-----------------------------------------------end of log
 */
+
+#ifdef vms
+#include <types.h>
+#else /* not vms */
+#ifdef MVS
+#include <time.h>		/* for time_t */
+#else /* not MVS */
+#include <sys/types.h>		/* for time_t */
+#endif /* not MVS */
+#endif /* not vms */
+
 #define MAX_SRCFILE_NAME	256
 
 #define DISP_HILI	1
@@ -53,17 +63,17 @@ static char const disp_h[] =
 #define DISP_UNINDENT	16
 
 /* interface of 'disp.c' */
-extern void disp_str P_((char *str, int attributes));
-extern void disp_file
-	P_((char *filename, int f_line, int f_col, int t_line, int t_col, int
-	attributes));
-extern void disp_end P_((void));
-extern void disp_elipsis P_((int nSkipped));
-extern void disp_title P_((char *title, int startLine, int endLine));
-extern int disp_windowSize P_((void));
+extern void disp_str(const char *str, int attributes);
+extern void disp_file(const char *filename,
+		      int f_line, int f_col,
+		      int t_line, int t_col,
+		      int attributes);
+extern void disp_end(void);
+extern void disp_elipsis(int nSkipped);
+extern void disp_title(char *title, int startLine, int endLine);
+extern int disp_windowSize(void);
 
 /* interface of 'srcfile_name.c' */
-extern char *srcfile_name P_((char *srcfile, time_t *chgtime, char *atacfile));
-
+extern char *srcfile_name(char *srcfile, time_t * chgtime, const char *atacfile);
 
 #endif /* disp_H */

@@ -31,10 +31,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const lib_c[] =
-"$Header: /users/source/archives/atac.vcs/atacysis/RCS/lib.c,v 3.5 2008/12/17 01:15:09 tom Exp $";
+static char const lib_c[] = "$Id: lib.c,v 3.8 2013/12/09 01:46:10 tom Exp $";
 /*
-* $Log: lib.c,v $
+* @Log: lib.c,v @
 * Revision 3.5  2008/12/17 01:15:09  tom
 * converted to ANSI, indent'd
 *
@@ -106,10 +105,10 @@ static char const lib_c[] =
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
 /* forward declarations */
-static int putLong P_((FILE *fp, long n));
+static int putLong(FILE *fp, long n);
 
 struct cfile *
-cf_openIn(char *path)
+cf_openIn(const char *path)
 {
     struct cfile *cf;
 
@@ -136,7 +135,7 @@ cf_openIn(char *path)
 }
 
 struct cfile *
-cf_openOut(char *path)
+cf_openOut(const char *path)
 {
     struct cfile *cf;
 
@@ -187,11 +186,11 @@ putLong(FILE *fp,
     while (value >= 10) {
 	x = value / 10;
 	y = (x << 3) + (x << 1);
-	*p++ = '0' + value - y;
+	*p++ = (char) ('0' + value - y);
 	value = x;
     }
 
-    r |= putc(value + '0', fp);
+    r |= putc((char) (value + '0'), fp);
 
     while (p > buf) {
 	r |= putc(*--p, fp);
@@ -329,13 +328,13 @@ cf_getString(struct cfile *cf,
 		    break;
 	    }
 	    if (p < pEnd)
-		*p++ = c;
+		*p++ = (char) c;
 	    c = getc(fp);
 	}
     } else {
 	while (c != EOF && (!isspace(c))) {
 	    if (p < pEnd)
-		*p++ = c;
+		*p++ = (char) c;
 	    c = getc(fp);
 	}
     }
@@ -503,7 +502,7 @@ cf_putNewline(struct cfile *cf)
 		if (cf->pendingCount == 2 &&
 		    cf->pendingValue < 10 && cf->pendingValue >= 0) {
 		    r |= putc(' ', fp);
-		    r |= putc(cf->pendingValue + '0', fp);
+		    r |= putc((char) (cf->pendingValue + '0'), fp);
 		} else {
 		    r |= putc('!', fp);
 		    r |= putLong(fp, cf->pendingCount);
@@ -525,11 +524,11 @@ cf_putNewline(struct cfile *cf)
 
 void
 cf_putString(struct cfile *cf,
-	     char *s)
+	     const char *s)
 {
     register int r;
     FILE *fp;
-    register char *p;
+    const char *p;
     int c;
 
     r = 0;
@@ -551,7 +550,7 @@ cf_putString(struct cfile *cf,
 	    if (cf->pendingCount == 2 &&
 		cf->pendingValue < 10 && cf->pendingValue >= 0) {
 		r |= putc(' ', fp);
-		r |= putc(cf->pendingValue + '0', fp);
+		r |= putc((char) (cf->pendingValue + '0'), fp);
 	    } else {
 		r |= putc('!', fp);
 		r |= putLong(fp, cf->pendingCount);
@@ -606,7 +605,7 @@ cf_putLong(struct cfile *cf,
 	    if (cf->pendingCount == 2 &&
 		cf->pendingValue < 10 && cf->pendingValue > 0) {
 		r |= putc(' ', fp);
-		r |= putc(cf->pendingValue + '0', fp);
+		r |= putc((char) (cf->pendingValue + '0'), fp);
 	    } else {
 		r |= putc('!', fp);
 		r |= putLong(fp, cf->pendingCount);

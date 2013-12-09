@@ -22,10 +22,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const pat_match_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pat_match.c,v 3.3 1995/12/27 20:54:31 tom Exp $";
+static char const pat_match_c[] = "$Id: pat_match.c,v 3.5 2013/12/09 00:49:29 tom Exp $";
 /*
-* $Log: pat_match.c,v $
+* @Log: pat_match.c,v @
 * Revision 3.3  1995/12/27 20:54:31  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -55,18 +54,17 @@ static char const pat_match_c[] =
 *	list matches everything.
 */
 int
-patMatch(pat, name, deselect)
-char *pat;
-char *name;
-int deselect;
+patMatch(const char *pat,
+	 const char *name,
+	 int deselect)
 {
-    char	*pStart;
-    char	*pEnd;
-    int		match;
-    int		flip;
+    const char *pStart;
+    const char *pEnd;
+    int match;
+    int flip;
 
     if (deselect) {
-	flip = 1;	/* must be 1, not other non-zero */
+	flip = 1;		/* must be 1, not other non-zero */
     } else {
 	flip = 0;
     }
@@ -78,9 +76,7 @@ int deselect;
     pStart = pat;
     for (pEnd = pStart; *pEnd; ++pEnd) {
 	if (*pEnd == ',') {
-	    *pEnd = '\0';
-	    match = gmatch(name, pStart);
-	    *pEnd = ',';
+	    match = gmatch(name, pStart, pEnd);
 	    if (match) {
 		return 1 ^ flip;
 	    }
@@ -88,7 +84,7 @@ int deselect;
 	}
     }
 
-    match = gmatch(name, pStart);	/* returns 1 or 0 */
+    match = gmatch(name, pStart, pStart + strlen(pStart));	/* returns 1 or 0 */
 
     return match ^ flip;
 }

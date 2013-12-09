@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef man_H
 #define man_H
-static const char man_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/man.h,v 3.2 1996/11/13 01:29:27 tom Exp $";
+static const char man_h[] = "$Id: man.h,v 3.3 2013/12/08 22:02:11 tom Exp $";
 /*
-* $Log: man.h,v $
+* @Log: man.h,v @
 * Revision 3.2  1996/11/13 01:29:27  tom
 * change ident to 'const' to quiet gcc
 *

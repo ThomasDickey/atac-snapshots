@@ -1,4 +1,4 @@
-/* $Id: list.h,v 3.5 1997/12/10 01:51:44 tom Exp $ */
+/* $Id: list.h,v 3.7 2013/12/09 00:17:28 tom Exp $ */
 
 #ifndef list_H
 #define list_H
@@ -13,16 +13,16 @@
 #define LIST_DATATYPE void
 #endif
 
-typedef void (*DataFree) P_((LIST_DATATYPE *));
-typedef char*(*DataDump) P_((LIST_DATATYPE *));
+typedef void (*DataFree) (LIST_DATATYPE *);
+typedef char *(*DataDump) (LIST_DATATYPE *);
 
 typedef struct link {
 #ifdef DEBUG
-	char		*magic;
+    char *magic;
 #endif
-	LIST_DATATYPE	*data;
-	struct link	*next;
-	struct link	*prev;
+    LIST_DATATYPE *data;
+    struct link *next;
+    struct link *prev;
 } LIST;
 
 #define LIST_FREE(head,func) list_free( head, (DataFree)func )
@@ -31,12 +31,12 @@ typedef struct link {
 #define LIST_DUMP(head,func,label) list_dump( head, (DataDump)func, label )
 
 /* list.c */
-extern LIST *list_create P_(( void ));
-extern int list_delete P_(( LIST *head, LIST **old ));
-extern int list_free P_(( LIST *head, DataFree func ));
-extern int list_next P_(( LIST *head, LIST **prev, LIST_DATATYPE **data ));
-extern int list_prev P_(( LIST *head, LIST **prev, LIST_DATATYPE **data ));
-extern int list_put P_(( LIST *head, LIST_DATATYPE *data ));
-extern void list_dump P_(( LIST *head, DataDump func, char *label ));
+extern LIST *list_create(void);
+extern int list_delete(LIST * head, LIST ** old);
+extern int list_free(LIST * head, DataFree func);
+extern int list_next(LIST * head, LIST ** prev, LIST_DATATYPE ** data);
+extern int list_prev(LIST * head, LIST ** prev, LIST_DATATYPE ** data);
+extern int list_put(LIST * head, LIST_DATATYPE * data);
+extern void list_dump(LIST * head, DataDump func, const char *label);
 
 #endif /* list_H */

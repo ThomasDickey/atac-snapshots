@@ -16,13 +16,12 @@
 #include <config.h>
 #endif
 
-static const char hili_c[] =
-"$Header: /users/source/archives/atac.vcs/tools/RCS/hili.c,v 3.9 1998/08/23 19:50:57 tom Exp $";
+static const char hili_c[] = "$Id: hili.c,v 3.11 2013/12/08 23:25:57 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-* $Log: hili.c,v $
+* @Log: hili.c,v @
 * Revision 3.9  1998/08/23 19:50:57  tom
 * fix gcc warnings for both termcap and terminfo configurations.
 *
@@ -103,19 +102,16 @@ extern char *tgetstr();
 #include "portable.h"
 
 /* forward declarations */
-extern int main P_((int argc, char *argv[]));
-extern void initcap P_((void));
-static int getscript P_((FILE *f, unsigned *line, unsigned *col, int *cmd, char *sarg));
-static void mode_normal P_((void));
-static void mode_reverse P_((void));
-static void mputs P_((char *s));
-static void uputs P_((char *s));
+extern void initcap(void);
+static int getscript(FILE *f, unsigned *line, unsigned *col, int *cmd, char *sarg);
+static void mode_normal(void);
+static void mode_reverse(void);
 
 #define USAGE(S)	"usage: %s [-u] [-r] {script-file | -} [text-file | -]\n", S
 
 #define SARG_MAX	1024
 
-char	*pgmname = "";
+char *pgmname = "";
 
 #ifdef M_TERMCAP
 static char *reverse_code;
@@ -123,356 +119,363 @@ static char *normal_code;
 #endif
 
 static void
-uputs(s)
-char *s;
+uputs(char *s)
 {
-	register char	*p;
+    register char *p;
 
-	for (p = s; *p; ++p) {
-		putchar('_');
-		putchar('\b');
-		putchar(*p);
-	}
+    for (p = s; *p; ++p) {
+	putchar('_');
+	putchar('\b');
+	putchar(*p);
+    }
 }
 
 static void
-mputs(s)
-char *s;
+mputs(char *s)
 {
-	register char	*p;
+    register char *p;
 
-	for (p = s; *p; ++p)
-		putchar(*p);
+    for (p = s; *p; ++p)
+	putchar(*p);
 }
 
 int
-main(argc, argv)
-int argc;
-char *argv[];
+main(int argc,
+     char *argv[])
 {
-	int	c;
-	int	argi;
-	char	*p;
-	FILE	*script;
-	FILE	*text;
-	unsigned	cur_line;
-	unsigned	cur_col;
-	unsigned	line;
-	unsigned	col;
-	int	cmd;
-	int	on_count;
-	int	on;
-	int	onvalue;
-	int	h_state;
-	int	morescript;
-	int	ulflag;
-	int	output;
-	char	sarg[SARG_MAX];
-	int	margin;
-	int	tabcol;
+    int c;
+    int argi;
+    char *p;
+    FILE *script;
+    FILE *text;
+    unsigned cur_line;
+    unsigned cur_col;
+    unsigned line;
+    unsigned col;
+    int cmd;
+    int on_count;
+    int on;
+    int onvalue;
+    int h_state;
+    int morescript;
+    int ulflag;
+    int output;
+    char sarg[SARG_MAX];
+    int margin;
+    int tabcol;
 
-	pgmname = argv[0];
-	ulflag = 0;
-	onvalue = 1;
-	margin = 0;
+    pgmname = argv[0];
+    ulflag = 0;
+    onvalue = 1;
+    margin = 0;
 
-	for (argi = 1; argi < argc; ++argi) {
-		p = argv[argi];
-		if (*p++ != '-' || *p == '\0') break;
-		do
-			switch(*p)
-			{
-			case 'u':
-				ulflag = 1;
-				break;
-			case 'r':
-				onvalue = 0;
-				break;
-			default:
-				fprintf(stderr, "%s: unknown option: -%c\n",
-					pgmname, *p);
-				fprintf(stderr, USAGE(pgmname));
-				exit(1);
-				break;
-			}
-		while (*++p);
-	}
-
-	text = stdin;
-	switch(argc - argi)
-	{
-	case 1:
+    for (argi = 1; argi < argc; ++argi) {
+	p = argv[argi];
+	if (*p++ != '-' || *p == '\0')
+	    break;
+	do
+	    switch (*p) {
+	    case 'u':
+		ulflag = 1;
 		break;
-	case 2:
-		if (strcmp(argv[argi+1], "-") == 0)
-			break;
-		text = fopen(argv[argi+1], "r");
-		if (text == NULL) {
-			fprintf(stderr, "can't open %s\n", argv[argi+1]);
-			exit(1);
-		}
+	    case 'r':
+		onvalue = 0;
 		break;
-	default:
+	    default:
+		fprintf(stderr, "%s: unknown option: -%c\n",
+			pgmname, *p);
 		fprintf(stderr, USAGE(pgmname));
 		exit(1);
+		break;
+	    }
+	while (*++p);
+    }
+
+    text = stdin;
+    switch (argc - argi) {
+    case 1:
+	break;
+    case 2:
+	if (strcmp(argv[argi + 1], "-") == 0)
+	    break;
+	text = fopen(argv[argi + 1], "r");
+	if (text == NULL) {
+	    fprintf(stderr, "can't open %s\n", argv[argi + 1]);
+	    exit(1);
 	}
-	if (strcmp(argv[argi], "-") == 0) script = stdin;
-	else {
-		script = fopen(argv[argi], "r");
-		if (script == NULL) {
-			fprintf(stderr, "can't open %s\n", argv[argi]);
-			exit(1);
+	break;
+    default:
+	fprintf(stderr, USAGE(pgmname));
+	exit(1);
+    }
+    if (strcmp(argv[argi], "-") == 0)
+	script = stdin;
+    else {
+	script = fopen(argv[argi], "r");
+	if (script == NULL) {
+	    fprintf(stderr, "can't open %s\n", argv[argi]);
+	    exit(1);
+	}
+    }
+
+    if (!ulflag)
+	initcap();
+
+    output = 1;
+
+    h_state = 0;
+    on_count = 0;
+    on = 0;
+    morescript = 1;
+    if (!getscript(script, &line, &col, &cmd, sarg))
+	morescript = 0;
+
+    tabcol = 1;
+    cur_line = 1;
+    cur_col = 1;
+    while (1) {
+	while (morescript &&
+	       (cur_line > line ||
+		(cur_line == line && cur_col >= col))) {
+	    switch (cmd) {
+	    case '-':
+		if (on_count)
+		    if (--on_count == 0)
+			on = 0;
+		break;
+	    case '+':
+		++on_count;
+		on = 1;
+		break;
+	    case 'o':
+		output = 1;
+		break;
+	    case 'O':
+		output = 0;
+		break;
+	    case 'f':
+		if (text && text != script)
+		    fclose(text);
+		text = fopen(sarg, "r");
+		if (text == NULL) {
+		    fprintf(stderr, "can't open %s\n", sarg);
+		    exit(1);
 		}
-	}
-
-	if (!ulflag) initcap();
-
-	output = 1;
-
-	h_state = 0;
-	on_count = 0;
-	on = 0;
-	morescript = 1;
-	if (!getscript(script, &line, &col, &cmd, sarg))
+		output = 1;
+		cur_line = 1;
+		cur_col = 1;
+		break;
+	    case 't':
+		if (h_state == 1) {
+		    mode_normal();
+		    h_state = 0;
+		}
+		mputs(sarg);
+		putchar('\n');
+		tabcol = 1;
+		break;
+	    case 'T':
+		if (h_state == 1) {
+		    mode_normal();
+		    h_state = 0;
+		}
+		mputs(sarg);
+		tabcol += (int) strlen(sarg);
+		break;
+	    case 'h':
+		if (ulflag)
+		    uputs(sarg);
+		else {
+		    if (h_state == 0) {
+			mode_reverse();
+			h_state = 1;
+		    }
+		    mputs(sarg);
+		    mode_normal();
+		}
+		putchar('\n');
+		tabcol = 1;
+		break;
+	    case 'H':
+		if (ulflag)
+		    uputs(sarg);
+		else {
+		    if (h_state == 0) {
+			mode_reverse();
+			h_state = 1;
+		    }
+		    mputs(sarg);
+		}
+		tabcol += (int) strlen(sarg);
+		break;
+	    case 'm':
+		margin = 8;
+		break;
+	    }
+	    if (!getscript(script, &line, &col, &cmd, sarg)) {
 		morescript = 0;
-
-	tabcol = 1;
-	cur_line = 1;
-	cur_col = 1;
-	while (1) {
-		while (morescript &&
-			(cur_line > line ||
-			(cur_line == line && cur_col >= col)))
-		{
-			switch(cmd)
-			{
-			case '-':
-				if (on_count)
-					if (--on_count == 0) on = 0;
-				break;
-			case '+':
-				++on_count;
-				on = 1;
-				break;
-			case 'o':
-				output = 1;
-				break;
-			case 'O':
-				output = 0;
-				break;
-			case 'f':
-				if (text && text != script) fclose(text);
-				text = fopen(sarg, "r");
-				if (text == NULL) {
-					fprintf(stderr,"can't open %s\n", sarg);
-					exit(1);
-				}
-				output = 1;
-				cur_line = 1;
-				cur_col = 1;
-				break;
-			case 't':
-				if (h_state == 1) {
-					mode_normal();
-					h_state = 0;
-				}
-				mputs(sarg);
-				putchar('\n');
-				tabcol = 1;
-				break;
-			case 'T':
-				if (h_state == 1) {
-					mode_normal();
-					h_state = 0;
-				}
-				mputs(sarg);
-				tabcol += strlen(sarg);
-				break;
-			case 'h':
-				if (ulflag)
-					uputs(sarg);
-				else {
-					if (h_state == 0) {
-						mode_reverse();
-						h_state = 1;
-					}
-					mputs(sarg);
-					mode_normal();
-				}
-				putchar('\n');
-				tabcol = 1;
-				break;
-			case 'H':
-				if (ulflag)
-					uputs(sarg);
-				else {
-					if (h_state == 0) {
-						mode_reverse();
-						h_state = 1;
-					}
-					mputs(sarg);
-				}
-				tabcol += strlen(sarg);
-				break;
-			case 'm':
-				margin = 8;
-				break;
-			}
-			if (!getscript(script, &line, &col, &cmd, sarg)) {
-				morescript = 0;
-				if (output == 0) {
-					if (h_state) mode_normal();
-					exit(0);
-				}
-			}
+		if (output == 0) {
+		    if (h_state)
+			mode_normal();
+		    exit(0);
 		}
-		if ((c = getc(text)) == EOF) break;
-		if (c == '\n') {
-			++cur_line;
-			cur_col = 1;
-		} else ++cur_col;
-		if (output) {
-			if (on == onvalue) {
-				if (isprint(c) && c != ' ') {
-					if (ulflag) {
-						putchar('_');
-						putchar('\b');
-					} else if (h_state == 0) {
-						mode_reverse();
-						h_state = 1;
-					}
-				} else if (c == '\n') {
-					mode_normal();
-					h_state = 0;
-				}
-			} else if (h_state) {
-				mode_normal();
-				h_state = 0;
-			}
-			if (tabcol == 1 && margin)
-				mputs("        ");
-			if (c == '\t') {
-				do
-					putchar(' ');
-				while (++tabcol % 8 != 1);
-			} else {
-				putchar(c);
-				if (c == '\n')
-					tabcol = 1;
-				else ++tabcol;
-			}
-		}
+	    }
 	}
+	if ((c = getc(text)) == EOF)
+	    break;
+	if (c == '\n') {
+	    ++cur_line;
+	    cur_col = 1;
+	} else
+	    ++cur_col;
+	if (output) {
+	    if (on == onvalue) {
+		if (isprint(c) && c != ' ') {
+		    if (ulflag) {
+			putchar('_');
+			putchar('\b');
+		    } else if (h_state == 0) {
+			mode_reverse();
+			h_state = 1;
+		    }
+		} else if (c == '\n') {
+		    mode_normal();
+		    h_state = 0;
+		}
+	    } else if (h_state) {
+		mode_normal();
+		h_state = 0;
+	    }
+	    if (tabcol == 1 && margin)
+		mputs("        ");
+	    if (c == '\t') {
+		do
+		    putchar(' ');
+		while (++tabcol % 8 != 1);
+	    } else {
+		putchar(c);
+		if (c == '\n')
+		    tabcol = 1;
+		else
+		    ++tabcol;
+	    }
+	}
+    }
 
-	if (h_state) mode_normal();
+    if (h_state)
+	mode_normal();
 
-	exit(0);
+    exit(0);
 }
 
 #ifdef M_TERMCAP
 void
-initcap()
+initcap(void)
 {
-	char *termtype;
-	static char tcapbuf[512];
-	char termcap[1024];
-	char *bp = tcapbuf;
+    char *termtype;
+    static char tcapbuf[512];
+    char termcap[1024];
+    char *bp = tcapbuf;
 
-	termtype = getenv("TERM");
-	if (termtype == NULL)
-		termtype = "lpr";
-	if (tgetent(termcap, termtype) != 1) {
-		fprintf(stderr,"%s: trouble reading termcap\n", pgmname);
-		exit(1);
-	}
-
+    termtype = getenv("TERM");
+    if (termtype == NULL)
+	termtype = "lpr";
+    if (tgetent(termcap, termtype) != 1) {
+	fprintf(stderr, "%s: trouble reading termcap\n", pgmname);
+	exit(1);
+    }
 #ifdef OLD
-	/* This nonsense attempts to work with both old and new termcap */
-	reverse_code =		tgetstr("mr", &bp);
-	normal_code =	tgetstr("me", &bp);
+    /* This nonsense attempts to work with both old and new termcap */
+    reverse_code = tgetstr("mr", &bp);
+    normal_code = tgetstr("me", &bp);
 #else
-	reverse_code =		tgetstr("so", &bp);
-	normal_code =	tgetstr("se", &bp);
+    reverse_code = tgetstr("so", &bp);
+    normal_code = tgetstr("se", &bp);
 #endif
 
-	if (reverse_code == 0 || normal_code == 0) {
-		fprintf(stderr, "%s: no termcap highlight mode for <%s>\n",
-			pgmname, termtype);
-		exit(1);
-	}
+    if (reverse_code == 0 || normal_code == 0) {
+	fprintf(stderr, "%s: no termcap highlight mode for <%s>\n",
+		pgmname, termtype);
+	exit(1);
+    }
 }
 
 #ifndef OUTC_ARGS
 #define OUTC_ARGS int c
 #endif
 
-#if CC_HAS_PROTOS
 #define OUTC_FUNC(func) func(OUTC_ARGS)
-#else
-#define OUTC_FUNC(func) func(c) OUTC_ARGS;
-#endif
 
 #ifdef OUTC_RETURN
-static int  OUTC_FUNC(outchar) { return putchar(c&0177); }
+static int
+OUTC_FUNC(outchar)
+{
+    return putchar(c & 0177);
+}
 #else
-static void OUTC_FUNC(outchar) { (void) putchar(c&0177); }
+static void
+OUTC_FUNC(outchar)
+{
+    (void) putchar(c & 0177);
+}
 #endif
 
 static void
-mode_normal()
+mode_normal(void)
 {
-	tputs(normal_code, 1, outchar);
+    tputs(normal_code, 1, outchar);
 }
 
 static void
-mode_reverse()
+mode_reverse(void)
 {
-	tputs(reverse_code, 1, outchar);
+    tputs(reverse_code, 1, outchar);
 }
 #endif
 
 #ifdef M_TERMINFO
-void initcap()
+void
+initcap(void)
 {
-	char	*termtype;
-	int	err;
+    char *termtype;
+    int err;
 
-	termtype = getenv("TERM");
-	if (termtype == NULL)
-		termtype = "lpr";
-	setupterm(termtype, 1, &err);
+    termtype = getenv("TERM");
+    if (termtype == NULL)
+	termtype = "lpr";
+    setupterm(termtype, 1, &err);
 }
 
 static void
-mode_normal()
+mode_normal(void)
 {
-	vidattr(0);
+    vidattr(0);
 }
 
 static void
-mode_reverse()
+mode_reverse(void)
 {
-	vidattr(A_STANDOUT);
+    vidattr(A_STANDOUT);
 }
 #endif
 
 static int
-getscript(f, line, col, cmd, sarg)
-FILE		*f;
-unsigned	*line;
-unsigned	*col;
-int		*cmd;
-char		*sarg;
+getscript(FILE *f,
+	  unsigned *line,
+	  unsigned *col,
+	  int *cmd,
+	  char *sarg)
 {
-	char s[10];
-	char inbuf[1024];
+    char s[10];
+    char inbuf[1024];
 
-	if (fgets(inbuf, sizeof inbuf, f) == NULL)
-		return 0;
-	*sarg = '\0';
-	if (sscanf(inbuf, "%s %d %d|%[^\n]", s, line, col, sarg) < 3)
-		return 0;
-	if (s[0] == '-') ++*col;
-	*cmd = s[0];
-	return 1;
+    if (fgets(inbuf, sizeof inbuf, f) == NULL)
+	return 0;
+    *sarg = '\0';
+    if (sscanf(inbuf, "%s %d %d|%[^\n]", s, line, col, sarg) < 3)
+	return 0;
+    if (s[0] == '-')
+	++ * col;
+    *cmd = s[0];
+    return 1;
 }

@@ -17,18 +17,17 @@
 #endif
 
 #ifdef MVS
- #pragma runopts(execops,isasize(50k))	/* ==> for MVS delete leading blank! */
+#pragma runopts(execops,isasize(50k))	/* ==> for MVS delete leading blank! */
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char atac_i_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/atac_i.c,v 3.11 2005/08/13 15:13:22 tom Exp $";
+static const char atac_i_c[] = "$Id: atac_i.c,v 3.12 2013/12/08 17:36:25 tom Exp $";
 static const char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-* $Log: atac_i.c,v $
+* @Log: atac_i.c,v @
 * Revision 3.11  2005/08/13 15:13:22  tom
 * portable.h now always includes stdio.h
 *
@@ -101,8 +100,8 @@ static const char bellcoreCopyRight[] =
 #include "atac_i.h"
 
 /* forward declarations */
-static void usage P_(( char * ));
-static void runErrorTests P_(( void *tree ));
+static void usage(char *);
+static void runErrorTests(void *tree);
 
 int dump_tables = 0;
 int all_paths = 0;
@@ -112,55 +111,52 @@ int feasableFlag = 1;
 int cyclomaticFlag = 0;
 
 static void
-usage(cmd)
-char	*cmd;
+usage(char *cmd)
 {
-	fprintf(stderr, "Usage: %s [-w] srcin srcout fgout\n", cmd);
-	fprintf(stderr, "\t-A list all paths\n");
-	fprintf(stderr, "\t-D supress deparse\n");
-	fprintf(stderr, "\t-F supress feasability analysis\n");
-	fprintf(stderr, "\t-I supress instrumentation\n");
-	fprintf(stderr, "\t-S supress symbol resolution\n");
-	fprintf(stderr, "\t-T supress source table output\n");
-	fprintf(stderr, "\t-a count all paths\n");
-	fprintf(stderr, "\t-d count all du-paths\n");
-	fprintf(stderr, "\t-e run some error coverage tests\n");
-	fprintf(stderr, "\t-f static-data-file\n");
-	fprintf(stderr, "\t-g dump flow graph tables\n");
-	fprintf(stderr, "\t-f static-data-file\n");
-	fprintf(stderr, "\t-m compute cyclomatic number\n");
-	fprintf(stderr, "\t-s dump symbols\n");
-	fprintf(stderr, "\t-t dump parse tree\n");
-	fprintf(stderr, "\t-w supress warning messages\n");
+    fprintf(stderr, "Usage: %s [-w] srcin srcout fgout\n", cmd);
+    fprintf(stderr, "\t-A list all paths\n");
+    fprintf(stderr, "\t-D supress deparse\n");
+    fprintf(stderr, "\t-F supress feasability analysis\n");
+    fprintf(stderr, "\t-I supress instrumentation\n");
+    fprintf(stderr, "\t-S supress symbol resolution\n");
+    fprintf(stderr, "\t-T supress source table output\n");
+    fprintf(stderr, "\t-a count all paths\n");
+    fprintf(stderr, "\t-d count all du-paths\n");
+    fprintf(stderr, "\t-e run some error coverage tests\n");
+    fprintf(stderr, "\t-f static-data-file\n");
+    fprintf(stderr, "\t-g dump flow graph tables\n");
+    fprintf(stderr, "\t-f static-data-file\n");
+    fprintf(stderr, "\t-m compute cyclomatic number\n");
+    fprintf(stderr, "\t-s dump symbols\n");
+    fprintf(stderr, "\t-t dump parse tree\n");
+    fprintf(stderr, "\t-w supress warning messages\n");
 }
 
 int
-main(argc, argv)
-int	argc;
-char	*argv[];
+main(int argc,
+     char *argv[])
 {
-    static char	*prefix;
-    TNODE	*tree;
-    int	status;
-    int	i;
-    char	*p;
-    int	supress_sym = 0;
-    int	supress_inst = 0;
-    int	supress_deparse = 0;
-    int	dump_tree = 0;
-    int	dump_sym_flag = 0;
-    int	errorTestFlag = 0;
-    FILE	*srcin = NULL;
-    FILE	*srcout = NULL;
-    FILE	*fgout = NULL;
-    FILE	*tablesout = NULL; /* usually same as srcout */
+    static char *prefix;
+    TNODE *tree;
+    int status;
+    int i;
+    char *p;
+    int supress_sym = 0;
+    int supress_inst = 0;
+    int supress_deparse = 0;
+    int dump_tree = 0;
+    int dump_sym_flag = 0;
+    int errorTestFlag = 0;
+    FILE *srcin = NULL;
+    FILE *srcout = NULL;
+    FILE *fgout = NULL;
+    FILE *tablesout = NULL;	/* usually same as srcout */
 
     for (i = 1; i < argc; ++i) {
 	p = argv[i];
 	if (*p == '-' && *(p + 1)) {
 	    while (*++p) {
-		switch (*p)
-		{
+		switch (*p) {
 		case 'A':
 		    list_all_paths = 1;
 		    break;
@@ -186,10 +182,10 @@ char	*argv[];
 		case 'd':
 		    count_alldu = 1;
 		    supress_deparse = 1;
-		    srcout = fopen("/dev/null","r");
+		    srcout = fopen("/dev/null", "r");
 		    if (srcout == NULL) {
 			fprintf(stderr,
-				"can't open %s\n", 
+				"can't open %s\n",
 				"/dev/null");
 			exit(1);
 		    }
@@ -202,7 +198,8 @@ char	*argv[];
 		    /* backward compatibility */
 		    if (*(p + 1) == '\0')
 			p = argv[++i];
-		    else ++p;
+		    else
+			++p;
 		    fgout = fopen(p, "w");
 		    if (fgout == NULL) {
 			fprintf(stderr,
@@ -238,7 +235,8 @@ char	*argv[];
 	    }
 	} else {
 	    if (srcin == NULL) {
-		if (*p == '-') srcin = stdin;
+		if (*p == '-')
+		    srcin = stdin;
 		else {
 		    srcin = fopen(p, "r");
 		    if (srcin == NULL) {
@@ -247,9 +245,9 @@ char	*argv[];
 			exit(1);
 		    }
 		}
-	    }
-	    else if (srcout == NULL) {
-		if (*p == '-') srcout = stdout;
+	    } else if (srcout == NULL) {
+		if (*p == '-')
+		    srcout = stdout;
 		else {
 		    srcout = fopen(p, "w");
 		    if (srcout == NULL) {
@@ -258,9 +256,9 @@ char	*argv[];
 			exit(1);
 		    }
 		}
-	    }
-	    else if (fgout == NULL) {
-		if (*p == '-') fgout = stdout;
+	    } else if (fgout == NULL) {
+		if (*p == '-')
+		    fgout = stdout;
 		else {
 		    fgout = fopen(p, "w");
 		    if (fgout == NULL) {
@@ -269,29 +267,38 @@ char	*argv[];
 			exit(1);
 		    }
 		}
-	    }
-	    else {
+	    } else {
 		fprintf(stderr, "extra argument %s\n", p);
 		exit(1);
 	    }
 	}
     }
 
-    if (srcin == NULL) srcin = stdin;
-    if (srcout == NULL) srcout = stdout;
-    if (fgout == NULL) fgout = stdout;
-    if (tablesout == NULL) tablesout = srcout;
-	
+    if (srcin == NULL)
+	srcin = stdin;
+    if (srcout == NULL)
+	srcout = stdout;
+    if (fgout == NULL)
+	fgout = stdout;
+    if (tablesout == NULL)
+	tablesout = srcout;
+
     status = parse(srcin, &tree, &prefix);
 
     if (status == 0) {
-	if (!supress_sym) do_sym(tree);
-	if (!supress_inst) flowgraph(tree, tablesout, fgout, prefix);
-	if (!supress_deparse) deparse(tree, srcout, "aTaC", prefix);
+	if (!supress_sym)
+	    do_sym(tree);
+	if (!supress_inst)
+	    flowgraph(tree, tablesout, fgout, prefix);
+	if (!supress_deparse)
+	    deparse(tree, srcout, "aTaC", prefix);
 
-	if (dump_tree) print_tree(tree, 1, 0, 0);
-	if (dump_sym_flag) dump_sym(tree, prefix);
-	if (errorTestFlag) runErrorTests(tree);
+	if (dump_tree)
+	    print_tree(tree, 1, 0, 0);
+	if (dump_sym_flag)
+	    dump_sym(tree, prefix);
+	if (errorTestFlag)
+	    runErrorTests(tree);
     } else {
 	fprintf(stderr, "parse errors\n");
 	exit(1);
@@ -301,8 +308,7 @@ char	*argv[];
 }
 
 static void
-runErrorTests(tree)
-void	*tree;
+runErrorTests(void *tree)
 {
-    testConst();	/* run some tests in const.c */
+    testConst();		/* run some tests in const.c */
 }

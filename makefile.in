@@ -12,13 +12,16 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-# $Header: /users/source/archives/atac.vcs/RCS/makefile.in,v 3.6 1998/08/23 18:34:15 tom Exp $
+# $Id: makefile.in,v 3.7 2013/12/08 16:36:35 tom Exp $
 #
 # Makefile for ATAC.  See README.
 #
 .SUFFIXES:
 #
 # $Log: makefile.in,v $
+# Revision 3.7  2013/12/08 16:36:35  tom
+# use "mkdir -p" rather than "mkdirs.sh" script
+#
 # Revision 3.6  1998/08/23 18:34:15  tom
 # don't pass CFLAGS to lower-levels, since autoconf does that properly.
 #
@@ -187,7 +190,7 @@ $(MANDIR)/cat1 \
 $(MANDIR)/man1 \
 $(SRCDIR) \
 $(TUTORIALDIR) :
-	sh mkdirs.sh $@
+	mkdir -p $@
 
 #
 # install lib

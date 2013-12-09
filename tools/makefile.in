@@ -12,9 +12,10 @@
 #OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
 #WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #****************************************************************
-#	$Header: /users/source/archives/atac.vcs/tools/RCS/makefile.in,v 3.13 1998/08/23 19:47:33 tom Exp $
 #
-# $Log: makefile.in,v $
+# $Id: makefile.in,v 3.14 2013/12/08 16:55:55 tom Exp $
+#
+# @Log: makefile.in,v @
 # Revision 3.13  1998/08/23 19:47:33  tom
 # remove trial/error build of hili (done in configure-script)
 #
@@ -90,11 +91,11 @@ system:		atac atacCC atacLD atacmin atac_rt.o hili minimize predefs.c
 .SUFFIXES : .i
 
 .c.o:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $(srcdir)/$*.c
 
 .c.i:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(srcdir)/$*.c >$@
 
 clean:

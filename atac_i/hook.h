@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef hook_H
 #define hook_H
-static const char hook_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/hook.h,v 3.2 1996/11/13 00:23:16 tom Exp $";
+static const char hook_h[] = "$Id: hook.h,v 3.3 2013/12/08 22:02:11 tom Exp $";
 /*
-* $Log: hook.h,v $
+* @Log: hook.h,v @
 * Revision 3.2  1996/11/13 00:23:16  tom
 * change ident to 'const' to quiet gcc.
 *

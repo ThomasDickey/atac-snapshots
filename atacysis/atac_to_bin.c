@@ -35,13 +35,12 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* not MVS */
 #endif /* not vms */
 
-static char const atac_to_bin_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/atac_to_bin.c,v 3.9 2005/08/14 13:48:31 tom Exp $";
+static char const atac_to_bin_c[] = "$Id: atac_to_bin.c,v 3.12 2013/12/09 00:33:02 tom Exp $";
 static char const bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 
 /*
-* $Log: atac_to_bin.c,v $
+* @Log: atac_to_bin.c,v @
 * Revision 3.9  2005/08/14 13:48:31  tom
 * gcc warnings
 *
@@ -73,12 +72,12 @@ static char const bellcoreCopyRight[] =
 */
 
 /* forward declarations */
-static int putBinDotAtac P_((int fd, T_MODULE *mod));
+static int putBinDotAtac(int fd, T_MODULE * mod);
 
 #define ROUND(n) 	/* round up to char pointer boundary */		\
     (((n) + sizeof(char *) - 1) & ~(sizeof(char *) - 1))
 
-static char	*zeros = NULL;
+static char *zeros = NULL;
 #define PAD(fd,n)	write((fd), &zeros, ROUND(n) - (n))
 
 /*
@@ -93,23 +92,22 @@ static char	*zeros = NULL;
 *	string pointers, offsets are on "char *" boundaries
 *	(i.e. divisible by 4).  Zero padding is added where necessary.
 */
-static int				/* 0 for success; -1 for failure */
-putBinDotAtac(fd, mod)
-int		fd;
-T_MODULE	*mod;
+static int			/* 0 for success; -1 for failure */
+putBinDotAtac(int fd,
+	      T_MODULE * mod)
 {
-    char	*charPtr;
-    T_FILE	*file;
-    T_FUNC	*func;
-    T_VAR	*var;
-    T_BLK	*blkPtr;
-    T_VAR	*varPtr;
-    T_CUSE	*cusePtr;
-    T_PUSE	*pusePtr;
-    int		offset;
-    int		stringOffset;
-    size_t	writeSize;
-    T_HEADER	header;
+    char *charPtr;
+    T_FILE *file;
+    T_FUNC *func;
+    T_VAR *var;
+    T_BLK *blkPtr;
+    T_VAR *varPtr;
+    T_CUSE *cusePtr;
+    T_PUSE *pusePtr;
+    int offset;
+    int stringOffset;
+    size_t writeSize;
+    T_HEADER header;
 
     /*
      * Fill in T_HEADER and write it to the file.  Pointer offsets are
@@ -124,9 +122,9 @@ T_MODULE	*mod;
     for (func = mod->func; func < mod->func + mod->n_func; ++func) {
 	offset +=
 	    ROUND(func->n_blk * sizeof(T_BLK)) +
-		ROUND(func->n_var * sizeof(T_VAR)) +
-		    ROUND(func->n_cuse * sizeof(T_CUSE)) +
-			ROUND(func->n_puse * sizeof(T_PUSE));
+	    ROUND(func->n_var * sizeof(T_VAR)) +
+	    ROUND(func->n_cuse * sizeof(T_CUSE)) +
+	    ROUND(func->n_puse * sizeof(T_PUSE));
     }
     header.funcOffset = offset;
 
@@ -139,16 +137,15 @@ T_MODULE	*mod;
      */
     stringOffset = offset + (mod->n_func * sizeof(T_FUNC));
 
-	
     /*
      * T_FILE: Change pointers to offsets and write.
      */
     for (file = mod->file; file < mod->file + mod->n_file; ++file) {
-	charPtr = file->filename; /* Hold vname ptr. */
-	file->filename = (char *)stringOffset;
-	stringOffset += strlen(charPtr) + 1;
+	charPtr = file->filename;	/* Hold vname ptr. */
+	file->filename = (char *) stringOffset;
+	stringOffset += (int) strlen(charPtr) + 1;
 	write(fd, file, sizeof *file);
-	file->filename = charPtr; /* Put it back. */
+	file->filename = charPtr;	/* Put it back. */
     }
     writeSize = mod->n_file * sizeof(T_FILE);
     PAD(fd, writeSize);
@@ -167,11 +164,11 @@ T_MODULE	*mod;
 	 * T_VAR: Change pointers to offsets and write.
 	 */
 	for (var = func->var; var < func->var + func->n_var; ++var) {
-	    charPtr = var->vname; /* Hold vname ptr. */
-	    var->vname = (char *)stringOffset;
-	    stringOffset += strlen(charPtr) + 1;
+	    charPtr = var->vname;	/* Hold vname ptr. */
+	    var->vname = (char *) stringOffset;
+	    stringOffset += (int) strlen(charPtr) + 1;
 	    write(fd, var, sizeof *var);
-	    var->vname = charPtr; /* Put it back. */
+	    var->vname = charPtr;	/* Put it back. */
 	}
 	writeSize = func->n_var * sizeof(T_VAR);
 	PAD(fd, writeSize);
@@ -194,33 +191,33 @@ T_MODULE	*mod;
      */
     offset = header.fileOffset + ROUND(mod->n_file * sizeof(T_FILE));
     for (func = mod->func; func < mod->func + mod->n_func; ++func) {
-	charPtr = func->fname; /* Hold fname ptr. */
-	func->fname = (char *)stringOffset;
-	stringOffset += strlen(charPtr) + 1;
+	charPtr = func->fname;	/* Hold fname ptr. */
+	func->fname = (char *) stringOffset;
+	stringOffset += (int) strlen(charPtr) + 1;
 
-	blkPtr = func->blk; /* Hold blk ptr. */
-	func->blk = (T_BLK *)offset;
+	blkPtr = func->blk;	/* Hold blk ptr. */
+	func->blk = (T_BLK *) offset;
 	offset += ROUND(func->n_blk * sizeof(T_BLK));
 
-	varPtr = func->var; /* Hold var ptr. */
-	func->var = (T_VAR *)offset;
+	varPtr = func->var;	/* Hold var ptr. */
+	func->var = (T_VAR *) offset;
 	offset += ROUND(func->n_var * sizeof(T_VAR));
 
-	cusePtr = func->cuse; /* Hold cuse ptr. */
-	func->cuse = (T_CUSE *)offset;
+	cusePtr = func->cuse;	/* Hold cuse ptr. */
+	func->cuse = (T_CUSE *) offset;
 	offset += ROUND(func->n_cuse * sizeof(T_CUSE));
 
-	pusePtr = func->puse; /* Hold puse ptr. */
-	func->puse = (T_PUSE *)offset;
+	pusePtr = func->puse;	/* Hold puse ptr. */
+	func->puse = (T_PUSE *) offset;
 	offset += ROUND(func->n_puse * sizeof(T_PUSE));
 
 	write(fd, func, sizeof *func);
 
-	func->fname = charPtr; /* put fname ptr back. */
-	func->blk = blkPtr; /* put blk ptr back. */
-	func->var = varPtr; /* put var ptr back. */
-	func->cuse = cusePtr; /* put cuse ptr back. */
-	func->puse = pusePtr; /* put puse ptr back. */
+	func->fname = charPtr;	/* put fname ptr back. */
+	func->blk = blkPtr;	/* put blk ptr back. */
+	func->var = varPtr;	/* put var ptr back. */
+	func->cuse = cusePtr;	/* put cuse ptr back. */
+	func->puse = pusePtr;	/* put puse ptr back. */
     }
     if (offset != header.funcOffset) {
 	fprintf(stderr, "bad offset calculation: %d %d\n",
@@ -229,26 +226,26 @@ T_MODULE	*mod;
     }
 
     /*
-    * Strings: Write them out in the order that their offsets were
-    * calculated above.
-    */
+     * Strings: Write them out in the order that their offsets were
+     * calculated above.
+     */
     stringOffset = offset + (mod->n_func * sizeof(T_FUNC));
     for (file = mod->file; file < mod->file + mod->n_file; ++file) {
 	writeSize = strlen(file->filename) + 1;
 	write(fd, file->filename, writeSize);
-	stringOffset += writeSize;
+	stringOffset += (int) writeSize;
     }
     for (func = mod->func; func < mod->func + mod->n_func; ++func) {
 	for (var = func->var; var < func->var + func->n_var; ++var) {
 	    writeSize = strlen(var->vname) + 1;
 	    write(fd, var->vname, writeSize);
-	    stringOffset += writeSize;
+	    stringOffset += (int) writeSize;
 	}
     }
     for (func = mod->func; func < mod->func + mod->n_func; ++func) {
 	writeSize = strlen(func->fname) + 1;
 	write(fd, func->fname, writeSize);
-	stringOffset += writeSize;
+	stringOffset += (int) writeSize;
     }
 
     /*
@@ -261,16 +258,15 @@ T_MODULE	*mod;
 
     return 0;
 }
-    
+
 int
-main(argc, argv)
-int	argc;
-char	*argv[];
+main(int argc,
+     char *argv[])
 {
     int covCount;
-    T_MODULE	*mod;
-    int		fd;
-    int		i;
+    T_MODULE *mod;
+    int fd;
+    int i;
 
     /*
      * Check command line args.
@@ -297,8 +293,8 @@ char	*argv[];
 	    putBinDotAtac(fd, mod + i - 1);
 	    if (close(fd) != 0)
 		perror(argv[i]);
-	}
-	else perror(argv[i]);
+	} else
+	    perror(argv[i]);
     }
 
     /*

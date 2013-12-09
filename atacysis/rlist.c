@@ -30,10 +30,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "rlist.h"
 
-static char const rlist_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/rlist.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
+static char const rlist_c[] = "$Id: rlist.c,v 3.5 2013/12/08 20:07:35 tom Exp $";
 /*
-* $Log: rlist.c,v $
+* @Log: rlist.c,v @
 * Revision 3.4  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -67,36 +66,32 @@ static char const rlist_c[] =
 *-----------------------------------------------end of log
 */
 
-#if defined(TEST) || defined(TEST2)
-static void rlist_print P_((RLIST **head));
-#endif
-
 RLIST **
-rlist_create()
+rlist_create(void)
 {
-	RLIST	**head;
+    RLIST **head;
 
-	head = (RLIST **)malloc(sizeof(RLIST **));
-	*head = NULL;
+    head = (RLIST **) malloc(sizeof(RLIST **));
+    *head = NULL;
 
-	return head;
+    return head;
 }
-	
+
 void
-rlist_free(head)
-RLIST	**head;
+rlist_free(RLIST ** head)
 {
-	RLIST *p;
-	RLIST *next;
+    RLIST *p;
+    RLIST *next;
 
-	if (head == NULL) return;
+    if (head == NULL)
+	return;
 
-	for (p = *head; p; p = next) {
-		next = p->next;
-		free(p);
-	}
+    for (p = *head; p; p = next) {
+	next = p->next;
+	free(p);
+    }
 
-	free(head);
+    free(head);
 }
 
 /*
@@ -104,27 +99,27 @@ RLIST	**head;
 *	the ordered list "head".  If ranges overlap, combine them.
 */
 void
-rlist_put(head, line1, col1, line2, col2)
-    int	line1;
-    int	col1;
-    int	line2;
-    int	col2;
-    RLIST	**head;
+rlist_put(RLIST ** head,
+	  int line1,
+	  int col1,
+	  int line2,
+	  int col2)
 {
-    RLIST	*p;
-    RLIST	*q;
-    RLIST	**next;
-    RLIST	*new;
-    int		sLine;
-    int		sCol;
-    int		eLine;
-    int		eCol;
-    
-    if (head == NULL) return;
-    
+    RLIST *p;
+    RLIST *q;
+    RLIST **next;
+    RLIST *new;
+    int sLine;
+    int sCol;
+    int eLine;
+    int eCol;
+
+    if (head == NULL)
+	return;
+
     /*
-    * Put start before end.
-    */
+     * Put start before end.
+     */
     if (line1 > line2 || (line1 == line2 && col1 > col2)) {
 	eLine = line1;
 	eCol = col1;
@@ -136,10 +131,10 @@ rlist_put(head, line1, col1, line2, col2)
 	eLine = line2;
 	eCol = col2;
     }
-    
+
     /*
-    * Find place to insert range.
-    */
+     * Find place to insert range.
+     */
     next = head;
     for (p = *next; p; p = p->next) {
 	if (eLine > p->sLine || (eLine == p->sLine && eCol >= p->sCol - 1)) {
@@ -147,7 +142,7 @@ rlist_put(head, line1, col1, line2, col2)
 	     *  Disjoint range?
 	     */
 	    if (sLine > p->eLine || (sLine == p->eLine && sCol > p->eCol + 1))
-	        break;
+		break;
 
 	    /*
 	     * Extend end of range if necessary.
@@ -162,8 +157,7 @@ rlist_put(head, line1, col1, line2, col2)
 	     */
 	    for (q = p->next; q; q = q->next) {
 		if (sLine < q->eLine ||
-		    (sLine == q->eLine && sCol <= q->eCol + 1))
-		{
+		    (sLine == q->eLine && sCol <= q->eCol + 1)) {
 		    /*
 		     * Combine *q and *p and free *q.
 		     */
@@ -172,8 +166,8 @@ rlist_put(head, line1, col1, line2, col2)
 		    p->next = q->next;
 		    free(q);
 		    q = p;
-		}
-		else break;
+		} else
+		    break;
 	    }
 
 	    /*
@@ -187,11 +181,11 @@ rlist_put(head, line1, col1, line2, col2)
 	}
 	next = &p->next;
     }
-    
+
     /*
-    * Insert disjoint range.
-    */
-    new = (RLIST *)malloc(sizeof *new);
+     * Insert disjoint range.
+     */
+    new = (RLIST *) malloc(sizeof *new);
     new->eLine = eLine;
     new->eCol = eCol;
     new->sLine = sLine;
@@ -201,166 +195,168 @@ rlist_put(head, line1, col1, line2, col2)
 }
 
 void
-rlist_reverse(head)
-RLIST	**head;
+rlist_reverse(RLIST ** head)
 {
-	RLIST *p;
-	RLIST *next;
-	RLIST *prev;
+    RLIST *p;
+    RLIST *next;
+    RLIST *prev;
 
-	if (head == NULL) return;
+    if (head == NULL)
+	return;
 
-	prev = NULL;
-	for (p = *head; p; p = next) {
-		next = p->next;
-		p->next = prev;
-		prev = p;
-	}
-	*head = prev;
+    prev = NULL;
+    for (p = *head; p; p = next) {
+	next = p->next;
+	p->next = prev;
+	prev = p;
+    }
+    *head = prev;
 }
 
 #if defined(TEST) || defined(TEST2)
 static void
-rlist_print(head)
-RLIST	**head;
+rlist_print(RLIST ** head)
 {
-	RLIST	*p;
+    RLIST *p;
 
-	if (head == NULL) return;
+    if (head == NULL)
+	return;
 
-	for (p = *head; p; p = p->next)
-		printf("[%d, %d] --> [%d, %d]\n", p->sLine, p->sCol, p->eLine, p->eCol);
+    for (p = *head; p; p = p->next)
+	printf("[%d, %d] --> [%d, %d]\n", p->sLine, p->sCol, p->eLine, p->eCol);
 }
 #endif
 
 int
-rlist_get(head, sLine, sCol, eLine, eCol)
-int	*sLine;
-int	*sCol;
-int	*eLine;
-int	*eCol;
-RLIST	**head;
+rlist_get(RLIST ** head,
+	  int *sLine,
+	  int *sCol,
+	  int *eLine,
+	  int *eCol)
 {
-	RLIST	*p;
+    RLIST *p;
 
-	if (head == NULL) return 0;
+    if (head == NULL)
+	return 0;
 
-	p = *head;
+    p = *head;
 
-	if (p == NULL) return 0;
+    if (p == NULL)
+	return 0;
 
-	*head = p->next;
+    *head = p->next;
 
-	*sLine = p->sLine;
-	*sCol = p->sCol;
-	*eLine = p->eLine;
-	*eCol = p->eCol;
+    *sLine = p->sLine;
+    *sCol = p->sCol;
+    *eLine = p->eLine;
+    *eCol = p->eCol;
 
-	free(p);
+    free(p);
 
-	return 1;
+    return 1;
 }
 
 #ifdef TEST
-static char bellcoreCopyRight[] = 
+static char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
 int
-main()
+main(void)
 {
-	int sLine, sCol, eLine, eCol;
-	RLIST **h;
+    int sLine, sCol, eLine, eCol;
+    RLIST **h;
 
-	h = rlist_create();
-	while (scanf("%d %d %d %d", &sLine, &sCol, &eLine, &eCol) == 4)
-		rlist_put(h, sLine, sCol, eLine, eCol);
-	printf("--- forward ---\n");
-	rlist_print(h);
-	printf("--- reverse ---\n");
-	rlist_reverse(h);
-	rlist_print(h);
-	rlist_free(h);
+    h = rlist_create();
+    while (scanf("%d %d %d %d", &sLine, &sCol, &eLine, &eCol) == 4)
+	rlist_put(h, sLine, sCol, eLine, eCol);
+    printf("--- forward ---\n");
+    rlist_print(h);
+    printf("--- reverse ---\n");
+    rlist_reverse(h);
+    rlist_print(h);
+    rlist_free(h);
 }
 #endif
 
 #ifdef TEST2
-static char bellcoreCopyRight[] = 
+static char bellcoreCopyRight[] =
 "Copyright (c) 1993 Bell Communications Research, Inc. (Bellcore)";
-main()
+int
+main(void)
 {
-	RLIST **h;
+    RLIST **h;
 
-	rlist_put(0, 0, 0, 0, 0);
+    rlist_put(0, 0, 0, 0, 0);
 
-	h = rlist_create();
+    h = rlist_create();
 
-	rlist_put(h, 31, 1, 33, 1);
-	rlist_put(h, 43, 1, 45, 1);
-	rlist_put(h, 50, 1, 53, 1);
-	rlist_put(h, 10, 1, 13, 1);
-	rlist_put(h, 22, 1, 25, 1);
-	rlist_put(h, 60, 1, 65, 1);
-	rlist_put(h, 72, 1, 75, 1);
-	rlist_put(h, 80, 1, 82, 1);
-	rlist_put(h, 90, 1, 92, 1);
-	rlist_put(h, 94, 1, 95, 1);
-	rlist_put(h, 102, 1, 104, 1);
-	rlist_put(h, 106, 1, 108, 1);
-	rlist_put(h, 110, 1, 113, 1);
-	rlist_put(h, 125, 1, 120, 1);
-	rlist_put(h, 12, 1, 15, 1);
-	rlist_put(h, 20, 1, 23, 1);
-	rlist_put(h, 30, 1, 35, 1);
-	rlist_put(h, 40, 1, 43, 1);
-	rlist_put(h, 53, 1, 55, 1);
-	rlist_put(h, 60, 1, 65, 1);
-	rlist_put(h, 70, 1, 75, 1);
-	rlist_put(h, 80, 1, 85, 1);
-	rlist_put(h, 91, 1, 94, 1);
-	rlist_put(h, 100, 1, 115, 1);
+    rlist_put(h, 31, 1, 33, 1);
+    rlist_put(h, 43, 1, 45, 1);
+    rlist_put(h, 50, 1, 53, 1);
+    rlist_put(h, 10, 1, 13, 1);
+    rlist_put(h, 22, 1, 25, 1);
+    rlist_put(h, 60, 1, 65, 1);
+    rlist_put(h, 72, 1, 75, 1);
+    rlist_put(h, 80, 1, 82, 1);
+    rlist_put(h, 90, 1, 92, 1);
+    rlist_put(h, 94, 1, 95, 1);
+    rlist_put(h, 102, 1, 104, 1);
+    rlist_put(h, 106, 1, 108, 1);
+    rlist_put(h, 110, 1, 113, 1);
+    rlist_put(h, 125, 1, 120, 1);
+    rlist_put(h, 12, 1, 15, 1);
+    rlist_put(h, 20, 1, 23, 1);
+    rlist_put(h, 30, 1, 35, 1);
+    rlist_put(h, 40, 1, 43, 1);
+    rlist_put(h, 53, 1, 55, 1);
+    rlist_put(h, 60, 1, 65, 1);
+    rlist_put(h, 70, 1, 75, 1);
+    rlist_put(h, 80, 1, 85, 1);
+    rlist_put(h, 91, 1, 94, 1);
+    rlist_put(h, 100, 1, 115, 1);
 
-	printf("--- lines forward ---\n");
-	rlist_print(h);
+    printf("--- lines forward ---\n");
+    rlist_print(h);
 
-	rlist_reverse(h);
-	printf("--- lines reverse ---\n");
-	rlist_print(h);
+    rlist_reverse(h);
+    printf("--- lines reverse ---\n");
+    rlist_print(h);
 
-	rlist_free(h);
+    rlist_free(h);
 
-	h = rlist_create();
+    h = rlist_create();
 
-	rlist_put(h, 1, 31, 1, 33);
-	rlist_put(h, 1, 43, 1, 45);
-	rlist_put(h, 1, 50, 1, 53);
-	rlist_put(h, 1, 10, 1, 13);
-	rlist_put(h, 1, 22, 1, 25);
-	rlist_put(h, 1, 60, 1, 65);
-	rlist_put(h, 1, 72, 1, 75);
-	rlist_put(h, 1, 80, 1, 82);
-	rlist_put(h, 1, 90, 1, 92);
-	rlist_put(h, 1, 94, 1, 95);
-	rlist_put(h, 1, 102, 1, 104);
-	rlist_put(h, 1, 106, 1, 108);
-	rlist_put(h, 1, 110, 1, 113);
-	rlist_put(h, 1, 125, 1, 120);
-	rlist_put(h, 1, 12, 1, 15);
-	rlist_put(h, 1, 20, 1, 23);
-	rlist_put(h, 1, 30, 1, 35);
-	rlist_put(h, 1, 40, 1, 43);
-	rlist_put(h, 1, 53, 1, 55);
-	rlist_put(h, 1, 60, 1, 65);
-	rlist_put(h, 1, 70, 1, 75);
-	rlist_put(h, 1, 80, 1, 85);
-	rlist_put(h, 1, 91, 1, 94);
-	rlist_put(h, 1, 100, 1, 115);
+    rlist_put(h, 1, 31, 1, 33);
+    rlist_put(h, 1, 43, 1, 45);
+    rlist_put(h, 1, 50, 1, 53);
+    rlist_put(h, 1, 10, 1, 13);
+    rlist_put(h, 1, 22, 1, 25);
+    rlist_put(h, 1, 60, 1, 65);
+    rlist_put(h, 1, 72, 1, 75);
+    rlist_put(h, 1, 80, 1, 82);
+    rlist_put(h, 1, 90, 1, 92);
+    rlist_put(h, 1, 94, 1, 95);
+    rlist_put(h, 1, 102, 1, 104);
+    rlist_put(h, 1, 106, 1, 108);
+    rlist_put(h, 1, 110, 1, 113);
+    rlist_put(h, 1, 125, 1, 120);
+    rlist_put(h, 1, 12, 1, 15);
+    rlist_put(h, 1, 20, 1, 23);
+    rlist_put(h, 1, 30, 1, 35);
+    rlist_put(h, 1, 40, 1, 43);
+    rlist_put(h, 1, 53, 1, 55);
+    rlist_put(h, 1, 60, 1, 65);
+    rlist_put(h, 1, 70, 1, 75);
+    rlist_put(h, 1, 80, 1, 85);
+    rlist_put(h, 1, 91, 1, 94);
+    rlist_put(h, 1, 100, 1, 115);
 
-	printf("--- columns forward ---\n");
-	rlist_print(h);
+    printf("--- columns forward ---\n");
+    rlist_print(h);
 
-	rlist_reverse(h);
-	printf("--- columns reverse ---\n");
-	rlist_print(h);
+    rlist_reverse(h);
+    printf("--- columns reverse ---\n");
+    rlist_print(h);
 
-	rlist_free(h);
+    rlist_free(h);
 }
 #endif

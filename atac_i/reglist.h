@@ -1,22 +1,22 @@
-/* $Id: reglist.h,v 3.1 1997/05/11 23:05:41 tom Exp $ */
+/* $Id: reglist.h,v 3.2 2013/12/08 22:06:18 tom Exp $ */
 
 #ifndef reglist_H
 #define reglist_H
 
 typedef struct regnode {
-	void		*data;
-	int		idno;
-	struct regnode	*left;
-	struct regnode	*right;
+    void *data;
+    int idno;
+    struct regnode *left;
+    struct regnode *right;
 } REGNODE;
 
 typedef struct {
-	REGNODE	*tree;
-	int	idno;
+    REGNODE *tree;
+    int idno;
 } REGLST;
 
-extern int reglst_insert P_(( REGLST *reglst, void *data ));
-extern void reglst_free P_(( REGLST *reglst ));
-extern REGLST *reglst_create P_(( void ));
+extern int reglst_insert(REGLST * reglst, void *data);
+extern void reglst_free(REGLST * reglst);
+extern REGLST *reglst_create(void);
 
 #endif /* reglist_H */

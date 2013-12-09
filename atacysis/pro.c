@@ -34,10 +34,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "ramfile.h"
 #include "man.h"
 
-static char const pro_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pro.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
+static char const pro_c[] = "$Id: pro.c,v 3.6 2013/12/09 01:11:41 tom Exp $";
 /*
-* $Log: pro.c,v $
+* @Log: pro.c,v @
 * Revision 3.4  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 * fix compiler warnings (casts).
@@ -84,36 +83,11 @@ static char const pro_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static int pro_test
-	P_((membertype *mems, char *pDate, char *pVersion, char *testName, int
-	corrupted));
-static void pro_block
-	P_((blocktype *block, int iTestCase, int iFreq));
-static void pro_cuse
-	P_((vartype *var, int iDefine, int iUse, int iTestCase, int iFreq));
-static void pro_puse
-	P_((vartype *var, int iDefine, int iUse, int iTo, int iTestCase, int
-	iFreq));
-static int pro_source P_((RAMFILE *rf, char *pName));
-static void pro_header
-	P_((struct cfile *cf, headertype *hdr, char *pPath, time_t iStamp, int
-	iTestCase, char *tracefile, char *testName, int *corrupted));
-static void extend_coverageVector
-	P_((coveragetype **coverageVector, int *iCovNext, int *iCoverageCount,
-	int iTestCase));
-static void extend_stampVector
-	P_((stampstype **stampVector, time_t *lStampNext, int *iStampCount, int
-	iTestCase));
-static int map_file P_((int iFileId));
-static int mapSet P_((int iFileId, int iFile));
-static void mapReset P_((void));
-
-static int	*sourceMap = NULL;
-static int	iMapCount = 0;
+static int *sourceMap = NULL;
+static int iMapCount = 0;
 
 static void
-mapReset()
+mapReset(void)
 {
     int i;
 
@@ -123,25 +97,24 @@ mapReset()
 }
 
 static int
-mapSet(iFileId, iFile)
-int	iFileId;
-int	iFile;
+mapSet(int iFileId,
+       int iFile)
 {
-    int	i;
-    int	newSize;
+    int i;
+    int newSize;
 
     for (i = 0; i < iMapCount; ++i) {
 	if (sourceMap[i] == iFileId) {
-	    return 0;			/* failure: already mapped */
+	    return 0;		/* failure: already mapped */
 	}
     }
 
     if (iMapCount <= iFile) {
 	newSize = iFile + MAP_POOL_SIZE;
 	if (iMapCount == 0) {
-	    sourceMap = (int *)malloc(newSize * sizeof *sourceMap);
+	    sourceMap = (int *) malloc((size_t) newSize * sizeof *sourceMap);
 	} else {
-	    sourceMap = (int *)realloc(sourceMap, newSize * sizeof *sourceMap);
+	    sourceMap = (int *) realloc(sourceMap, (size_t) newSize * sizeof *sourceMap);
 	}
 	if (sourceMap == NULL) {
 	    memoryError("realloc map table");
@@ -155,7 +128,7 @@ int	iFile;
 
     if (sourceMap[iFile] != -1) {
 	sourceMap[iFile] = iFileId;
-	return 0;			/* failure: map conflict */
+	return 0;		/* failure: map conflict */
     }
 
     sourceMap[iFile] = iFileId;
@@ -164,11 +137,10 @@ int	iFile;
 }
 
 static int
-map_file(iFileId)
-int	iFileId;
+map_file(int iFileId)
 {
     static int iCache = 0;
-    int	i;
+    int i;
 
     if (iMapCount == 0) {
 	return -1;
@@ -179,7 +151,8 @@ int	iFileId;
     }
 
     for (i = 0; i < iMapCount; ++i) {
-	if (sourceMap[i] == iFileId) break;
+	if (sourceMap[i] == iFileId)
+	    break;
     }
     if (i == iMapCount) {
 	return -1;
@@ -190,96 +163,93 @@ int	iFileId;
 }
 
 static void
-extend_stampVector(stampVector, lStampNext, iStampCount, iTestCase)
-stampstype	**stampVector;
-time_t	*lStampNext;
-int	*iStampCount;
-int	iTestCase;
+extend_stampVector(stampstype ** stampVector,
+		   time_t * lStampNext,
+		   int *iStampCount,
+		   int iTestCase)
 {
     int i;
 
     if (iTestCase > *iStampCount) {
 	if (*iStampCount == 0) {
-	    *stampVector = (stampstype *)pk_create();
+	    *stampVector = (stampstype *) pk_create();
 	}
-	pk_append((pkPack *)(*stampVector), (unsigned long)(*lStampNext));
-	*lStampNext = (time_t)0;
+	pk_append((pkPack *) (*stampVector), (unsigned long) (*lStampNext));
+	*lStampNext = (time_t) 0;
 	for (i = *iStampCount + 1; i < iTestCase; ++i) {
-	    pk_append((pkPack *)(*stampVector), 0);
+	    pk_append((pkPack *) (*stampVector), 0);
 	}
 	*iStampCount = iTestCase;
     }
 }
 
 static void
-extend_coverageVector(coverageVector, iCovNext, iCoverageCount, iTestCase)
-coveragetype	**coverageVector;
-int		*iCovNext;
-int		*iCoverageCount;
-int		iTestCase;
+extend_coverageVector(coveragetype ** coverageVector,
+		      int *iCovNext,
+		      int *iCoverageCount,
+		      int iTestCase)
 {
     int i;
 
     if (iTestCase > *iCoverageCount) {
 	if (*iCoverageCount == 0) {
-	    *coverageVector = (coveragetype *)pk_create();
+	    *coverageVector = (coveragetype *) pk_create();
 	}
-	pk_append((pkPack *)(*coverageVector), (unsigned long)(*iCovNext));
+	pk_append((pkPack *) (*coverageVector), (unsigned long) (*iCovNext));
 	*iCovNext = 0;
 	for (i = *iCoverageCount + 1; i < iTestCase; ++i) {
-	    pk_append((pkPack *)(*coverageVector), 0);
+	    pk_append((pkPack *) (*coverageVector), 0);
 	}
 	*iCoverageCount = iTestCase;
     }
 }
 
 static void
-pro_header(cf, hdr, pPath,iStamp, iTestCase, tracefile, testName, corrupted)
-struct cfile	*cf;
-headertype	*hdr;
-char	 *pPath;
-time_t	iStamp;
-int	iTestCase;
-char	*tracefile;
-char	*testName;
-int	*corrupted;
+pro_header(struct cfile *cf,
+	   headertype * hdr,
+	   char *pPath,
+	   time_t iStamp,
+	   int iTestCase,
+	   char *tracefile,
+	   char *testName,
+	   int *corrupted)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < hdr->iHeaderCount; ++i) {
-		if (0 == strcmp(pPath,hdr->headers[i].pPath)) {
-		    break;
-		}
+    for (i = 0; i < hdr->iHeaderCount; ++i) {
+	if (0 == strcmp(pPath, hdr->headers[i].pPath)) {
+	    break;
 	}
+    }
 
-	if (i == hdr->iHeaderCount) {
-	    prev_header(pPath, 0, NULL, hdr);
-	}
+    if (i == hdr->iHeaderCount) {
+	prev_header(pPath, 0, NULL, hdr);
+    }
 
-	extend_stampVector(&hdr->headers[i].stampVector,
-			   &hdr->headers[i].lStampNext,
-			   &hdr->headers[i].iStampCount,
-			   iTestCase);
-	if (hdr->headers[i].lStampNext != (time_t)0) {
-	    if (!*corrupted) {
-		traceError(tracefile, cf_lineNo(cf), testName);
-		*corrupted = 1;
-	    }
+    extend_stampVector(&hdr->headers[i].stampVector,
+		       &hdr->headers[i].lStampNext,
+		       &hdr->headers[i].iStampCount,
+		       iTestCase);
+    if (hdr->headers[i].lStampNext != (time_t) 0) {
+	if (!*corrupted) {
+	    traceError(tracefile, cf_lineNo(cf), testName);
+	    *corrupted = 1;
 	}
-	hdr->headers[i].lStampNext = iStamp;
+    }
+    hdr->headers[i].lStampNext = iStamp;
 }
 
 static int
-pro_source(rf, pName)
-RAMFILE *rf;
-char *pName;
+pro_source(RAMFILE * rf,
+	   const char *pName)
 {
     int i;
 
     /** check out when the stamp should be changed **/
 
     for (i = 0; i < rf->iFileCount; ++i) {
-	if (strcmp(pName, rf->files[i].pName) == 0) break;
+	if (strcmp(pName, rf->files[i].pName) == 0)
+	    break;
     }
 
     if (i == rf->iFileCount) {
@@ -290,21 +260,22 @@ char *pName;
 }
 
 static void
-pro_puse(var, iDefine, iUse, iTo, iTestCase, iFreq)
-vartype	*var;
-int iDefine,iUse,iTo;
-int	iTestCase;
-int	iFreq;
+pro_puse(
+	    vartype * var,
+	    int iDefine,
+	    int iUse,
+	    int iTo,
+	    int iTestCase,
+	    int iFreq)
 {
-    int		 i;
-    pusetype	*puse = NULL;
+    int i;
+    pusetype *puse = NULL;
 
     for (i = 0; i < var->iPuseCount; ++i) {
 	puse = &var->puses[i];
-	if ( (puse->iDefine == iDefine) && 
-	     (puse->iUse    == iUse) &&
-	     (puse->iTo     == iTo )   )
-	{
+	if ((puse->iDefine == iDefine) &&
+	    (puse->iUse == iUse) &&
+	    (puse->iTo == iTo)) {
 	    break;
 	}
     }
@@ -312,8 +283,8 @@ int	iFreq;
 	check_puse(var, i);
 	puse = &var->puses[i];	/* var->puses may be moved by check_puse */
 	puse->iDefine = iDefine;
-	puse->iUse    = iUse;
-	puse->iTo     = iTo;
+	puse->iUse = iUse;
+	puse->iTo = iTo;
 	puse->iTestCount = 0;
 	puse->coverage = NULL;
     }
@@ -325,20 +296,19 @@ int	iFreq;
 }
 
 static void
-pro_cuse(var, iDefine, iUse, iTestCase, iFreq)
-vartype	*var;
-int iDefine,iUse;
-int	iTestCase;
-int	iFreq;
+pro_cuse(vartype * var,
+	 int iDefine,
+	 int iUse,
+	 int iTestCase,
+	 int iFreq)
 {
-    int		 i;
-    cusetype	*cuse = NULL;
+    int i;
+    cusetype *cuse = NULL;
 
     for (i = 0; i < var->iCuseCount; ++i) {
 	cuse = &var->cuses[i];
-	if ( (cuse->iDefine == iDefine) && 
-	     (cuse->iUse    == iUse))
-	{
+	if ((cuse->iDefine == iDefine) &&
+	    (cuse->iUse == iUse)) {
 	    break;
 	}
     }
@@ -346,7 +316,7 @@ int	iFreq;
 	check_cuse(var, i);
 	cuse = &var->cuses[i];	/* var->cuses may be moved by check_cuse */
 	cuse->iDefine = iDefine;
-	cuse->iUse    = iUse;
+	cuse->iUse = iUse;
 	cuse->iTestCount = 0;
 	cuse->coverage = NULL;
     }
@@ -358,10 +328,9 @@ int	iFreq;
 }
 
 static void
-pro_block(block, iTestCase, iFreq)
-blocktype	*block;
-int		iTestCase;
-int		iFreq;
+pro_block(blocktype * block,
+	  int iTestCase,
+	  int iFreq)
 {
     if (block->iTestCount <= iTestCase) {
 	extend_coverageVector(&block->coverage, &block->iCovNext,
@@ -371,12 +340,11 @@ int		iFreq;
 }
 
 static int
-pro_test(mems, pDate, pVersion, testName, corrupted)
-membertype	*mems;
-char		*pDate;
-char		*pVersion;
-char		*testName;
-int		corrupted;
+pro_test(membertype * mems,
+	 const char *pDate,
+	 const char *pVersion,
+	 const char *testName,
+	 int corrupted)
 {
     mapReset();
     return prev_member(pDate, pVersion, 0, testName, 100, 0, corrupted, mems);
@@ -386,19 +354,18 @@ int		corrupted;
 * testNo: Return the next available .n suffix for testName.
 */
 int
-testNo(mems, testName)
-membertype	*mems;
-char		*testName;
+testNo(membertype * mems,
+       const char *testName)
 {
-    int		i;
-    size_t	len;
-    int		max;
-    char	*pName;
-    int		n;
+    int i;
+    size_t len;
+    int max;
+    char *pName;
+    int n;
 
     max = 0;
     len = strlen(testName);
-    
+
     for (i = 0; i < mems->iMemberCount; ++i) {
 	pName = mems->members[i].pName;
 	if (strncmp(pName, testName, len) == 0 && pName[len] == '.') {
@@ -413,24 +380,23 @@ char		*testName;
 }
 
 void
-process_pipe(cf, tracefile, tables, initC, indexOnly)
-struct cfile	*cf;
-char		*tracefile;
-tablestype	*tables;
-int		initC;
-int		indexOnly;
+process_pipe(struct cfile *cf,
+	     char *tracefile,
+	     tablestype * tables,
+	     int initC,
+	     int indexOnly)
 {
     int c;
-    int iFile,iFunc,iBlock,iVar,iDef,iUse,iTo;
+    int iFile, iFunc, iBlock, iVar, iDef, iUse, iTo;
     time_t lTime;
     char acBuffer[BUFFER_SIZE];
     char acDate[50];
     char acVersion[50];
     char acName[50];
-    int	iTestCase;
+    int iTestCase;
     int iFileId;
     int iFreq;
-    int	corrupted;
+    int corrupted;
     int *pCorrupted = NULL;
 
     iTestCase = -1;
@@ -439,9 +405,8 @@ int		indexOnly;
     c = initC;
 
     while (c != EOF) {
-	switch (c)
-	{
- 	case 't':
+	switch (c) {
+	case 't':
 	    corrupted = 0;
 	    cf_getString(cf, acDate, sizeof acDate);
 	    cf_getString(cf, acVersion, sizeof acVersion);
@@ -455,9 +420,8 @@ int		indexOnly;
 		traceError(tracefile, cf_lineNo(cf), acName);
 		strcpy(acDate, "?");
 		corrupted = 1;
-	    }
-	    else if (acVersion[0] == '\0') {
-		    strcpy(acVersion, "old");
+	    } else if (acVersion[0] == '\0') {
+		strcpy(acVersion, "old");
 	    }
 	    iTestCase = pro_test(&tables->mems, acDate, acVersion, acName,
 				 corrupted);
@@ -484,10 +448,11 @@ int		indexOnly;
 		pCorrupted = &tables->mems.members[iTestCase].iCorrupted;
 		iFile = -1;
 	    }
-	    if (indexOnly) break;
+	    if (indexOnly)
+		break;
 	    iFileId = cf_getLong(cf);
 	    cf_getString(cf, acBuffer, sizeof acBuffer);
-	    lTime = (time_t)cf_getLong(cf);
+	    lTime = (time_t) cf_getLong(cf);
 
 	    iFile = pro_source(&tables->rf, acBuffer);
 	    if (mapSet(iFileId, iFile) == 0) {
@@ -503,12 +468,13 @@ int		indexOnly;
 	    if (iTestCase == -1) {
 		sprintf(acName, "E.%d", testNo(&tables->mems, "E"));
 		traceError(tracefile, cf_lineNo(cf), acName);
-		iTestCase = pro_test(&tables->mems, "unknown","unknown", 
+		iTestCase = pro_test(&tables->mems, "unknown", "unknown",
 				     acName, 1);
 		iFile = pro_source(&tables->rf, "=dummy=");
 		pCorrupted = &tables->mems.members[iTestCase].iCorrupted;
-	    } 
-	    if (indexOnly) break;
+	    }
+	    if (indexOnly)
+		break;
 	    if (iFile == -1) {
 		if (!*pCorrupted) {
 		    traceError(tracefile, cf_lineNo(cf), acName);
@@ -517,8 +483,8 @@ int		indexOnly;
 		iFile = pro_source(&tables->rf, "=dummy=");
 	    }
 	    cf_getString(cf, acBuffer, sizeof acBuffer);
-	    lTime = (time_t)cf_getLong(cf);
-	    pro_header(cf, &tables->rf.files[iFile].hdr, acBuffer,lTime,
+	    lTime = (time_t) cf_getLong(cf);
+	    pro_header(cf, &tables->rf.files[iFile].hdr, acBuffer, lTime,
 		       iTestCase, tracefile, acName, pCorrupted);
 	    break;
 	case 'b':
@@ -530,7 +496,8 @@ int		indexOnly;
 		pCorrupted = &tables->mems.members[iTestCase].iCorrupted;
 		iFile = -1;
 	    }
-	    if (indexOnly) break;
+	    if (indexOnly)
+		break;
 	    iFile = map_file(cf_getLong(cf));
 	    if (iFile == -1) {
 		if (!*pCorrupted) {
@@ -540,10 +507,11 @@ int		indexOnly;
 		break;
 	    }
 	    iFunc = cf_getLong(cf);
-	    iBlock= cf_getLong(cf);
+	    iBlock = cf_getLong(cf);
 	    iFreq = cf_getLong(cf);
-	    if (iFreq == 0) iFreq = 1;
-				
+	    if (iFreq == 0)
+		iFreq = 1;
+
 	    check_func(&tables->rf.files[iFile], iFunc);
 	    check_block(&tables->rf.files[iFile].funcs[iFunc], iBlock);
 	    pro_block(&tables->rf.files[iFile].funcs[iFunc].blocks[iBlock],
@@ -558,7 +526,8 @@ int		indexOnly;
 		pCorrupted = &tables->mems.members[iTestCase].iCorrupted;
 		iFile = -1;
 	    }
-	    if (indexOnly) break;
+	    if (indexOnly)
+		break;
 	    iFile = map_file(cf_getLong(cf));
 	    if (iFile == -1) {
 		if (!*pCorrupted) {
@@ -568,16 +537,17 @@ int		indexOnly;
 		break;
 	    }
 	    iFunc = cf_getLong(cf);
-	    iVar  = cf_getLong(cf);
-	    iDef  = cf_getLong(cf);
-	    iUse  = cf_getLong(cf);
+	    iVar = cf_getLong(cf);
+	    iDef = cf_getLong(cf);
+	    iUse = cf_getLong(cf);
 	    iFreq = cf_getLong(cf);
-	    if (iFreq == 0) iFreq = 1;
+	    if (iFreq == 0)
+		iFreq = 1;
 
 	    check_func(&tables->rf.files[iFile], iFunc);
 	    check_var(&tables->rf.files[iFile].funcs[iFunc], iVar);
 	    pro_cuse(&tables->rf.files[iFile].funcs[iFunc].vars[iVar],
-		      iDef, iUse, iTestCase, iFreq);
+		     iDef, iUse, iTestCase, iFreq);
 	    break;
 	case 'p':
 	    if (iTestCase == -1) {
@@ -588,7 +558,8 @@ int		indexOnly;
 		pCorrupted = &tables->mems.members[iTestCase].iCorrupted;
 		iFile = -1;
 	    }
-	    if (indexOnly) break;
+	    if (indexOnly)
+		break;
 	    iFile = map_file(cf_getLong(cf));
 	    if (iFile == -1) {
 		if (!*pCorrupted) {
@@ -598,19 +569,20 @@ int		indexOnly;
 		break;
 	    }
 	    iFunc = cf_getLong(cf);
-	    iVar  = cf_getLong(cf);
-	    iDef  = cf_getLong(cf);
-	    iUse  = cf_getLong(cf);
-	    iTo   = cf_getLong(cf);
+	    iVar = cf_getLong(cf);
+	    iDef = cf_getLong(cf);
+	    iUse = cf_getLong(cf);
+	    iTo = cf_getLong(cf);
 	    iFreq = cf_getLong(cf);
-	    if (iFreq == 0) iFreq = 1;
+	    if (iFreq == 0)
+		iFreq = 1;
 
 	    check_func(&tables->rf.files[iFile], iFunc);
 	    check_var(&tables->rf.files[iFile].funcs[iFunc], iVar);
 	    pro_puse(&tables->rf.files[iFile].funcs[iFunc].vars[iVar],
-		      iDef, iUse, iTo, iTestCase, iFreq);
+		     iDef, iUse, iTo, iTestCase, iFreq);
 	    break;
-	default :
+	default:
 	    if (iTestCase == -1) {
 		sprintf(acName, "E.%d", testNo(&tables->mems, "E"));
 		traceError(tracefile, cf_lineNo(cf), acName);
@@ -618,8 +590,7 @@ int		indexOnly;
 				     acName, 1);
 		pCorrupted = &tables->mems.members[iTestCase].iCorrupted;
 		iFile = -1;
-	    }
-	    else if (!*pCorrupted) {
+	    } else if (!*pCorrupted) {
 		traceError(tracefile, cf_lineNo(cf), acName);
 		*pCorrupted = 1;
 	    }

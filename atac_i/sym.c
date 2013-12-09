@@ -33,10 +33,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "sym.h"
 #include "tree.h"
 
-static char const sym_c[] =
-"$Header: /users/source/archives/atac.vcs/atac_i/RCS/sym.c,v 3.13 2008/12/17 01:00:11 tom Exp $";
+static char const sym_c[] = "$Id: sym.c,v 3.14 2013/12/08 18:49:52 tom Exp $";
 /*
-* $Log: sym.c,v $
+* @Log: sym.c,v @
 * Revision 3.13  2008/12/17 01:00:11  tom
 * convert to ANSI, indent'd.  Use childX() functions rather than CHILDx()
 * macros to quiet gcc 4.3.2 warnings about reuse of macro_n in parameters.
@@ -224,9 +223,8 @@ copy_dimlist(DIMLIST * list)
 * 
 */
 static SYM *
-mk_valsym(
-	     VALTYPE * type,
-	     NAMETYPE nametype)
+mk_valsym(VALTYPE * type,
+	  NAMETYPE nametype)
 {
     SYM *sym;
 
@@ -365,8 +363,8 @@ sym_insert(SYM * sym,
 	    if (sym->nametype != VALSYM)
 		break;
 	    /*
-	       * Permit forward or backward references to functions
-	       * or globals.
+	     * Permit forward or backward references to functions
+	     * or globals.
 	     */
 /* ?unknown? should check that the types don't conflict and then merge into one sym */
 	    if (sym->type.valtype.sclass & SCB_EXTERN_REF)
@@ -409,11 +407,10 @@ sym_find(char *name,
 * in any symtab in symtablist.
 */
 static SYM *
-ssym_find(
-	     char *name,
-	     NAMETYPE nametype1,
-	     NAMETYPE nametype2,
-	     SYMTABLIST * symtablist)
+ssym_find(char *name,
+	  NAMETYPE nametype1,
+	  NAMETYPE nametype2,
+	  SYMTABLIST * symtablist)
 {
     SYMTABLIST *p;
     SYM *sym;
@@ -666,9 +663,9 @@ dcl_data_specs(TNODE * node,	/* genus: GEN_DATA_SPECS */
 	dcl_data_item(child0(p), sym, symtablist);
 
 	/*
-	   * All functions are EXTERN (except functions with bodies
-	   * which are handled by dcl_function).  Other class info
-	   * is ignored (e.g. register, static).
+	 * All functions are EXTERN (except functions with bodies
+	 * which are handled by dcl_function).  Other class info
+	 * is ignored (e.g. register, static).
 	 */
 	if (QUAL_ISFUNC(sym->type.valtype.qual))
 	    sym->type.valtype.sclass = SCB_EXTERN_REF;
@@ -703,7 +700,7 @@ dcl_data_specs(TNODE * node,	/* genus: GEN_DATA_SPECS */
 		}
 	    } else {
 		/*
-		   * uninitialized static defaults to 0.
+		 * uninitialized static defaults to 0.
 		 */
 		sym->constValue->type = CONST_VT;
 		sym->constValue->fraction = 0;
@@ -966,9 +963,8 @@ dcl_enum(TNODE * node,		/* genus: GEN_ENUM_DCL */
 }
 
 static SYM *			/* returns pointer to tag symbol */
-ref_enum(
-	    TNODE * node,	/* genus: GEN_ENUM_REF */
-	    SYMTABLIST * symtablist)
+ref_enum(TNODE * node,		/* genus: GEN_ENUM_REF */
+	 SYMTABLIST * symtablist)
 {
     TNODE *tagnode;
     SYM *tagsym;
@@ -1061,10 +1057,9 @@ checkBaseType(int base,
 * checkSClass: Check that storage class makes sence.
 */
 static int
-checkSClass(
-	       int sclass,
-	       symType_t symType,
-	       SRCPOS * srcpos)
+checkSClass(int sclass,
+	    symType_t symType,
+	    SRCPOS * srcpos)
 {
     int sc;
     int constVolatile;
@@ -1135,11 +1130,10 @@ checkSClass(
 }
 
 static void
-getClassTypes(
-		 TNODE * node,
-		 symType_t symType,
-		 VALTYPE * type,
-		 SYMTABLIST * symtablist)
+getClassTypes(TNODE * node,
+	      symType_t symType,
+	      VALTYPE * type,
+	      SYMTABLIST * symtablist)
 {
     TNODE *p;
     TNODE *t;
@@ -1315,15 +1309,15 @@ dcl(TNODE * node,		/* GEN_INIT_DCL or GEN_INDATA_DCL */
 	break;
     case INIT_DCL_NOSPEC:
 	/*
-	   * A type declaration without any data items may be
-	   * used to define a struct/union/enum tag.  Some programmers
-	   * like to preceede these declarations with "typedef" for
-	   * clarity (even though no type name is defined).  ANSI
-	   * allows undeclaration of a struct/union tag this way.
-	   * We allow all declarations without data items even
-	   * though they don't make much sense.  In any case,
-	   * getClassTypes has taken care of the tags so there is
-	   * nothing to do here.
+	 * A type declaration without any data items may be
+	 * used to define a struct/union/enum tag.  Some programmers
+	 * like to preceede these declarations with "typedef" for
+	 * clarity (even though no type name is defined).  ANSI
+	 * allows undeclaration of a struct/union tag this way.
+	 * We allow all declarations without data items even
+	 * though they don't make much sense.  In any case,
+	 * getClassTypes has taken care of the tags so there is
+	 * nothing to do here.
 	 */
 	break;
     case INIT_DCL_EMPTY:
@@ -1336,9 +1330,8 @@ dcl(TNODE * node,		/* GEN_INIT_DCL or GEN_INDATA_DCL */
 }
 
 static void
-dcl_function(
-		TNODE * node,	/* GEN_FUNCTION */
-		SYMTABLIST * symtablist)
+dcl_function(TNODE * node,	/* GEN_FUNCTION */
+	     SYMTABLIST * symtablist)
 {
     VALTYPE type;
     SYM *sym;
@@ -1505,8 +1498,7 @@ ansiParam(TNODE * node,		/* GEN_ANSI_PARAM */
 }
 
 static void
-default_params(
-		  SYMLIST ** symtab)
+default_params(SYMLIST ** symtab)
 {
     SYMLIST *p;
     SYM *sym;

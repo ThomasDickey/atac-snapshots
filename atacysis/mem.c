@@ -32,10 +32,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "ramfile.h"
 #include "man.h"
 
-static char const mem_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/mem.c,v 3.4 1995/12/29 21:24:41 tom Exp $";
+static char const mem_c[] = "$Id: mem.c,v 3.5 2013/12/08 20:10:23 tom Exp $";
 /*
-* $Log: mem.c,v $
+* @Log: mem.c,v @
 * Revision 3.4  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -71,9 +70,8 @@ static char const mem_c[] =
 *	Initialize if necessary.
 */
 void
-check_block(func, iBlock)
-functype	*func;
-int		iBlock;
+check_block(functype * func,
+	    int iBlock)
 {
     int i;
 
@@ -81,10 +79,10 @@ int		iBlock;
 	func->iBlockPool = ((iBlock / BLOCK_POOL_SIZE) + 1) * BLOCK_POOL_SIZE;
 	if (NULL == func->blocks) {
 	    func->blocks = (blocktype *)
-	        malloc(func->iBlockPool * sizeof(blocktype));
+		malloc(func->iBlockPool * sizeof(blocktype));
 	} else {
 	    func->blocks = (blocktype *)
-	        realloc(func->blocks, func->iBlockPool * sizeof(blocktype));
+		realloc(func->blocks, func->iBlockPool * sizeof(blocktype));
 	}
 	if (NULL == func->blocks) {
 	    memoryError("allocating blocks");
@@ -93,7 +91,7 @@ int		iBlock;
 
     if (iBlock >= func->iBlockCount) {
 	for (i = func->iBlockCount; i <= iBlock; ++i) {
-	    func->blocks[i].coverage = (coveragetype *)NULL;
+	    func->blocks[i].coverage = (coveragetype *) NULL;
 	    func->blocks[i].iTestCount = 0;
 	    func->blocks[i].iCovNext = 0;
 	}
@@ -106,19 +104,18 @@ int		iBlock;
 *	Initialize if necessary.
 */
 void
-check_var(func, iVar)
-functype	*func;
-int		iVar;
+check_var(functype * func,
+	  int iVar)
 {
     int i;
 
     if (iVar >= func->iVarPool) {
 	func->iVarPool = ((iVar / VAR_POOL_SIZE) + 1) * VAR_POOL_SIZE;
 	if (NULL == func->vars) {
-	    func->vars = (vartype *)malloc(func->iVarPool * sizeof(vartype));
+	    func->vars = (vartype *) malloc(func->iVarPool * sizeof(vartype));
 	} else {
 	    func->vars = (vartype *)
-	        realloc(func->vars, func->iVarPool * sizeof(vartype));
+		realloc(func->vars, func->iVarPool * sizeof(vartype));
 	}
 	if (NULL == func->vars) {
 	    memoryError("allocating vars");
@@ -127,10 +124,10 @@ int		iVar;
 
     if (iVar >= func->iVarCount) {
 	for (i = func->iVarCount; i <= iVar; ++i) {
-	    func->vars[i].cuses = (cusetype *)NULL;
+	    func->vars[i].cuses = (cusetype *) NULL;
 	    func->vars[i].iCuseCount = 0;
 	    func->vars[i].iCusePool = 0;
-	    func->vars[i].puses = (pusetype *)NULL;
+	    func->vars[i].puses = (pusetype *) NULL;
 	    func->vars[i].iPuseCount = 0;
 	    func->vars[i].iPusePool = 0;
 	}
@@ -143,19 +140,18 @@ int		iVar;
 *	Initialize if necessary.
 */
 void
-check_cuse(var, iCuse)
-vartype	*var;
-int 	iCuse;
+check_cuse(vartype * var,
+	   int iCuse)
 {
     int i;
 
     if (iCuse >= var->iCusePool) {
 	var->iCusePool = ((iCuse / CUSE_POOL_SIZE) + 1) * CUSE_POOL_SIZE;
 	if (NULL == var->cuses) {
-	    var->cuses = (cusetype *)malloc(var->iCusePool * sizeof(cusetype));
+	    var->cuses = (cusetype *) malloc(var->iCusePool * sizeof(cusetype));
 	} else {
 	    var->cuses = (cusetype *)
-	        realloc(var->cuses, var->iCusePool * sizeof(cusetype));
+		realloc(var->cuses, var->iCusePool * sizeof(cusetype));
 	}
 	if (NULL == var->cuses) {
 	    memoryError("allocating cuses");
@@ -164,7 +160,7 @@ int 	iCuse;
 
     if (iCuse >= var->iCuseCount) {
 	for (i = var->iCuseCount; i <= iCuse; ++i) {
-	    var->cuses[i].coverage = (coveragetype *)NULL;
+	    var->cuses[i].coverage = (coveragetype *) NULL;
 	    var->cuses[i].iTestCount = 0;
 	    var->cuses[i].iCovNext = 0;
 	    var->cuses[i].iDefine = -1;
@@ -179,19 +175,18 @@ int 	iCuse;
 *	Initialize if necessary.
 */
 void
-check_puse(var, iPuse)
-vartype	*var;
-int 	iPuse;
+check_puse(vartype * var,
+	   int iPuse)
 {
     int i;
 
     if (iPuse >= var->iPusePool) {
 	var->iPusePool = ((iPuse / PUSE_POOL_SIZE) + 1) * PUSE_POOL_SIZE;
 	if (NULL == var->puses) {
-	    var->puses = (pusetype *)malloc(var->iPusePool * sizeof(pusetype));
+	    var->puses = (pusetype *) malloc(var->iPusePool * sizeof(pusetype));
 	} else {
 	    var->puses = (pusetype *)
-	        realloc(var->puses, var->iPusePool * sizeof(pusetype));
+		realloc(var->puses, var->iPusePool * sizeof(pusetype));
 	}
 	if (NULL == var->puses) {
 	    memoryError("allocating puses");
@@ -200,7 +195,7 @@ int 	iPuse;
 
     if (iPuse >= var->iPuseCount) {
 	for (i = var->iPuseCount; i <= iPuse; ++i) {
-	    var->puses[i].coverage = (coveragetype *)NULL;
+	    var->puses[i].coverage = (coveragetype *) NULL;
 	    var->puses[i].iTestCount = 0;
 	    var->puses[i].iCovNext = 0;
 	    var->puses[i].iDefine = -1;
@@ -215,9 +210,8 @@ int 	iPuse;
 *	Initialize if necessary.
 */
 void
-check_func(file, iFunc)
-filetype	*file;
-int 		iFunc;
+check_func(filetype * file,
+	   int iFunc)
 {
     int i;
 
@@ -225,10 +219,10 @@ int 		iFunc;
 	file->iFuncPool = ((iFunc / FUNC_POOL_SIZE) + 1) * FUNC_POOL_SIZE;
 	if (NULL == file->funcs) {
 	    file->funcs = (functype *)
-	        malloc(file->iFuncPool * sizeof(functype));
+		malloc(file->iFuncPool * sizeof(functype));
 	} else {
 	    file->funcs = (functype *)
-	        realloc(file->funcs, file->iFuncPool * sizeof(functype));
+		realloc(file->funcs, file->iFuncPool * sizeof(functype));
 	}
 	if (NULL == file->funcs) {
 	    memoryError("allocating funcs");
@@ -237,12 +231,12 @@ int 		iFunc;
 
     if (iFunc >= file->iFuncCount) {
 	for (i = file->iFuncCount; i <= iFunc; ++i) {
-	    file->funcs[i].blocks = (blocktype *)NULL;
-	    file->funcs[i].iBlockCount= 0;
-	    file->funcs[i].iBlockPool= 0;
-	    file->funcs[i].vars = (vartype *)NULL;
-	    file->funcs[i].iVarCount= 0;
-	    file->funcs[i].iVarPool= 0;
+	    file->funcs[i].blocks = (blocktype *) NULL;
+	    file->funcs[i].iBlockCount = 0;
+	    file->funcs[i].iBlockPool = 0;
+	    file->funcs[i].vars = (vartype *) NULL;
+	    file->funcs[i].iVarCount = 0;
+	    file->funcs[i].iVarPool = 0;
 	}
 	file->iFuncCount = iFunc + 1;
     }
@@ -253,9 +247,8 @@ int 		iFunc;
 *	Initialize if necessary.
 */
 void
-check_file(rf, iFile)
-RAMFILE		*rf;
-int 		iFile;
+check_file(RAMFILE * rf,
+	   int iFile)
 {
     int i;
 
@@ -263,10 +256,10 @@ int 		iFile;
 	rf->iFilePool = ((iFile / FILE_POOL_SIZE) + 1) * FILE_POOL_SIZE;
 	if (NULL == rf->files) {
 	    rf->files = (filetype *)
-	        malloc(rf->iFilePool * sizeof(filetype));
+		malloc(rf->iFilePool * sizeof(filetype));
 	} else {
 	    rf->files = (filetype *)
-	        realloc(rf->files, rf->iFilePool * sizeof(filetype));
+		realloc(rf->files, rf->iFilePool * sizeof(filetype));
 	}
 	if (NULL == rf->files) {
 	    memoryError("allocating files");
@@ -275,11 +268,11 @@ int 		iFile;
 
     if (iFile >= rf->iFileCount) {
 	for (i = rf->iFileCount; i <= iFile; ++i) {
-	    rf->files[i].funcs = (functype *)NULL;
-	    rf->files[i].iFuncCount= 0;
-	    rf->files[i].iFuncPool= 0;
-	    rf->files[i].pName = (char *)NULL;
-	    rf->files[i].hdr.headers = (headerstype *)NULL;
+	    rf->files[i].funcs = (functype *) NULL;
+	    rf->files[i].iFuncCount = 0;
+	    rf->files[i].iFuncPool = 0;
+	    rf->files[i].pName = (char *) NULL;
+	    rf->files[i].hdr.headers = (headerstype *) NULL;
 	    rf->files[i].hdr.iHeaderCount = 0;
 	    rf->files[i].hdr.iHeaderPool = 0;
 	}
@@ -292,9 +285,8 @@ int 		iFile;
 *	Initialize if necessary.
 */
 void
-check_member(mem, iMember)
-membertype	*mem;
-int 		iMember;
+check_member(membertype * mem,
+	     int iMember)
 {
     int i;
 
@@ -303,10 +295,10 @@ int 		iMember;
 	    MEMBER_POOL_SIZE;
 	if (NULL == mem->members) {
 	    mem->members = (memberstype *)
-	        malloc(mem->iMemberPool * sizeof(memberstype));
+		malloc(mem->iMemberPool * sizeof(memberstype));
 	} else {
 	    mem->members = (memberstype *)
-	        realloc(mem->members, mem->iMemberPool * sizeof(memberstype));
+		realloc(mem->members, mem->iMemberPool * sizeof(memberstype));
 	}
 	if (NULL == mem->members) {
 	    memoryError("allocating members");
@@ -315,10 +307,10 @@ int 		iMember;
 
     if (iMember >= mem->iMemberCount) {
 	for (i = mem->iMemberCount; i <= iMember; ++i) {
-	    mem->members[i].pDate = (char *)NULL;
+	    mem->members[i].pDate = (char *) NULL;
 	    mem->members[i].iFamily = -1;
-	    mem->members[i].pName = (char *)NULL;
-	    mem->members[i].pVersion = (char *)NULL;
+	    mem->members[i].pName = (char *) NULL;
+	    mem->members[i].pVersion = (char *) NULL;
 	    mem->members[i].iCost = -1;
 	    mem->members[i].iFreqFlag = -1;
 	    mem->members[i].iCorrupted = -1;
@@ -333,9 +325,8 @@ int 		iMember;
 *	Initialize if necessary.
 */
 void
-check_header(hdr, iHeader)
-headertype	*hdr;
-int 		iHeader;
+check_header(headertype * hdr,
+	     int iHeader)
 {
     int i;
 
@@ -344,10 +335,10 @@ int 		iHeader;
 	    HEADER_POOL_SIZE;
 	if (NULL == hdr->headers) {
 	    hdr->headers = (headerstype *)
-	        malloc(hdr->iHeaderPool * sizeof(headerstype));
+		malloc(hdr->iHeaderPool * sizeof(headerstype));
 	} else {
 	    hdr->headers = (headerstype *)
-	        realloc(hdr->headers, hdr->iHeaderPool * sizeof(headerstype));
+		realloc(hdr->headers, hdr->iHeaderPool * sizeof(headerstype));
 	}
 	if (NULL == hdr->headers) {
 	    memoryError("allocating headers");
@@ -356,9 +347,9 @@ int 		iHeader;
 
     if (iHeader >= hdr->iHeaderCount) {
 	for (i = hdr->iHeaderCount; i <= iHeader; ++i) {
-	    hdr->headers[i].pPath = (char *)NULL;
-	    hdr->headers[i].stampVector = (stampstype *)NULL;
-	    hdr->headers[i].lStampNext = (time_t)0;
+	    hdr->headers[i].pPath = (char *) NULL;
+	    hdr->headers[i].stampVector = (stampstype *) NULL;
+	    hdr->headers[i].lStampNext = (time_t) 0;
 	    hdr->headers[i].iStampCount = -1;
 	}
 	hdr->iHeaderCount = iHeader + 1;
@@ -370,9 +361,8 @@ int 		iHeader;
 *	Initialize if necessary.
 */
 void
-check_family(fam, iFamily)
-familytype	*fam;
-int 		iFamily;
+check_family(familytype * fam,
+	     int iFamily)
 {
     int i;
 
@@ -381,10 +371,10 @@ int 		iFamily;
 	    FAMILY_POOL_SIZE;
 	if (NULL == fam->families) {
 	    fam->families = (familiestype *)
-	        malloc(fam->iFamilyPool * sizeof(familiestype));
+		malloc(fam->iFamilyPool * sizeof(familiestype));
 	} else {
 	    fam->families = (familiestype *)
-	        realloc(fam->families, fam->iFamilyPool * sizeof(familiestype));
+		realloc(fam->families, fam->iFamilyPool * sizeof(familiestype));
 	}
 	if (NULL == fam->families) {
 	    memoryError("allocating families");
@@ -393,7 +383,7 @@ int 		iFamily;
 
     if (iFamily >= fam->iFamilyCount) {
 	for (i = fam->iFamilyCount; i <= iFamily; ++i) {
-	    fam->families[i].family = (char *)NULL;
+	    fam->families[i].family = (char *) NULL;
 	}
 	fam->iFamilyCount = iFamily + 1;
     }

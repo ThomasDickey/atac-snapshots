@@ -21,10 +21,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/error.c,v 3.4 2005/08/14 14:02:03 tom Exp $";
+static char const error_c[] = "$Id: error.c,v 3.6 2013/12/08 23:55:14 tom Exp $";
 /*
-* $Log: error.c,v $
+* @Log: error.c,v @
 * Revision 3.4  2005/08/14 14:02:03  tom
 * gcc warnings
 *
@@ -50,20 +49,18 @@ static char const error_c[] =
 */
 
 void
-internal_error(s, arg1, arg2)
-char	*s;
-char	*arg1;
-char	*arg2;
+internal_error(const char *s,
+	       const char *arg1,
+	       const char *arg2)
 {
-	fprintf(stderr, s, arg1, arg2);
-	exit(1);
+    fprintf(stderr, s, arg1, arg2);
+    exit(1);
 }
 
 void
-trace_error(filename, recno)
-char	*filename;
-int	 recno;
+trace_error(const char *filename,
+	    int recno)
 {
-	fprintf(stderr, "%s: corrupted trace line: %d\n", filename, recno);
-	exit(1);
+    fprintf(stderr, "%s: corrupted trace line: %d\n", filename, recno);
+    exit(1);
 }

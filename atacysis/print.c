@@ -22,10 +22,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const print_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/print.c,v 3.5 1995/12/27 20:13:58 tom Exp $";
+static char const print_c[] = "$Id: print.c,v 3.6 2013/12/08 19:02:59 tom Exp $";
 /*
-* $Log: print.c,v $
+* @Log: print.c,v @
 * Revision 3.5  1995/12/27 20:13:58  tom
 * adjust headers, prototyped for autoconfig
 * correct gcc warnings (long vs int).
@@ -70,93 +69,89 @@ static char const print_c[] =
 */
 
 void
-print_mod(mod, covVector)
-T_MODULE	*mod;
-int		*covVector;
+print_mod(T_MODULE * mod,
+	  int *covVector)
 {
-	int i;
-	int j;
-	int cov;
-	int tot;
+    int i;
+    int j;
+    int cov;
+    int tot;
 
-	for (i = 0; i < mod->n_func; ++i) {
-		printf("Func %d <%s>\n", i, mod->func[i].fname);
-		cov = 0;
-		tot = 0;
-		for(j = 0; j < (int)mod->func[i].n_blk; ++j) {
-		    if (covVector && 
-			covVector[mod->func[i].blkCovStart + j] != -1)
-		    {
-			++tot;
-			if (covVector[mod->func[i].blkCovStart + j] == 1) {
-			    ++cov;
-			}
-		    }
+    for (i = 0; i < mod->n_func; ++i) {
+	printf("Func %d <%s>\n", i, mod->func[i].fname);
+	cov = 0;
+	tot = 0;
+	for (j = 0; j < (int) mod->func[i].n_blk; ++j) {
+	    if (covVector &&
+		covVector[mod->func[i].blkCovStart + j] != -1) {
+		++tot;
+		if (covVector[mod->func[i].blkCovStart + j] == 1) {
+		    ++cov;
 		}
-		printf("\tBlock %d of %d\n", cov, tot);
-		cov = 0;
-		tot = 0;
-		for(j = 0; j < (int)mod->func[i].n_cuse; ++j) {
-		    if (covVector && 
-			covVector[mod->func[i].cUseCovStart + j] != -1)
-		    {
-			if (covVector[mod->func[i].cUseCovStart + j] == 1) {
-			    ++cov;
-			}
-		    }
-		}
-		printf("\tCuse %d of %d\n", cov, tot);
-		cov = 0;
-		tot = 0;
-		for(j = 0; j < (int)mod->func[i].n_puse; ++j) {
-		    if (covVector &&
-			covVector[mod->func[i].pUseCovStart + j] != -1)
-		    {
-			++tot;
-			if (covVector[mod->func[i].pUseCovStart + j] == 1) {
-			    ++cov;
-			}
-		    }
-		}
-		printf("\tPuse %d of %d\n", cov, tot);
+	    }
 	}
-	for (i = 0; i < (int)mod->n_file; ++i)
-		printf("File %d <%s> <%ld>\n", i, mod->file[i].filename,
-			(long)(mod->file[i].chgtime));
-	for (i = 0; i < (int)mod->n_func; ++i) {
-		printf("Func %d <%s>\n", i, mod->func[i].fname);
-		for(j = 0; j < (int)mod->func[i].n_blk; ++j)
-			printf("\tBlock %d <%d %d %d> <%d %d %d> %d\n", j,
-				mod->func[i].blk[j].pos.start.file,
-				mod->func[i].blk[j].pos.start.col,
-				mod->func[i].blk[j].pos.start.line,
-				mod->func[i].blk[j].pos.end.file,
-				mod->func[i].blk[j].pos.end.col,
-				mod->func[i].blk[j].pos.end.line,
-			        covVector ? 
-			            covVector[mod->func[i].blkCovStart + j]
-			            : 0);
-		for(j = 0; j < (int)mod->func[i].n_var; ++j)
-			printf("\tVar %d <%s> (%d %d)\n", j,
-				mod->func[i].var[j].vname,
-				mod->func[i].var[j].cstart,
-				mod->func[i].var[j].pstart);
-		for(j = 0; j < (int)mod->func[i].n_puse; ++j)
-			printf("\tPuse %d <%d: %d %d %d> %d\n", j,
-				mod->func[i].puse[j].varno,
-				mod->func[i].puse[j].blk1,
-				mod->func[i].puse[j].blk2,
-				mod->func[i].puse[j].blk3,
-				covVector ?
-			            covVector[mod->func[i].pUseCovStart + j]
-			            : 0);
-		for(j = 0; j < (int)mod->func[i].n_cuse; ++j)
-			printf("\tCuse %d <%d: %d %d> %d\n", j,
-				mod->func[i].cuse[j].varno,
-				mod->func[i].cuse[j].blk1,
-				mod->func[i].cuse[j].blk2,
-			        covVector ?
-			            covVector[mod->func[i].cUseCovStart + j]
-			            : 0);
+	printf("\tBlock %d of %d\n", cov, tot);
+	cov = 0;
+	tot = 0;
+	for (j = 0; j < (int) mod->func[i].n_cuse; ++j) {
+	    if (covVector &&
+		covVector[mod->func[i].cUseCovStart + j] != -1) {
+		if (covVector[mod->func[i].cUseCovStart + j] == 1) {
+		    ++cov;
+		}
+	    }
 	}
+	printf("\tCuse %d of %d\n", cov, tot);
+	cov = 0;
+	tot = 0;
+	for (j = 0; j < (int) mod->func[i].n_puse; ++j) {
+	    if (covVector &&
+		covVector[mod->func[i].pUseCovStart + j] != -1) {
+		++tot;
+		if (covVector[mod->func[i].pUseCovStart + j] == 1) {
+		    ++cov;
+		}
+	    }
+	}
+	printf("\tPuse %d of %d\n", cov, tot);
+    }
+    for (i = 0; i < (int) mod->n_file; ++i)
+	printf("File %d <%s> <%ld>\n", i, mod->file[i].filename,
+	       (long) (mod->file[i].chgtime));
+    for (i = 0; i < (int) mod->n_func; ++i) {
+	printf("Func %d <%s>\n", i, mod->func[i].fname);
+	for (j = 0; j < (int) mod->func[i].n_blk; ++j)
+	    printf("\tBlock %d <%d %d %d> <%d %d %d> %d\n", j,
+		   mod->func[i].blk[j].pos.start.file,
+		   mod->func[i].blk[j].pos.start.col,
+		   mod->func[i].blk[j].pos.start.line,
+		   mod->func[i].blk[j].pos.end.file,
+		   mod->func[i].blk[j].pos.end.col,
+		   mod->func[i].blk[j].pos.end.line,
+		   covVector ?
+		   covVector[mod->func[i].blkCovStart + j]
+		   : 0);
+	for (j = 0; j < (int) mod->func[i].n_var; ++j)
+	    printf("\tVar %d <%s> (%d %d)\n", j,
+		   mod->func[i].var[j].vname,
+		   mod->func[i].var[j].cstart,
+		   mod->func[i].var[j].pstart);
+	for (j = 0; j < (int) mod->func[i].n_puse; ++j)
+	    printf("\tPuse %d <%d: %d %d %d> %d\n", j,
+		   mod->func[i].puse[j].varno,
+		   mod->func[i].puse[j].blk1,
+		   mod->func[i].puse[j].blk2,
+		   mod->func[i].puse[j].blk3,
+		   covVector ?
+		   covVector[mod->func[i].pUseCovStart + j]
+		   : 0);
+	for (j = 0; j < (int) mod->func[i].n_cuse; ++j)
+	    printf("\tCuse %d <%d: %d %d> %d\n", j,
+		   mod->func[i].cuse[j].varno,
+		   mod->func[i].cuse[j].blk1,
+		   mod->func[i].cuse[j].blk2,
+		   covVector ?
+		   covVector[mod->func[i].cUseCovStart + j]
+		   : 0);
+    }
 }
