@@ -21,10 +21,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <config.h>
 #endif
 
-static const char list_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/list.c,v 3.9 2005/08/14 13:45:53 tom Exp $";
+static const char list_c[] = "$Id: list.c,v 3.11 2013/12/09 00:17:33 tom Exp $";
 /*
-* $Log: list.c,v $
+* @Log: list.c,v @
 * Revision 3.9  2005/08/14 13:45:53  tom
 * gcc warning (implicit type)
 *
@@ -77,206 +76,229 @@ static const char list_c[] =
 #include "list.h"
 
 #ifdef DEBUG
-static char MAGIC[1];	/* Guaranteed unique address */
+static char MAGIC[1];		/* Guaranteed unique address */
 #endif
 
 LIST *
-list_create()
+list_create(void)
 {
-	LIST *head;	/* points to list pointer */
+    LIST *head;			/* points to list pointer */
 
-	head = (LIST *)malloc(sizeof *head);
-	if (head == NULL) return NULL;
+    head = (LIST *) malloc(sizeof *head);
+    if (head == NULL)
+	return NULL;
 #ifdef DEBUG
-	head->magic = MAGIC;
+    head->magic = MAGIC;
 #endif
-	head->data = NULL;		/* not used */
-	head->next = head;
-	head->prev = head;
-	return head;
+    head->data = NULL;		/* not used */
+    head->next = head;
+    head->prev = head;
+    return head;
 }
 
-int					/* return status */
-list_free(head, datafree)
-LIST	*head;
-DataFree datafree;
+int
+list_free(LIST * head,
+	  DataFree datafree)
 {
-	LIST	*link;
-	LIST	*next;
+    LIST *link;
+    LIST *next;
 
 #ifdef DEBUG
-	if (head->magic != MAGIC) return 0;
+    if (head->magic != MAGIC)
+	return 0;
 #endif
 
-	for (link = head->next; link != head; link = next) {
-		next = link->next;
-		if (datafree) (*datafree)(link->data);
+    for (link = head->next; link != head; link = next) {
+	next = link->next;
+	if (datafree)
+	    (*datafree) (link->data);
 #ifdef DEBUG
-		link->magic = NULL;
+	link->magic = NULL;
 #endif
-		free(link);
-	}
+	free(link);
+    }
 #ifdef DEBUG
-	head->magic = NULL;
+    head->magic = NULL;
 #endif
-	free(head);
-	return 1;
+    free(head);
+    return 1;
 }
 
-int					/* return status */
-list_delete(head, old)
-LIST	*head;
-LIST	**old;
+int
+list_delete(LIST * head,
+	    LIST ** old)
 {
-	LIST *d;
-	LIST *p;
+    LIST *d;
+    LIST *p;
 
 #ifdef DEBUG
-	if (head->magic != MAGIC) return 0;
+    if (head->magic != MAGIC)
+	return 0;
 #endif
-	if (old == NULL)
-		d = head->next;
-	else {
-		d = *old;
-		if (d == NULL)
-			d = head->next;
-	}
-	if (d == NULL) return 0;
+    if (old == NULL)
+	d = head->next;
+    else {
+	d = *old;
+	if (d == NULL)
+	    d = head->next;
+    }
+    if (d == NULL)
+	return 0;
 #ifdef DEBUG
-	if (d->magic != MAGIC) return 0;
+    if (d->magic != MAGIC)
+	return 0;
 #endif
 
-	p = d->prev;
-	if (p == head) p = NULL;
-	if (old) *old = p;
+    p = d->prev;
+    if (p == head)
+	p = NULL;
+    if (old)
+	*old = p;
 
-	d->prev->next = d->next;
-	d->next->prev = d->prev;
+    d->prev->next = d->next;
+    d->next->prev = d->prev;
 #ifdef DEBUG
-	d->magic = NULL;
+    d->magic = NULL;
 #endif
-	free(d);
+    free(d);
 
-	return 1;
+    return 1;
 }
 
-int					/* return status */
-list_put(head, data)
-LIST	*head;
-LIST_DATATYPE	*data;
+int
+list_put(LIST * head,
+	 LIST_DATATYPE * data)
 {
-	LIST	*new;
+    LIST *new;
 
 #ifdef DEBUG
-	if (head->magic != MAGIC) return 0;
+    if (head->magic != MAGIC)
+	return 0;
 #endif
 
-	new = (LIST *)malloc(sizeof *new);
-	if (new == NULL) return 0;
+    new = (LIST *) malloc(sizeof *new);
+    if (new == NULL)
+	return 0;
 #ifdef DEBUG
-	new->magic = MAGIC;
+    new->magic = MAGIC;
 #endif
-	new->data = data;
-	new->next = head;		/* Add to end of list */
-	head->prev->next = new;
-	new->prev = head->prev;	/* Add to beginning of backward list */
-	head->prev = new;
-	return 1;
+    new->data = data;
+    new->next = head;		/* Add to end of list */
+    head->prev->next = new;
+    new->prev = head->prev;	/* Add to beginning of backward list */
+    head->prev = new;
+    return 1;
 }
 
-int					/* return status */
-list_next(head, prev, data)
-LIST	*head;
-LIST	**prev;
-LIST_DATATYPE	**data;
+int
+list_next(LIST * head,
+	  LIST ** prev,
+	  LIST_DATATYPE ** data)
 {
-	LIST	*p;
+    LIST *p;
 
 #ifdef DEBUG
-	if (head->magic != MAGIC) return 0;
+    if (head->magic != MAGIC)
+	return 0;
 #endif
 
-	if (prev && (p = *prev)) {
+    if (prev && (p = *prev)) {
 #ifdef DEBUG
-		if (p->magic != MAGIC) return 0;
+	if (p->magic != MAGIC)
+	    return 0;
 #endif
-		p = p->next;
-	}
-	else p = head->next;
-		
-	if (p == head) return 0;
+	p = p->next;
+    } else
+	p = head->next;
 
-	if (data) *data = p->data;
-	if (prev) *prev = p;
+    if (p == head)
+	return 0;
 
-	return 1;
+    if (data)
+	*data = p->data;
+    if (prev)
+	*prev = p;
+
+    return 1;
 }
-int					/* return status */
-list_prev(head, prev, data)
-LIST	*head;
-LIST	**prev;
-LIST_DATATYPE	**data;
+
+int
+list_prev(LIST * head,
+	  LIST ** prev,
+	  LIST_DATATYPE ** data)
 {
-	LIST	*p;
+    LIST *p;
 
 #ifdef DEBUG
-	if (head->magic != MAGIC) return 0;
+    if (head->magic != MAGIC)
+	return 0;
 #endif
 
-	if (prev && (p = *prev)) {
+    if (prev && (p = *prev)) {
 #ifdef DEBUG
-		if (p->magic != MAGIC) return 0;
+	if (p->magic != MAGIC)
+	    return 0;
 #endif
-		p = p->prev;
-	}
-	else p = head->prev;
+	p = p->prev;
+    } else
+	p = head->prev;
 
-	if (p == head) return 0;
+    if (p == head)
+	return 0;
 
-	if (data) *data = p->data;
-	if (prev) *prev = p;
+    if (data)
+	*data = p->data;
+    if (prev)
+	*prev = p;
 
-	return 1;
+    return 1;
 }
 
 void
-list_dump(head, datadump, label)
-LIST	*head;
-char	*(*datadump) P_((LIST_DATATYPE *));
-char	*label;
+list_dump(LIST * head,
+	  char *(*datadump) (LIST_DATATYPE *),
+	  const char *label)
 {
-	LIST *link;
-	LIST_DATATYPE *data;
-	int i;
-	int j;
-	static int tab = -1;
+    LIST *link;
+    LIST_DATATYPE *data;
+    int i;
+    int j;
+    static int tab = -1;
 
-	++tab;
-	for (j = 0; j < tab; ++j) putc('\t', stderr);
-	fprintf(stderr, "--->");
-	if (label) fprintf(stderr, "%s\n", label);
-	else fprintf(stderr, " list_dump\n");
+    ++tab;
+    for (j = 0; j < tab; ++j)
+	putc('\t', stderr);
+    fprintf(stderr, "--->");
+    if (label)
+	fprintf(stderr, "%s\n", label);
+    else
+	fprintf(stderr, " list_dump\n");
 #ifdef DEBUG
-	if (head->magic != MAGIC) {
-		for (j = 0; j < tab; ++j) putc('\t', stderr);
-		fprintf(stderr, "error: corrupted list\n");
-	} else {
+    if (head->magic != MAGIC) {
+	for (j = 0; j < tab; ++j)
+	    putc('\t', stderr);
+	fprintf(stderr, "error: corrupted list\n");
+    } else {
 #endif
-		i = 0;
-		for (link = NULL; list_next(head, &link, &data);) {
-			for (j = 0; j < tab; ++j) putc('\t', stderr);
-			fprintf(stderr, "%d:\t", i++);
-			if (datadump)
-				(*datadump)(data);
-			else if (data)
-				fprintf(stderr, "%p\n", data);
-		}
-#ifdef DEBUG
+	i = 0;
+	for (link = NULL; list_next(head, &link, &data);) {
+	    for (j = 0; j < tab; ++j)
+		putc('\t', stderr);
+	    fprintf(stderr, "%d:\t", i++);
+	    if (datadump)
+		(*datadump) (data);
+	    else if (data)
+		fprintf(stderr, "%p\n", data);
 	}
+#ifdef DEBUG
+    }
 #endif
-	for (j = 0; j < tab; ++j) putc('\t', stderr);
-	fprintf(stderr, "<---");
-	if (label) fprintf(stderr, "%s\n", label);
-	else fprintf(stderr, " list_dump\n");
-	--tab;
+    for (j = 0; j < tab; ++j)
+	putc('\t', stderr);
+    fprintf(stderr, "<---");
+    if (label)
+	fprintf(stderr, "%s\n", label);
+    else
+	fprintf(stderr, " list_dump\n");
+    --tab;
 }

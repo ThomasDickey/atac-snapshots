@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef tree_H
 #define tree_H
-static const char tree_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tree.h,v 3.6 1996/11/12 11:05:42 tom Exp $";
+static const char tree_h[] = "$Id: tree.h,v 3.7 2013/12/08 22:02:11 tom Exp $";
 /*
-* $Log: tree.h,v $
+* @Log: tree.h,v @
 * Revision 3.6  1996/11/12 11:05:42  tom
 * change ident to 'const' to quiet gcc
 *

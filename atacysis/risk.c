@@ -30,10 +30,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const risk_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/risk.c,v 3.7 1995/12/29 21:24:41 tom Exp $";
+static char const risk_c[] = "$Id: risk.c,v 3.8 2013/12/08 20:31:17 tom Exp $";
 /*
-* $Log: risk.c,v $
+* @Log: risk.c,v @
 * Revision 3.7  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -88,51 +87,47 @@ typedef int COVTYPE;
 #define AMT_PPRED	1.0
 #define AMT_PTARG	1.0
 
-/* forward declarations */
-static void doSum
-	P_((float (*perLine)[COV_N], float *sum, int start, int end));
-static void doBlk
-	P_((T_BLK *blk, int mark, int *maxLine, float (**total)[COV_N], float
-	(**covered)[COV_N], COVTYPE covType, double amount));
-
 static void
-doBlk(blk, mark, maxLine, total, covered, covType, amount)
-T_BLK	*blk;
-int	mark;
-int	*maxLine;
-float	(**total)[COV_N];
-float	(**covered)[COV_N];
-COVTYPE	covType;
-float	amount;
+doBlk(
+	 T_BLK * blk,
+	 int mark,
+	 int *maxLine,
+	 float (**total)[COV_N],
+	 float (**covered)[COV_N],
+	 COVTYPE covType,
+	 float amount)
 {
-    int		sLine;
-    int		eLine;
-    int		max;
-    float	(*t)[COV_N];
-    float	(*c)[COV_N];
-    int		i;
-    int		j;
-    float	fraction;
+    int sLine;
+    int eLine;
+    int max;
+    float (*t)[COV_N];
+    float (*c)[COV_N];
+    int i;
+    int j;
+    float fraction;
 
-    if (blk->pos.start.file != 0) return;
-    if (blk->pos.end.file != 0) return;
+    if (blk->pos.start.file != 0)
+	return;
+    if (blk->pos.end.file != 0)
+	return;
     sLine = blk->pos.start.line;
     eLine = blk->pos.end.line;
     if (eLine < sLine) {
 	sLine = eLine;
 	eLine = blk->pos.start.line;
     }
-    if (sLine < 1) return;
+    if (sLine < 1)
+	return;
     max = *maxLine;
     t = *total;
     c = *covered;
     if (eLine > max) {
 	if (max == 0) {
-	    t = (float (*)[COV_N])malloc((eLine + 1) * sizeof *t * COV_N);
-	    c = (float (*)[COV_N])malloc((eLine + 1) * sizeof *c * COV_N);
+	    t = (float (*)[COV_N]) malloc((eLine + 1) * sizeof *t * COV_N);
+	    c = (float (*)[COV_N]) malloc((eLine + 1) * sizeof *c * COV_N);
 	} else {
-	    t = (float (*)[COV_N])realloc(t, (eLine + 1) * sizeof *t * COV_N);
-	    c = (float (*)[COV_N])realloc(c, (eLine + 1) * sizeof *c * COV_N);
+	    t = (float (*)[COV_N]) realloc(t, (eLine + 1) * sizeof *t * COV_N);
+	    c = (float (*)[COV_N]) realloc(c, (eLine + 1) * sizeof *c * COV_N);
 	}
 	CHECK_MALLOC(t);
 	CHECK_MALLOC(c);
@@ -146,21 +141,21 @@ float	amount;
 	*total = t;
 	*covered = c;
     }
-    
-    fraction = amount/(eLine - sLine + 1);
+
+    fraction = amount / (float) (eLine - sLine + 1);
 
     for (i = sLine; i <= eLine; ++i)
 	t[i][covType] += fraction;
-    if (mark) for (i = sLine; i <= eLine; ++i)
-	c[i][covType] += fraction;
+    if (mark)
+	for (i = sLine; i <= eLine; ++i)
+	    c[i][covType] += fraction;
 }
 
 static void
-doSum(perLine, sum, start, end)
-float	(*perLine)[COV_N];
-float	*sum;
-int	start;
-int	end;
+doSum(float (*perLine)[COV_N],
+      float *sum,
+      int start,
+      int end)
 {
     int i;
     int j;
@@ -169,7 +164,8 @@ int	end;
 	sum[i] = 0.0;
     }
 
-    if (perLine == NULL) return;
+    if (perLine == NULL)
+	return;
 
     for (i = start; i <= end; ++i) {
 	for (j = 0; j < COV_N; ++j)
@@ -178,127 +174,147 @@ int	end;
 }
 
 void
-risk(modules, n_mod, covVector, options)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		options;
+risk(T_MODULE * modules,
+     int n_mod,
+     int *covVector,
+     int options)
 {
-    int		i;
-    int		j;
-    int		cov;
-    T_MODULE	*mod;
-    int		decis_var;
-    int		maxLine;
-    float	(*total)[COV_N];
-    float	(*covered)[COV_N];
-    float	sum[COV_N];
-    T_FUNC	*func;
-    int		nFunc;
-    int		start;
-    int		end;
+    int i;
+    int j;
+    int cov;
+    T_MODULE *mod;
+    int decis_var;
+    int maxLine;
+    float (*total)[COV_N];
+    float (*covered)[COV_N];
+    float sum[COV_N];
+    T_FUNC *func;
+    int nFunc;
+    int start;
+    int end;
 
     total = NULL;
     covered = NULL;
 
     for (mod = modules; mod < modules + n_mod; ++mod) {
-	if (mod->n_file < 1) continue;
+	if (mod->n_file < 1)
+	    continue;
 	maxLine = 0;
 	nFunc = 0;
-	for (i = 0; i < (int)mod->n_func; ++i) {
+	for (i = 0; i < (int) mod->n_func; ++i) {
 	    func = mod->func + i;
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    ++nFunc;
 	    /*
 	     * Blocks.
 	     */
-	    if (options & OPTION_BLOCK) for(j = 1; j < (int)func->n_blk; ++j) {
-		cov = covVector[func->blkCovStart + j];
-		if (cov == -1)
-		    cov = 0;
-		doBlk(func->blk + j, cov,
-		      &maxLine, &total, &covered, COV_BLOCK, AMT_BLOCK);
-	    }
+	    if (options & OPTION_BLOCK)
+		for (j = 1; j < (int) func->n_blk; ++j) {
+		    cov = covVector[func->blkCovStart + j];
+		    if (cov == -1)
+			cov = 0;
+		    doBlk(func->blk + j, cov,
+			  &maxLine, &total, &covered, COV_BLOCK, AMT_BLOCK);
+		}
 
 	    /*
 	     * Decisions.
 	     */
-	    if (options & OPTION_DECIS) for(j = 0; j < (int)func->n_puse; ++j) {
-		decis_var = func->decis_var;
-		if (func->puse[j].varno != decis_var) break;
-		cov = covVector[func->pUseCovStart + j];
-		if (cov == -1)
-		    cov = 0;
-		doBlk(func->blk + func->puse[j].blk2, cov,
-		      &maxLine, &total, &covered, COV_DECIS, AMT_DPRED);
-		doBlk(func->blk + func->puse[j].blk3, cov,
-		      &maxLine, &total, &covered, COV_DECIS, AMT_DTARG);
-	    }
+	    if (options & OPTION_DECIS)
+		for (j = 0; j < (int) func->n_puse; ++j) {
+		    decis_var = func->decis_var;
+		    if (func->puse[j].varno != decis_var)
+			break;
+		    cov = covVector[func->pUseCovStart + j];
+		    if (cov == -1)
+			cov = 0;
+		    doBlk(func->blk + func->puse[j].blk2, cov,
+			  &maxLine, &total, &covered, COV_DECIS, AMT_DPRED);
+		    doBlk(func->blk + func->puse[j].blk3, cov,
+			  &maxLine, &total, &covered, COV_DECIS, AMT_DTARG);
+		}
 
 	    /*
 	     * C-uses
 	     */
-	    if (options & OPTION_CUSE) for(j = 0; j < (int)func->n_cuse; ++j) {
-		cov = covVector[func->cUseCovStart + j];
-		if (cov == -1)
-		    cov = 0;
-		doBlk(func->blk + func->cuse[j].blk1, cov,
-		      &maxLine, &total, &covered, COV_CUSE, AMT_CDEF);
-		doBlk(func->blk + func->cuse[j].blk2, cov,
-		      &maxLine, &total, &covered, COV_CUSE, AMT_CUSE);
-	    }
+	    if (options & OPTION_CUSE)
+		for (j = 0; j < (int) func->n_cuse; ++j) {
+		    cov = covVector[func->cUseCovStart + j];
+		    if (cov == -1)
+			cov = 0;
+		    doBlk(func->blk + func->cuse[j].blk1, cov,
+			  &maxLine, &total, &covered, COV_CUSE, AMT_CDEF);
+		    doBlk(func->blk + func->cuse[j].blk2, cov,
+			  &maxLine, &total, &covered, COV_CUSE, AMT_CUSE);
+		}
 
 	    /*
 	     * P-uses
 	     */
-	    if (options & OPTION_PUSE) for(j = 0; j < (int)func->n_puse; ++j) {
-		decis_var = func->decis_var;
-		if (func->puse[j].varno == decis_var) continue;
-		cov = (covVector[func->pUseCovStart + j]);
-		if (cov == -1)
-		    cov = 0;
-		doBlk(func->blk + func->puse[j].blk1, cov,
-		      &maxLine, &total, &covered, COV_PUSE, AMT_PDEF);
-		doBlk(func->blk + func->puse[j].blk2, cov,
-		      &maxLine, &total, &covered, COV_PUSE, AMT_PPRED);
-		doBlk(func->blk + func->puse[j].blk3, cov,
-		      &maxLine, &total, &covered, COV_PUSE, AMT_PTARG);
-	    }
+	    if (options & OPTION_PUSE)
+		for (j = 0; j < (int) func->n_puse; ++j) {
+		    decis_var = func->decis_var;
+		    if (func->puse[j].varno == decis_var)
+			continue;
+		    cov = (covVector[func->pUseCovStart + j]);
+		    if (cov == -1)
+			cov = 0;
+		    doBlk(func->blk + func->puse[j].blk1, cov,
+			  &maxLine, &total, &covered, COV_PUSE, AMT_PDEF);
+		    doBlk(func->blk + func->puse[j].blk2, cov,
+			  &maxLine, &total, &covered, COV_PUSE, AMT_PPRED);
+		    doBlk(func->blk + func->puse[j].blk3, cov,
+			  &maxLine, &total, &covered, COV_PUSE, AMT_PTARG);
+		}
 	}
 
 	/*
-	* F filename #units #lines { cov types } { totals } { covered }
-	*/
+	 * F filename #units #lines { cov types } { totals } { covered }
+	 */
 	printf("F %s %d %d {", mod->file[0].filename, nFunc, maxLine);
-	if (options & OPTION_BLOCK) printf(" b");
-	if (options & OPTION_CUSE) printf(" c");
-	if (options & OPTION_DECIS) printf(" d");
-	if (options & OPTION_PUSE) printf(" p");
+	if (options & OPTION_BLOCK)
+	    printf(" b");
+	if (options & OPTION_CUSE)
+	    printf(" c");
+	if (options & OPTION_DECIS)
+	    printf(" d");
+	if (options & OPTION_PUSE)
+	    printf(" p");
 	printf(" } {");
 
 	/*
 	 * Totals:
 	 */
 	doSum(total, sum, 1, maxLine);
-	if (options & OPTION_BLOCK) printf(" %.1f", sum[COV_BLOCK]);
-	if (options & OPTION_CUSE) printf(" %.1f", sum[COV_CUSE]);
-	if (options & OPTION_DECIS) printf(" %.1f", sum[COV_DECIS]);
-	if (options & OPTION_PUSE) printf(" %.1f", sum[COV_PUSE]);
+	if (options & OPTION_BLOCK)
+	    printf(" %.1f", sum[COV_BLOCK]);
+	if (options & OPTION_CUSE)
+	    printf(" %.1f", sum[COV_CUSE]);
+	if (options & OPTION_DECIS)
+	    printf(" %.1f", sum[COV_DECIS]);
+	if (options & OPTION_PUSE)
+	    printf(" %.1f", sum[COV_PUSE]);
 
 	/*
 	 * Covered:
 	 */
 	printf(" } {");
 	doSum(covered, sum, 1, maxLine);
-	if (options & OPTION_BLOCK) printf(" %.1f", sum[COV_BLOCK]);
-	if (options & OPTION_CUSE) printf(" %.1f", sum[COV_CUSE]);
-	if (options & OPTION_DECIS) printf(" %.1f", sum[COV_DECIS]);
-	if (options & OPTION_PUSE) printf(" %.1f", sum[COV_PUSE]);
+	if (options & OPTION_BLOCK)
+	    printf(" %.1f", sum[COV_BLOCK]);
+	if (options & OPTION_CUSE)
+	    printf(" %.1f", sum[COV_CUSE]);
+	if (options & OPTION_DECIS)
+	    printf(" %.1f", sum[COV_DECIS]);
+	if (options & OPTION_PUSE)
+	    printf(" %.1f", sum[COV_PUSE]);
 	printf(" }\n");
 
-	for (i = 0; i < (int)mod->n_func; ++i) {
+	for (i = 0; i < (int) mod->n_func; ++i) {
 	    func = mod->func + i;
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    start = func->blk[0].pos.start.line;
 	    end = func->blk[0].pos.end.line;
 	    if (start > end) {
@@ -314,20 +330,28 @@ int		options;
 	     * Totals:
 	     */
 	    doSum(total, sum, start, end);
-	    if (options & OPTION_BLOCK) printf(" %.1f", sum[COV_BLOCK]);
-	    if (options & OPTION_CUSE) printf(" %.1f", sum[COV_CUSE]);
-	    if (options & OPTION_DECIS) printf(" %.1f", sum[COV_DECIS]);
-	    if (options & OPTION_PUSE) printf(" %.1f", sum[COV_PUSE]);
+	    if (options & OPTION_BLOCK)
+		printf(" %.1f", sum[COV_BLOCK]);
+	    if (options & OPTION_CUSE)
+		printf(" %.1f", sum[COV_CUSE]);
+	    if (options & OPTION_DECIS)
+		printf(" %.1f", sum[COV_DECIS]);
+	    if (options & OPTION_PUSE)
+		printf(" %.1f", sum[COV_PUSE]);
 
 	    /*
 	     * Covered:
 	     */
 	    printf(" } {");
 	    doSum(covered, sum, start, end);
-	    if (options & OPTION_BLOCK) printf(" %.1f", sum[COV_BLOCK]);
-	    if (options & OPTION_CUSE) printf(" %.1f", sum[COV_CUSE]);
-	    if (options & OPTION_DECIS) printf(" %.1f", sum[COV_DECIS]);
-	    if (options & OPTION_PUSE) printf(" %.1f", sum[COV_PUSE]);
+	    if (options & OPTION_BLOCK)
+		printf(" %.1f", sum[COV_BLOCK]);
+	    if (options & OPTION_CUSE)
+		printf(" %.1f", sum[COV_CUSE]);
+	    if (options & OPTION_DECIS)
+		printf(" %.1f", sum[COV_DECIS]);
+	    if (options & OPTION_PUSE)
+		printf(" %.1f", sum[COV_PUSE]);
 	    printf(" }\n");
 
 	    /*

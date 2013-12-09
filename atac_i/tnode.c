@@ -22,9 +22,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
 static const char tnode_c[] =
-"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.6 2008/12/17 00:23:35 tom Exp $";
+"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.c,v 3.7 2013/12/08 18:52:35 tom Exp $";
 /*
-* $Log: tnode.c,v $
+* @Log: tnode.c,v @
 * Revision 3.6  2008/12/17 00:23:35  tom
 * convert to ANSI, indent'd
 *

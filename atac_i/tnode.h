@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef tnode_H
 #define tnode_H
-static const char tnode_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/tnode.h,v 3.8 1997/12/08 22:16:46 tom Exp $";
+static const char tnode_h[] = "$Id: tnode.h,v 3.9 2013/12/08 22:04:36 tom Exp $";
 /*
-* $Log: tnode.h,v $
+* @Log: tnode.h,v @
 * Revision 3.8  1997/12/08 22:16:46  tom
 * add prototypes for parse(), deparse()
 *
@@ -67,69 +66,69 @@ static const char tnode_h[] =
 #define RIGHT_SRCPOS	1
 
 typedef struct tnode {
-	int		genus;
-	int		species;
-	SRCPOS		srcpos[2];	/* LEFT_SRCPOS, RIGHT_SRCPOS */
-	struct tnode 	*up;
-	struct tnode 	*down;
-	struct tnode 	*over;
-	char		*text;
-	union {
-		struct symlist	*symtab;
-		struct sym	*sym;
-		struct {
-					short blkno;
-					short tempno;
-					struct valtype *type;
-		}		 hook;
-	} sym;
+    int genus;
+    int species;
+    SRCPOS srcpos[2];		/* LEFT_SRCPOS, RIGHT_SRCPOS */
+    struct tnode *up;
+    struct tnode *down;
+    struct tnode *over;
+    char *text;
+    union {
+	struct symlist *symtab;
+	struct sym *sym;
+	struct {
+	    short blkno;
+	    short tempno;
+	    struct valtype *type;
+	} hook;
+    } sym;
 } TNODE;
 
 /* Pgram.y */
-extern int parse P_(( FILE *srcfile, TNODE **tree, char **uprefix ));
+extern int parse(FILE *srcfile, TNODE ** tree, char **uprefix);
 
 /* dparse.c */
-extern void deparse P_(( TNODE *n, FILE *f, char *hookname, char *prefix ));
+extern void deparse(TNODE * n, FILE *f, char *hookname, char *prefix);
 
 /* srcpos.c */
-extern char *srcfname P_(( int findex));
-extern int srcfstamp P_(( int findex));
-extern int store_filename P_(( char *s));
-extern void node_isrcpos P_(( TNODE *node, int left, FILE *f));
-extern void node_srcpos P_(( TNODE *node, int left, FILE *f));
-extern void print_srcpos P_(( SRCPOS *srcpos, FILE *f));
+extern char *srcfname(int findex);
+extern int srcfstamp(int findex);
+extern int store_filename(char *s);
+extern void node_isrcpos(TNODE * node, int left, FILE *f);
+extern void node_srcpos(TNODE * node, int left, FILE *f);
+extern void print_srcpos(SRCPOS * srcpos, FILE *f);
 
 /* tree.c */
-extern TNODE *tFindDef P_(( TNODE *n ));
-extern TNODE *tFindPred P_(( TNODE *n ));
-extern TNODE *tFindSwitch P_(( TNODE *n ));
-extern TNODE *tlist_add P_(( TNODE *list, TNODE *next ));
-extern TNODE *tlist_ladd P_(( TNODE *list, TNODE *next ));
-extern TNODE *tmkleaf P_(( int genus, int species, SRCPOS *srcpos, char *text ));
-extern TNODE *tmknode P_(( int genus, int species, TNODE *child0, TNODE *child1 ));
-extern TNODE *tsrc_pos P_(( TNODE *node, SRCPOS *begin, SRCPOS *end ));
-extern int print_tree P_(( TNODE *node, int id, int parent, int level ));
-extern void tFindVDef P_(( TNODE *n, CONST_VALUE *value ));
-extern void tfreenode P_(( TNODE *node ));
+extern TNODE *tFindDef(TNODE * n);
+extern TNODE *tFindPred(TNODE * n);
+extern TNODE *tFindSwitch(TNODE * n);
+extern TNODE *tlist_add(TNODE * list, TNODE * next);
+extern TNODE *tlist_ladd(TNODE * list, TNODE * next);
+extern TNODE *tmkleaf(int genus, int species, SRCPOS * srcpos, char *text);
+extern TNODE *tmknode(int genus, int species, TNODE * child0, TNODE * child1);
+extern TNODE *tsrc_pos(TNODE * node, SRCPOS * begin, SRCPOS * end);
+extern int print_tree(TNODE * node, int id, int parent, int level);
+extern void tFindVDef(TNODE * n, CONST_VALUE * value);
+extern void tfreenode(TNODE * node);
 
 /* sym.c */
-extern SYM *sym_find P_(( char *name, NAMETYPE nametype, SYMLIST *symtab ));
-extern void dump_sym P_(( TNODE *node, char *prefix ));
-extern void do_sym P_(( TNODE *node ));
+extern SYM *sym_find(char *name, NAMETYPE nametype, SYMLIST * symtab);
+extern void dump_sym(TNODE * node, char *prefix);
+extern void do_sym(TNODE * node);
 
 /* tnode.c */
-TNODE *child0 P_(( TNODE *n ));
-TNODE *child1 P_(( TNODE *n ));
-TNODE *child2 P_(( TNODE *n ));
-TNODE *child3 P_(( TNODE *n ));
-TNODE *child4 P_(( TNODE *n ));
-TNODE *tnext P_(( TNODE *n ));
+TNODE *child0(TNODE * n);
+TNODE *child1(TNODE * n);
+TNODE *child2(TNODE * n);
+TNODE *child3(TNODE * n);
+TNODE *child4(TNODE * n);
+TNODE *tnext(TNODE * n);
 
 /* type.c */
-extern void clear_type P_(( VALTYPE *type ));
-extern void copy_type P_(( VALTYPE *from, VALTYPE *to ));
-extern void expr_type P_(( TNODE *n, VALTYPE *type ));
-extern void int_promote P_(( VALTYPE *type ));
+extern void clear_type(VALTYPE * type);
+extern void copy_type(VALTYPE * from, VALTYPE * to);
+extern void expr_type(TNODE * n, VALTYPE * type);
+extern void int_promote(VALTYPE * type);
 
 /*
 * Tree navigation macros.  WARNING: n should be a simple expr., no side effects.

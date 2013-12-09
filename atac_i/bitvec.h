@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef bitvector_H
 #define bitvector_H
-static const char bitvector_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/bitvec.h,v 3.3 1996/11/13 00:24:05 tom Exp $";
+static const char bitvector_h[] = "$Id: bitvec.h,v 3.4 2013/12/08 22:04:06 tom Exp $";
 /*
-* $Log: bitvec.h,v $
+* @Log: bitvec.h,v @
 * Revision 3.3  1996/11/13 00:24:05  tom
 * change ident to 'const' to quiet gcc
 *
@@ -41,9 +40,9 @@ static const char bitvector_h[] =
 * 
 *-----------------------------------------------end of log
 */
-#define BITSPW		32			/* Bits Per Word */
-#define LBITSPW		5			/* Log Bits Per Word */
-#define LBYTESPW	2			/* Log Bytes Per Word */
+#define BITSPW		32	/* Bits Per Word */
+#define LBITSPW		5	/* Log Bits Per Word */
+#define LBYTESPW	2	/* Log Bytes Per Word */
 #define WORDS_FOR_BITS(n)	(((n) + BITSPW - 1) >> LBITSPW)
 #define BYTES_FOR_BITS(n)	(WORDS_FOR_BITS(n) << LBYTESPW)
 typedef unsigned long BVPTR;

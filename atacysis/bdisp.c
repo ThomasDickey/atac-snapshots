@@ -32,10 +32,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "disp.h"
 #include "rlist.h"
 
-static char const bdisp_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/bdisp.c,v 3.7 2005/08/14 13:56:42 tom Exp $";
+static char const bdisp_c[] = "$Id: bdisp.c,v 3.9 2013/12/09 01:03:49 tom Exp $";
 /*
-* $Log: bdisp.c,v $
+* @Log: bdisp.c,v @
 * Revision 3.7  2005/08/14 13:56:42  tom
 * gcc warnings
 *
@@ -100,70 +99,71 @@ static char const bdisp_c[] =
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
 typedef struct {
-	RLIST	**rlist;
-	int	nDisp;
-	int	tot;
+    RLIST **rlist;
+    int nDisp;
+    int tot;
 } COV_LIST;
 
 /* forward declarations */
 static void display
-	P_((T_FILE *file, char *atacfile, char *funcname, int nDisp, int tot,
-	RLIST **rlist, SE_POSITION *func, int displayMode));
+  (T_FILE * file, const char *atacfile, const char *funcname, int nDisp, int tot,
+   RLIST ** rlist, SE_POSITION * func, int displayMode);
 static void print_header
-	P_((char *srcfile, char *func, int nDisp, int tot, int displayMode, int
-	startLine, int endLine));
+  (char *srcfile, const char *func, int nDisp, int tot, int displayMode, int
+   startLine, int endLine);
 
 void
-bdisp(modules, n_mod, covVector, displayMode)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		displayMode;
+bdisp(T_MODULE * modules,
+      int n_mod,
+      int *covVector,
+      int displayMode)
 {
-    int		i;
-    T_FUNC	*func;
-    T_BLK	*blk;
-    T_MODULE	*mod;
-    int		n_file;
-    COV_LIST	*cov_list;
-    COV_LIST	*clist;
-    int		none;
+    int i;
+    T_FUNC *func;
+    T_BLK *blk;
+    T_MODULE *mod;
+    int n_file;
+    COV_LIST *cov_list;
+    COV_LIST *clist;
+    int none;
 
     none = 1;
 
     /*
-    * Make room for maximum number of files.
-    */
+       * Make room for maximum number of files.
+     */
     n_file = 0;
     for (mod = modules; mod < modules + n_mod; ++mod)
-	    if (n_file < (int)mod->n_file) n_file = mod->n_file;
-    cov_list = (COV_LIST *)malloc(n_file * sizeof *cov_list);
+	if (n_file < (int) mod->n_file)
+	    n_file = mod->n_file;
+    cov_list = (COV_LIST *) malloc((size_t) n_file * sizeof *cov_list);
     CHECK_MALLOC(cov_list);
     for (i = 0; i < n_file; ++i) {
-	    cov_list[i].rlist = (RLIST **)rlist_create();
+	cov_list[i].rlist = (RLIST **) rlist_create();
     }
 
     for (mod = modules; mod < modules + n_mod; ++mod) {
 	for (func = mod->func; func < mod->func + mod->n_func; ++func) {
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    /*
-	    * Initialize display counts for this function accross all files.
-	    */
+	     * Initialize display counts for this function accross all files.
+	     */
 	    for (i = 0; i < n_file; ++i) {
 		cov_list[i].nDisp = 0;
 		cov_list[i].tot = 1;
 	    }
 	    /*
-	    * Find blocks to be displayed.
-	    */
-	    for(i = 1; i < (int)func->n_blk; ++i) {
+	       * Find blocks to be displayed.
+	     */
+	    for (i = 1; i < (int) func->n_blk; ++i) {
 		blk = func->blk + i;
-		if (blk->pos.start.file != blk->pos.end.file) continue;
+		if (blk->pos.start.file != blk->pos.end.file)
+		    continue;
 		clist = cov_list + blk->pos.start.file;
 		if (covVector[func->blkCovStart + i] != -1) {
 		    ++clist->tot;
-		    if (covVector[func->blkCovStart + i] == 0)
-		    {
+		    if (covVector[func->blkCovStart + i] == 0) {
 			++clist->nDisp;
 			rlist_put(clist->rlist, blk->pos.start.line,
 				  blk->pos.start.col,
@@ -174,24 +174,25 @@ int		displayMode;
 	    }
 
 	    /*
-	    * Display blocks.
-	    */
+	       * Display blocks.
+	     */
 	    for (i = 0; i < n_file; ++i) {
-		    clist = cov_list + i;
-		    if (clist->tot == 1) continue;
-		    if (clist->nDisp == 0) continue;
-		    none = 0;
-		    display(mod->file + i, mod->atacfile, func->fname,
-			    clist->nDisp, clist->tot, clist->rlist,
-			    &func->pos, displayMode);
-		    clist->tot = 1;
-		    clist->nDisp = 0;
+		clist = cov_list + i;
+		if (clist->tot == 1)
+		    continue;
+		if (clist->nDisp == 0)
+		    continue;
+		none = 0;
+		display(mod->file + i, mod->atacfile, func->fname,
+			clist->nDisp, clist->tot, clist->rlist,
+			&func->pos, displayMode);
+		clist->tot = 1;
+		clist->nDisp = 0;
 	    }
 	}
     }
     if (none) {
-	switch (displayMode & (DISPLAY_ALL | DISPLAY_COV))
-	{
+	switch (displayMode & (DISPLAY_ALL | DISPLAY_COV)) {
 	case DISPLAY_COV | DISPLAY_ALL:
 	    disp_str("No covered blocks.", DISP_NEWLINE);
 	    break;
@@ -209,84 +210,83 @@ int		displayMode;
     disp_end();
 
     /*
-    * Free empty lists.  (Lists are emptied in display()).
-    */
+     * Free empty lists.  (Lists are emptied in display()).
+     */
     for (i = 0; i < n_file; ++i)
-	    rlist_free(cov_list[i].rlist);
+	rlist_free(cov_list[i].rlist);
 }
 
 static void
-print_header(srcfile, func, nDisp, tot, displayMode, startLine, endLine)
-char	*srcfile;
-char	*func;
-int	nDisp;
-int	tot;
-int	displayMode;
-int	startLine;
-int	endLine;
+print_header(char *srcfile,
+	     const char *func,
+	     int nDisp,
+	     int tot,
+	     int displayMode,
+	     int startLine,
+	     int endLine)
 {
-	char	buf[MAX_HEADER];
-	char	*not;
+    char buf[MAX_HEADER];
+    const char *not;
 
-	if (displayMode & DISPLAY_COV) {
-	    not = "";
-	} else {
-	    not = "not ";
-	}
-	sprintf(buf, "%s:%s [%d of %d blocks %scovered] lines %%d - %%d",
-			srcfile, func, nDisp, tot, not);
-	disp_title(buf, startLine, endLine);
+    if (displayMode & DISPLAY_COV) {
+	not = "";
+    } else {
+	not = "not ";
+    }
+    sprintf(buf, "%s:%s [%d of %d blocks %scovered] lines %%d - %%d",
+	    srcfile, func, nDisp, tot, not);
+    disp_title(buf, startLine, endLine);
 }
 
 static void
-display(file, atacfile, funcname, nDisp, tot, rlist, func, displayMode)
-T_FILE		*file;
-char		*atacfile;
-char		*funcname;
-int		nDisp;
-int		tot;
-RLIST		**rlist;
-SE_POSITION	*func;
-int		displayMode;
+display(T_FILE * file,
+	const char *atacfile,
+	const char *funcname,
+	int nDisp,
+	int tot,
+	RLIST ** rlist,
+	SE_POSITION * func,
+	int displayMode)
 {
-	int		s1, s2, e1, e2, p1, p2;
-	int		start;
-	int		end;
-	char		*srcfile;
-	static char	*prev_filename = NULL;
-	static int	prev_end;
+    int s1, s2, e1, e2, p1, p2;
+    int start;
+    int end;
+    char *srcfile;
+    static char *prev_filename = NULL;
+    static int prev_end;
 
-	srcfile = srcfile_name(file->filename, &file->chgtime, atacfile);
-	if (rlist_get(rlist, &s1, &s2, &e1, &e2) == 0)	/* get last */
-		return;
-	end = e1 + SRC_CONTEXT_LINES;
-	if (func->end.file == 0 && end > (int)func->end.line) 
-		end = func->end.line;
-	rlist_put(rlist, s1, s2, e1, e2);	/* put it back */
-	rlist_reverse(rlist);
-	if (rlist_get(rlist, &s1, &s2, &e1, &e2) == 0)
-		return;
-	start = s1 - SRC_CONTEXT_LINES;
-	if (start <= 0) start = 1;
-	if (func->start.file == 0 && start < (int)func->start.line) 
-		start = func->start.line;
+    srcfile = srcfile_name(file->filename, &file->chgtime, atacfile);
+    if (rlist_get(rlist, &s1, &s2, &e1, &e2) == 0)	/* get last */
+	return;
+    end = e1 + SRC_CONTEXT_LINES;
+    if (func->end.file == 0 && end > (int) func->end.line)
+	end = func->end.line;
+    rlist_put(rlist, s1, s2, e1, e2);	/* put it back */
+    rlist_reverse(rlist);
+    if (rlist_get(rlist, &s1, &s2, &e1, &e2) == 0)
+	return;
+    start = s1 - SRC_CONTEXT_LINES;
+    if (start <= 0)
+	start = 1;
+    if (func->start.file == 0 && start < (int) func->start.line)
+	start = func->start.line;
 
-	print_header(srcfile, funcname, nDisp, tot, displayMode, start, end);
+    print_header(srcfile, funcname, nDisp, tot, displayMode, start, end);
 
-	if (file->filename != prev_filename || start <= prev_end) {
-		prev_filename = file->filename;
-	}
-	p1 = start;
-	p2 = 1;
+    if (file->filename != prev_filename || start <= prev_end) {
+	prev_filename = file->filename;
+    }
+    p1 = start;
+    p2 = 1;
 
-	do {
-		disp_file(srcfile, p1, p2, s1, s2 - 1, 0);
-		disp_file(srcfile, s1, s2, e1, e2, DISP_HILI);
-		p1 = e1;
-		p2 = e2 + 1;
-	} while (rlist_get(rlist, &s1, &s2, &e1, &e2));
+    do {
+	disp_file(srcfile, p1, p2, s1, s2 - 1, 0);
+	disp_file(srcfile, s1, s2, e1, e2, DISP_HILI);
+	p1 = e1;
+	p2 = e2 + 1;
+    } while (rlist_get(rlist, &s1, &s2, &e1, &e2));
 
-	disp_file(srcfile, p1, p2, end, -1, 0);
+    disp_file(srcfile, p1, p2, end, -1, 0);
 
-	prev_end = end;
+    prev_end = end;
 }

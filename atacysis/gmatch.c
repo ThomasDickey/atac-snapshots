@@ -20,10 +20,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const gmatch_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/gmatch.c,v 3.4 1995/12/27 20:54:20 tom Exp $";
+static char const gmatch_c[] = "$Id: gmatch.c,v 3.6 2013/12/09 01:43:03 tom Exp $";
 /*
-* $Log: gmatch.c,v $
+* @Log: gmatch.c,v @
 * Revision 3.4  1995/12/27 20:54:20  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -49,7 +48,8 @@ static char const gmatch_c[] =
 */
 
 /*
- * gmatch compares the string s with the shell pattern p and returns 1 if for match,
+ * gmatch compares the string s with the shell pattern p and returns
+ * 1 if for match,
  * 0 otherwise.
  * The eighth bit is used to 'quote' a character
  */
@@ -57,96 +57,86 @@ static char const gmatch_c[] =
 #define STRIP	0177
 
 int
-gmatch(s, p)
-register char *p;
-char *s;
+gmatch(const char *s,
+       const char *pFirst,
+       const char *pLast)
 {
- register int 	scc,c;
- while ((scc = *s++) != '\0')
-	{
-	 if(scc)
-		{
-		 if((scc &= STRIP)==0)
-			 scc=0200;
-		}
-	 switch(c = *p++)
-		{
-		 case '[':
-			{
-			 char ok = 0;
-			 int lc = -1;
-			 int notflag=0;
-			 if(*p == '!' )
-				{
-				 notflag=1;
-				 p++;
-				}
-			 while ((c = *p++) != '\0')
-				{
-				 if(c==']' && lc>=0)
-					 return(ok?gmatch(s,p):0);
-				 else if(c=='-' && lc>=0 && *p!=']')
-					 /*character range */
-					{
-					 c = *p++;
-					 if(notflag)
-						{
-						 if(lc>scc || scc>c)
-							 ok++;
-						 else
-							 return(0);
-						}
-					 else
-						 if(lc<scc && scc<=c)
-							 ok++;
-					}
-				 else
-					{
-					 c &=STRIP;
-				 	 if(notflag)
-						{
-						 if(scc!=c)
-							 ok++;
-						 else
-							 return(0);
-						}
-					 else
-						{
-						 if(scc==c)
-							 ok++;
-						}
-					 lc = c;
-					}
-				}
-			 return(0);
-			}
-		 default:
-			 if((c&STRIP) != scc)
-				 return(0);
-		 case '?':
-			 break;
-		 case '*':
-		/* several asteriks are the same as one */
-			 while(*p=='*' )
-				 p++;
-			 if(*p==0)
-				 return(1);
-			 --s;
-			 c = (*p)&STRIP;
-			 while(*s)
-				{
-				 if(c != ((*s)&STRIP) && *p!='?' && *p!='[')
-					 s++;
-				 else if(gmatch(s++,p))
-					 return(1);
-				}
-			 return(0);
+    int scc, c;
+    const char *p = pFirst;
 
-		 case 0:
-			 return(scc==0);
-		}
+    while ((scc = *s++) != '\0') {
+	if (scc) {
+	    if ((scc &= STRIP) == 0)
+		scc = 0200;
 	}
- while(*p == '*')
-	 p++;
- return(*p==0);
+
+	if (p >= pLast)
+	    return (scc == 0);
+
+	switch (c = *p++) {
+	case '[':
+	    {
+		char ok = 0;
+		int lc = -1;
+		int notflag = 0;
+		if (*p == '!') {
+		    notflag = 1;
+		    p++;
+		}
+		while (p < pLast) {
+		    c = *p++;
+		    if (c == ']' && lc >= 0)
+			return (ok ? gmatch(s, p, pLast) : 0);
+		    else if (c == '-' && lc >= 0 && *p != ']')
+			/*character range */
+		    {
+			c = *p++;
+			if (notflag) {
+			    if (lc > scc || scc > c)
+				ok++;
+			    else
+				return (0);
+			} else if (lc < scc && scc <= c)
+			    ok++;
+		    } else {
+			c &= STRIP;
+			if (notflag) {
+			    if (scc != c)
+				ok++;
+			    else
+				return (0);
+			} else {
+			    if (scc == c)
+				ok++;
+			}
+			lc = c;
+		    }
+		}
+		return (0);
+	    }
+	default:
+	    if ((c & STRIP) != scc)
+		return (0);
+	case '?':
+	    break;
+	case '*':
+	    /* several asterisks are the same as one */
+	    while (*p == '*' && (p < pLast))
+		p++;
+	    if (p >= pLast)
+		return (1);
+	    --s;
+	    c = (*p) & STRIP;
+	    while (*s) {
+		if (c != ((*s) & STRIP) && *p != '?' && *p != '[')
+		    s++;
+		else if (gmatch(s++, p, pLast))
+		    return (1);
+	    }
+	    return (0);
+	}
+    }
+    while (*p == '*' && (p < pLast))
+	p++;
+    return (p >= pLast);
 }

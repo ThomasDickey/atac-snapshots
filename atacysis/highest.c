@@ -30,10 +30,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const highest_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/highest.c,v 3.5 1995/12/29 21:24:41 tom Exp $";
+static char const highest_c[] = "$Id: highest.c,v 3.7 2013/12/09 00:30:03 tom Exp $";
 /*
-* $Log: highest.c,v $
+* @Log: highest.c,v @
 * Revision 3.5  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -82,45 +81,6 @@ static char const highest_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static void perFilePerTest
-	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
-	covCount, int options));
-static void perFuncPerTest
-	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
-	covCount, int options));
-static void perTest
-	P_((T_MODULE *modules, int n_mod, int nCov, T_TESTLIST *covList, int
-	covCount, int options));
-static void perFile
-	P_((T_MODULE *modules, int n_mod, int *covVector, int covCount, int
-	options));
-static void perFunc
-	P_((T_MODULE *modules, int n_mod, int *covVector, int covCount, int
-	options, int byFile));
-static void grandTotal
-	P_((T_MODULE *modules, int n_mod, int *covVector, int covCount, int
-	options));
-static void doLine
-	P_((T_MODULE *modules, int n_mod, int *covVector, int options, int
-	iMod, int iFunc));
-static void format
-	P_((int cov));
-static int *totVector
-	P_((int nCov, T_TESTLIST *covList, int covCount));
-static void decisCov
-	P_((T_FUNC *func, int *covVector, int *cov));
-static void pUseCov
-	P_((T_FUNC *func, int *covVector, int *cov));
-static void cUseCov
-	P_((T_FUNC *func, int *covVector, int *cov));
-static void blkCov
-	P_((T_FUNC *func, int *covVector, int *cov));
-static void fEntryCov
-	P_((T_FUNC *func, int *covVector, int *cov));
-static void heading
-	P_((int options, char *label));
-
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
 #define LINEMAX	100
@@ -133,13 +93,13 @@ static void heading
 #define C_COUNT 5
 
 static void
-heading(options, label)
-int	options;
-char	*label;
+heading(int options,
+	const char *label)
 {
-    int	fields;
+    int fields;
 
-    if (options & OPTION_NO_HEADER) return;
+    if (options & OPTION_NO_HEADER)
+	return;
 
     fields = 0;
 
@@ -179,10 +139,9 @@ char	*label;
 }
 
 static void
-fEntryCov(func, covVector, cov)
-T_FUNC	*func;
-int	*covVector;
-int	*cov;
+fEntryCov(T_FUNC * func,
+	  int *covVector,
+	  int *cov)
 {
     if (covVector[func->blkCovStart] == -1) {
 	*cov = 0;
@@ -192,23 +151,24 @@ int	*cov;
 }
 
 static void
-blkCov(func, covVector, cov)
-T_FUNC	*func;
-int	*covVector;
-int	*cov;
+blkCov(
+	  T_FUNC * func,
+	  int *covVector,
+	  int *cov)
 {
-    int	c;
+    int c;
     int t;
-    int	j;
-    int	*covPtr;
+    int j;
+    int *covPtr;
 
     c = 0;
     t = 0;
     covPtr = covVector + func->blkCovStart;
-    for(j = 0; j < (int)func->n_blk; ++j) {
+    for (j = 0; j < (int) func->n_blk; ++j) {
 	if (covPtr[j] != -1) {
 	    ++t;
-	    if (c < covPtr[j]) c = covPtr[j];
+	    if (c < covPtr[j])
+		c = covPtr[j];
 	}
     }
 
@@ -216,15 +176,14 @@ int	*cov;
 }
 
 static void
-cUseCov(func, covVector, cov)
-T_FUNC	*func;
-int	*covVector;
-int	*cov;
+cUseCov(T_FUNC * func,
+	int *covVector,
+	int *cov)
 {
-    int	c;
+    int c;
     int t;
-    int	j;
-    int	*covPtr;
+    int j;
+    int *covPtr;
 
     t = func->formalN_cuse;
 
@@ -235,12 +194,12 @@ int	*cov;
     }
 
     covPtr = covVector + func->cUseCovStart;
-    for(j = 0; j < (int)func->n_cuse; ++j) {
+    for (j = 0; j < (int) func->n_cuse; ++j) {
 	if (covPtr[j] == -1) {
 	    --t;
-	}
-	else {
-	    if (c < covPtr[j])  c = covPtr[j];
+	} else {
+	    if (c < covPtr[j])
+		c = covPtr[j];
 	}
     }
 
@@ -248,16 +207,15 @@ int	*cov;
 }
 
 static void
-pUseCov(func, covVector, cov)
-T_FUNC	*func;
-int	*covVector;
-int	*cov;
+pUseCov(T_FUNC * func,
+	int *covVector,
+	int *cov)
 {
-    int	c;
+    int c;
     int t;
-    int	j;
-    int	*covPtr;
-    int	decis_var;
+    int j;
+    int *covPtr;
+    int decis_var;
 
     decis_var = func->decis_var;
 
@@ -270,11 +228,12 @@ int	*cov;
     }
 
     covPtr = covVector + func->pUseCovStart;
-    for(j = 0; j < (int)func->n_puse; ++j) {
+    for (j = 0; j < (int) func->n_puse; ++j) {
 	if (func->puse[j].varno == decis_var || covPtr[j] == -1) {
 	    --t;
 	} else {
-	    if (c < covPtr[j]) c = covPtr[j];
+	    if (c < covPtr[j])
+		c = covPtr[j];
 	}
     }
 
@@ -282,16 +241,16 @@ int	*cov;
 }
 
 static void
-decisCov(func, covVector, cov)
-T_FUNC	*func;
-int	*covVector;
-int	*cov;
+decisCov(
+	    T_FUNC * func,
+	    int *covVector,
+	    int *cov)
 {
-    int	c;
+    int c;
     int t;
-    int	j;
-    int	*covPtr;
-    int	decis_var;
+    int j;
+    int *covPtr;
+    int decis_var;
 
     decis_var = func->decis_var;
 
@@ -299,11 +258,13 @@ int	*cov;
     t = 0;
 
     covPtr = covVector + func->pUseCovStart;
-    for(j = 0; j < (int)func->n_puse; ++j) {
-	if (func->puse[j].varno != decis_var) break;
+    for (j = 0; j < (int) func->n_puse; ++j) {
+	if (func->puse[j].varno != decis_var)
+	    break;
 	if (covPtr[j] != -1) {
 	    ++t;
-	    if (c < covPtr[j]) c = covPtr[j];
+	    if (c < covPtr[j])
+		c = covPtr[j];
 	}
     }
 
@@ -311,16 +272,15 @@ int	*cov;
 }
 
 static int *
-totVector(nCov, covList, covCount)
-int		nCov;
-T_TESTLIST	*covList;
-int		covCount;
+totVector(int nCov,
+	  T_TESTLIST * covList,
+	  int covCount)
 {
-    int	*cov;
-    int	j;
-    int	k;
+    int *cov;
+    int j;
+    int k;
 
-    cov = (int *)malloc(covCount * sizeof *cov);
+    cov = (int *) malloc((size_t) covCount * sizeof *cov);
     CHECK_MALLOC(cov);
 
     for (j = 0; j < covCount; ++j) {
@@ -339,32 +299,30 @@ int		covCount;
 }
 
 static void
-format(cov)
-int	cov;
+format(int cov)
 {
-    char	buf[20];
+    char buf[20];
     sprintf(buf, "%6d ", cov);
     printf("%-11.11s ", buf);
 }
 
 static void
-doLine(modules, n_mod, covVector, options, iMod, iFunc)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		options;
-int		iMod;
-int		iFunc;
+doLine(T_MODULE * modules,
+       int n_mod,
+       int *covVector,
+       int options,
+       int iMod,
+       int iFunc)
 {
-    int		i;
-    int		cov;
-    int		c_cov[C_COUNT];	/* per test coverage */
-    T_MODULE	*mod;
-    T_MODULE	*modEnd;
-    T_FUNC	*func;
-    T_FUNC	*funcEnd;
+    int i;
+    int cov;
+    int c_cov[C_COUNT];		/* per test coverage */
+    T_MODULE *mod;
+    T_MODULE *modEnd;
+    T_FUNC *func;
+    T_FUNC *funcEnd;
 
-    for (i = 0; i < C_COUNT; ++i) { 
+    for (i = 0; i < C_COUNT; ++i) {
 	c_cov[i] = 0;
     }
 
@@ -376,7 +334,8 @@ int		iFunc;
 	modEnd = modules + n_mod;
     }
     for (; mod < modEnd; ++mod) {
-	if (mod->ignore) continue;
+	if (mod->ignore)
+	    continue;
 	if (iFunc >= 0) {
 	    func = mod->func + iFunc;
 	    funcEnd = func + 1;
@@ -385,13 +344,15 @@ int		iFunc;
 	    funcEnd = mod->func + mod->n_func;
 	}
 	for (; func < funcEnd; ++func) {
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    /*
 	     * Function entry.
 	     */
 	    if (options & OPTION_F_ENTRY) {
 		fEntryCov(func, covVector, &cov);
-		if (c_cov[C_F_ENTRY] < cov) c_cov[C_F_ENTRY] = cov;
+		if (c_cov[C_F_ENTRY] < cov)
+		    c_cov[C_F_ENTRY] = cov;
 	    }
 
 	    /*
@@ -399,7 +360,8 @@ int		iFunc;
 	     */
 	    if (options & OPTION_BLOCK) {
 		blkCov(func, covVector, &cov);
-		if (c_cov[C_BLOCK] < cov) c_cov[C_BLOCK] = cov;
+		if (c_cov[C_BLOCK] < cov)
+		    c_cov[C_BLOCK] = cov;
 	    }
 
 	    /*
@@ -407,7 +369,8 @@ int		iFunc;
 	     */
 	    if (options & (OPTION_DECIS)) {
 		decisCov(func, covVector, &cov);
-		if (c_cov[C_DECIS] < cov) c_cov[C_DECIS] = cov;
+		if (c_cov[C_DECIS] < cov)
+		    c_cov[C_DECIS] = cov;
 	    }
 
 	    /*
@@ -415,7 +378,8 @@ int		iFunc;
 	     */
 	    if (options & (OPTION_CUSE | OPTION_ALLUSE)) {
 		cUseCov(func, covVector, &cov);
-		if (c_cov[C_C_USE] < cov) c_cov[C_C_USE] = cov;
+		if (c_cov[C_C_USE] < cov)
+		    c_cov[C_C_USE] = cov;
 	    }
 
 	    /*
@@ -423,7 +387,8 @@ int		iFunc;
 	     */
 	    if (options & (OPTION_PUSE | OPTION_ALLUSE)) {
 		pUseCov(func, covVector, &cov);
-		if (c_cov[C_P_USE] < cov) c_cov[C_P_USE] = cov;
+		if (c_cov[C_P_USE] < cov)
+		    c_cov[C_P_USE] = cov;
 	    }
 	}
     }
@@ -449,26 +414,24 @@ int		iFunc;
 }
 
 static void
-grandTotal(modules, n_mod, covVector, covCount, options)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		covCount;
-int		options;
+grandTotal(T_MODULE * modules,
+	   int n_mod,
+	   int *covVector,
+	   int covCount,
+	   int options)
 {
     heading(options, "");
     doLine(modules, n_mod, covVector, options, -1, -1);
-    printf("== all ==\n"); 
+    printf("== all ==\n");
 }
 
 static void
-perFunc(modules, n_mod, covVector, covCount, options, byFile)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		covCount;
-int		options;
-int		byFile;
+perFunc(T_MODULE * modules,
+	int n_mod,
+	int *covVector,
+	int covCount,
+	int options,
+	int byFile)
 {
     int i;
     int j;
@@ -478,7 +441,8 @@ int		byFile;
 
     nLine = 0;
     for (i = 0; i < n_mod; ++i) {
-	if (modules[i].ignore) continue;
+	if (modules[i].ignore)
+	    continue;
 	if (byFile) {
 	    if (i != 0) {
 		printf("\n");
@@ -486,31 +450,31 @@ int		byFile;
 	    }
 	    printf("file: %s\n", modules[i].file[0].filename);
 	}
-	for (j = 0; j < (int)modules[i].n_func; ++j) {
-	    if (modules[i].func[j].ignore) continue;
+	for (j = 0; j < (int) modules[i].n_func; ++j) {
+	    if (modules[i].func[j].ignore)
+		continue;
 	    doLine(modules, n_mod, covVector, options, i, j);
 	    printf("%s\n", modules[i].func[j].fname);
 	    ++nLine;
 	}
 	if (byFile && nLine > 1) {
 	    doLine(modules, n_mod, covVector, options, i, -1);
-	    printf("== all ==\n"); 
+	    printf("== all ==\n");
 	}
     }
 
     if (!byFile && nLine > 1) {
 	doLine(modules, n_mod, covVector, options, -1, -1);
-	printf("== all ==\n"); 
+	printf("== all ==\n");
     }
 }
-		
+
 static void
-perFile(modules, n_mod, covVector, covCount, options)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		covCount;
-int		options;
+perFile(T_MODULE * modules,
+	int n_mod,
+	int *covVector,
+	int covCount,
+	int options)
 {
     int i;
     int nLine;
@@ -519,7 +483,8 @@ int		options;
 
     nLine = 0;
     for (i = 0; i < n_mod; ++i) {
-	if (modules[i].ignore) continue;
+	if (modules[i].ignore)
+	    continue;
 	doLine(modules, n_mod, covVector, options, i, -1);
 	printf("%s\n", modules[i].file[0].filename);
 	++nLine;
@@ -527,22 +492,21 @@ int		options;
 
     if (nLine > 1) {
 	doLine(modules, n_mod, covVector, options, -1, -1);
-	printf("== all ==\n"); 
+	printf("== all ==\n");
     }
 }
-		
+
 static void
-perTest(modules, n_mod, nCov, covList, covCount, options)
-T_MODULE	*modules;
-int		n_mod;
-int		nCov;
-T_TESTLIST	*covList;
-int		covCount;
-int		options;
+perTest(T_MODULE * modules,
+	int n_mod,
+	int nCov,
+	T_TESTLIST * covList,
+	int covCount,
+	int options)
 {
-    int		k;
-    int		nLine;
-    int		*covVector;
+    int k;
+    int nLine;
+    int *covVector;
 
     heading(options, "test");
 
@@ -556,33 +520,34 @@ int		options;
     if (nLine > 1) {
 	covVector = totVector(nCov, covList, covCount);
 	doLine(modules, n_mod, covVector, options, -1, -1);
-	printf("== all ==\n"); 
+	printf("== all ==\n");
 	free(covVector);
     }
 }
 
 static void
-perFuncPerTest(modules, n_mod, nCov, covList, covCount, options)
-T_MODULE	*modules;
-int		n_mod;
-int		nCov;
-T_TESTLIST	*covList;
-int		covCount;
-int		options;
+perFuncPerTest(T_MODULE * modules,
+	       int n_mod,
+	       int nCov,
+	       T_TESTLIST * covList,
+	       int covCount,
+	       int options)
 {
-    int 	i;
-    int		j;
-    int		k;
-    int		*covVector = NULL;
+    int i;
+    int j;
+    int k;
+    int *covVector = NULL;
 
     if (nCov > 1) {
 	covVector = totVector(nCov, covList, covCount);
     }
 
     for (i = 0; i < n_mod; ++i) {
-	if (modules[i].ignore) continue;
-	for (j = 0; j < (int)modules[i].n_func; ++j) {
-	    if (modules[i].func[j].ignore) continue;
+	if (modules[i].ignore)
+	    continue;
+	for (j = 0; j < (int) modules[i].n_func; ++j) {
+	    if (modules[i].func[j].ignore)
+		continue;
 	    if (i + j != 0) {
 		printf("\n");
 	    }
@@ -594,7 +559,7 @@ int		options;
 	    }
 	    if (nCov > 1) {
 		doLine(modules, n_mod, covVector, options, i, j);
-		printf("== all ==\n"); 
+		printf("== all ==\n");
 	    }
 	}
     }
@@ -605,24 +570,24 @@ int		options;
 }
 
 static void
-perFilePerTest(modules, n_mod, nCov, covList, covCount, options)
-T_MODULE	*modules;
-int		n_mod;
-int		nCov;
-T_TESTLIST	*covList;
-int		covCount;
-int		options;
+perFilePerTest(T_MODULE * modules,
+	       int n_mod,
+	       int nCov,
+	       T_TESTLIST * covList,
+	       int covCount,
+	       int options)
 {
-    int 	i;
-    int		k;
-    int		*covVector = NULL;
+    int i;
+    int k;
+    int *covVector = NULL;
 
     if (nCov > 1) {
 	covVector = totVector(nCov, covList, covCount);
     }
 
     for (i = 0; i < n_mod; ++i) {
-	if (modules[i].ignore) continue;
+	if (modules[i].ignore)
+	    continue;
 	if (i != 0) {
 	    printf("\n");
 	}
@@ -634,7 +599,7 @@ int		options;
 	}
 	if (nCov > 1) {
 	    doLine(modules, n_mod, covVector, options, i, -1);
-	    printf("== all ==\n"); 
+	    printf("== all ==\n");
 	}
     }
 
@@ -644,15 +609,14 @@ int		options;
 }
 
 void
-highest(modules, n_mod, nCov, covList, covCount, byFunc, byFile, options)
-T_MODULE	*modules;
-int		n_mod;
-int		nCov;
-T_TESTLIST	*covList;
-int		covCount;
-int		byFunc;
-int		byFile;
-int		options;
+highest(T_MODULE * modules,
+	int n_mod,
+	int nCov,
+	T_TESTLIST * covList,
+	int covCount,
+	int byFunc,
+	int byFile,
+	int options)
 {
     if (nCov == 1) {
 	if (byFunc) {
@@ -662,8 +626,7 @@ int		options;
 	} else {
 	    grandTotal(modules, n_mod, covList[0].cov, covCount, options);
 	}
-    }
-    else if (byFunc) {
+    } else if (byFunc) {
 	perFuncPerTest(modules, n_mod, nCov, covList, covCount, options);
     } else if (byFile) {
 	perFilePerTest(modules, n_mod, nCov, covList, covCount, options);

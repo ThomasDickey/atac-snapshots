@@ -21,10 +21,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <config.h>
 #endif
 
-static const char reglist_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/reglist.c,v 3.5 1997/05/11 23:06:28 tom Exp $";
+static const char reglist_c[] = "$Id: reglist.c,v 3.6 2013/12/08 17:46:23 tom Exp $";
 /*
-* $Log: reglist.c,v $
+* @Log: reglist.c,v @
 * Revision 3.5  1997/05/11 23:06:28  tom
 * split-out reglist.h
 *
@@ -64,68 +63,71 @@ static const char reglist_c[] =
 #include "reglist.h"
 
 /* forward declarations */
-static void tree_free P_(( REGNODE *tree ));
+static void tree_free(REGNODE * tree);
 
 REGLST *
-reglst_create()
+reglst_create(void)
 {
-	REGLST *r;
+    REGLST *r;
 
-	r = (REGLST *)malloc(sizeof *r);
-	if (r == NULL) return NULL;		/* out of memory */
+    r = (REGLST *) malloc(sizeof *r);
+    if (r == NULL)
+	return NULL;		/* out of memory */
 
-	r->tree = NULL;
-	r->idno = 0;
+    r->tree = NULL;
+    r->idno = 0;
 
-	return r;
+    return r;
 }
 
 static void
-tree_free(tree)
-REGNODE	*tree;
+tree_free(REGNODE * tree)
 {
-	if (tree) {
-		tree_free(tree->left);
-		tree_free(tree->right);
-		free(tree);
-	}
+    if (tree) {
+	tree_free(tree->left);
+	tree_free(tree->right);
+	free(tree);
+    }
 }
 
 void
-reglst_free(reglst)
-REGLST	*reglst;
+reglst_free(REGLST * reglst)
 {
-	if (reglst == NULL) return;		/* no reglst */
+    if (reglst == NULL)
+	return;			/* no reglst */
 
-	tree_free(reglst->tree);
-	free(reglst);
+    tree_free(reglst->tree);
+    free(reglst);
 }
 
 int
-reglst_insert(reglst, data)
-REGLST	*reglst;
-void	*data;
+reglst_insert(REGLST * reglst,
+	      void *data)
 {
-	REGNODE	*n;
-	REGNODE	**next;
+    REGNODE *n;
+    REGNODE **next;
 
-	if (reglst == NULL) return -1;		/* no reglst */
+    if (reglst == NULL)
+	return -1;		/* no reglst */
 
-	next = &reglst->tree;
-	for (n = reglst->tree; n != NULL; n = *next) {
-		if (data < n->data) next = &n->left;
-		else
-		if (data > n->data) next = &n->right;
-		else return n->idno;		/* found */
-	}
+    next = &reglst->tree;
+    for (n = reglst->tree; n != NULL; n = *next) {
+	if (data < n->data)
+	    next = &n->left;
+	else if (data > n->data)
+	    next = &n->right;
+	else
+	    return n->idno;	/* found */
+    }
 
-	n = (REGNODE *)malloc(sizeof *n);
-	if (n == NULL) return -1;	/* out of memory */
+    n = (REGNODE *) malloc(sizeof *n);
+    if (n == NULL)
+	return -1;		/* out of memory */
 
-	*next = n;
-	n->data = data;
-	n->idno = reglst->idno++;
-	n->left = NULL;
-	n->right = NULL;
-	return n->idno;
+    *next = n;
+    n->data = data;
+    n->idno = reglst->idno++;
+    n->left = NULL;
+    n->right = NULL;
+    return n->idno;
 }

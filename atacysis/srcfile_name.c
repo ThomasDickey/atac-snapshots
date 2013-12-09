@@ -32,10 +32,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "version.h"
 #include "disp.h"
 
-static char const srcfile_name_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/srcfile_name.c,v 3.7 2005/08/14 13:47:42 tom Exp $";
+static char const srcfile_name_c[] = "$Id: srcfile_name.c,v 3.9 2013/12/09 01:59:57 tom Exp $";
 /*
-* $Log: srcfile_name.c,v $
+* @Log: srcfile_name.c,v @
 * Revision 3.7  2005/08/14 13:47:42  tom
 * gcc warnings
 *
@@ -73,55 +72,59 @@ static char const srcfile_name_c[] =
 */
 
 char *
-srcfile_name(srcfile, chgtime, atacfile)
-char *srcfile;
-char *atacfile;
-time_t *chgtime;
+srcfile_name(char *srcfile,
+	     time_t * chgtime,
+	     const char *atacfile)
 {
-	static char buf[MAX_SRCFILE_NAME];
-	static char errMsg[80];
-	char	*p;
-	char	*s;
-	char	*b;
-	time_t	tExpected;
-	time_t	tActual;
+    static char buf[MAX_SRCFILE_NAME];
+    static char errMsg[80];
+    const char *p;
+    const char *s;
+    char *b;
+    time_t tExpected;
+    time_t tActual;
 
-	if (*srcfile == '/') b = srcfile;
+    if (*srcfile == '/')
+	b = srcfile;
+    else {
+
+	p = atacfile + strlen(atacfile);
+	while (--p >= atacfile) {
+	    if (*p == '/')
+		break;
+	}
+
+	if (p == atacfile)
+	    return srcfile;
 	else {
 
-	    p = atacfile + strlen(atacfile);
-	    while (--p >= atacfile) {
-		if (*p == '/') break;
+	    b = buf + sizeof buf;
+
+	    s = srcfile + strlen(srcfile);
+	    while (s >= srcfile) {
+		if (b < buf)
+		    break;
+		*--b = *s--;
 	    }
 
-	    if (p == atacfile) return srcfile;
-	    else {
-
-		b = buf + sizeof buf;
-
-		s = srcfile + strlen(srcfile);
-		while (s >= srcfile) {
-		    if (b < buf) break;
-		    *--b = *s--;
-		}
-
-		while (p >= atacfile) {
-		    if (b <= buf) break;
-		    *--b = *p--;
-		}
+	    while (p >= atacfile) {
+		if (b <= buf)
+		    break;
+		*--b = *p--;
 	    }
 	}
+    }
 
-	tExpected = *chgtime;
-	if (tExpected == 0) {
-	    return b;
-	}
-
-	tActual = (time_t)filestamp(b);
-	if (tActual != tExpected) {
-	    sprintf(errMsg, "! ! ! ! WARNING %s has been modified ! ! ! !", b);
-	    disp_str(errMsg, DISP_CLEAR | DISP_HILI | DISP_NEWLINE);
-	    *chgtime = 0;
-	}
+    tExpected = *chgtime;
+    if (tExpected == 0) {
 	return b;
+    }
+
+    tActual = (time_t) filestamp(b);
+    if (tActual != tExpected) {
+	sprintf(errMsg, "! ! ! ! WARNING %s has been modified ! ! ! !", b);
+	disp_str(errMsg, DISP_CLEAR | DISP_HILI | DISP_NEWLINE);
+	*chgtime = 0;
+    }
+    return b;
 }

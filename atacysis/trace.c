@@ -31,10 +31,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "atacysis.h"
 
-static char const trace_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/trace.c,v 3.12 1995/12/29 21:24:41 tom Exp $";
+static char const trace_c[] = "$Id: trace.c,v 3.14 2013/12/09 02:01:02 tom Exp $";
 /*
-* $Log: trace.c,v $
+* @Log: trace.c,v @
 * Revision 3.12  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -128,38 +127,6 @@ static char const trace_c[] =
 * 
 *-----------------------------------------------end of log
 */
-/* forward declarations */
-static int testNo
-	P_((T_TEST *tests, int nTests, char *testName));
-static void getCompressed
-	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
-	int nCov, int options, char *selectPattern, T_TESTLIST **selectListPtr,
-	int *nSelectPtr, T_TEST **testsPtr, int *nTestsPtr));
-static void getPuseCov
-	P_((struct cfile *cf, char *filename, int nPuse, T_MODULE *modIndex[],
-	int nModIndex, int **testCov, int nTests));
-static void getCuseCov
-	P_((struct cfile *cf, char *filename, int nCuse, T_MODULE *modIndex[],
-	int nModIndex, int **testCov, int nTests));
-static void getBlkCov
-	P_((struct cfile *cf, char *filename, int nBlk, T_MODULE *modIndex[],
-	int nModIndex, int **testCov, int nTests));
-static void getSkip
-	P_((struct cfile *cf, char *filename, int nSkip, int type));
-static void checkSrcStamp
-	P_((struct cfile *cf, char *filename, T_TEST *tests, int nTests,
-	T_MODULE *modIndex[], int nModIndex, int nSource, char *selectPattern,
-	int deselect));
-static void getMIndex
-	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
-	T_MODULE *modIndex[], int nModIndex));
-static void getIndex
-	P_((struct cfile *cf, char *filename, T_TEST *tests, int nTests));
-static int skipFlatTest
-	P_((struct cfile *cf, char *filename));
-static int getFlatTest
-	P_((struct cfile *cf, char *filename, T_MODULE *t_module, int n_module,
-	char *testName, int *cov, int options, int *freq));
 
 #define CHECK_MALLOC(p) if((p)==NULL)fprintf(stderr,"Out of memory\n"),exit(1)
 
@@ -169,46 +136,45 @@ static int getFlatTest
 #define FILENAME_SIZE 1024
 
 typedef struct {
-	int		file;
-	T_MODULE	*module;
+    int file;
+    T_MODULE *module;
 } M_INDEX;
 
 /*
 * getFlatTests: Read in an uncompressed trace and update cov vector.
 * 	stop reading at EOF or t or f entry.  
 */
-static int				/* Return next input character. */
-getFlatTest(cf, filename, t_module, n_module, testName, cov, options, freq)
-struct cfile	*cf;
-char		*filename;
-T_MODULE	*t_module;
-int		n_module;
-char		*testName;
-int		*cov;
-int		options;
-int		*freq;
+static int			/* Return next input character. */
+getFlatTest(struct cfile *cf,
+	    const char *filename,
+	    T_MODULE * t_module,
+	    int n_module,
+	    const char *testName,
+	    int *cov,
+	    int options,
+	    int *freq)
 {
-    M_INDEX	*m_index;	/* Maps file_id into module info. */
-    int		n_m_index = 0;
-    int		file;		/* File_id most recently used. */
-    T_MODULE	*mod;		/* Module info for file_id: file */
-    int		tfile;		/* Next file_id */
-    int		funcNo;		/* function number input field */ 
-    int		varNo;		/* var input field */
-    int		b1;		/* block 1 input field */
-    int		b2;		/* block 2 input field */
-    int		b3;		/* block 3 input field */
-    T_FUNC	*func;
-    T_CUSE	*cuse;
-    T_PUSE	*puse;
-    int		i;
-    int		c;
-    char	srcfilename[FILENAME_SIZE];
-    time_t	chgtime;
+    M_INDEX *m_index;		/* Maps file_id into module info. */
+    int n_m_index = 0;
+    int file;			/* File_id most recently used. */
+    T_MODULE *mod;		/* Module info for file_id: file */
+    int tfile;			/* Next file_id */
+    int funcNo;			/* function number input field */
+    int varNo;			/* var input field */
+    int b1;			/* block 1 input field */
+    int b2;			/* block 2 input field */
+    int b3;			/* block 3 input field */
+    T_FUNC *func;
+    T_CUSE *cuse;
+    T_PUSE *puse;
+    int i;
+    int c;
+    char srcfilename[FILENAME_SIZE];
+    time_t chgtime;
 
-    *freq = 0;	/* Incomplete (or no) frequency counts so far. */
+    *freq = 0;			/* Incomplete (or no) frequency counts so far. */
 
-    m_index = (M_INDEX *)malloc(n_module * sizeof *m_index);
+    m_index = (M_INDEX *) malloc(n_module * sizeof *m_index);
     CHECK_MALLOC(m_index);
 
     n_m_index = 0;
@@ -216,16 +182,20 @@ int		*freq;
     mod = NULL;
 
     while ((c = cf_getFirstChar(cf)) != EOF) {
-	if (c == 't') return c;
+	if (c == 't')
+	    return c;
 	if (c == 'h') {
 	    cf_getString(cf, srcfilename, sizeof srcfilename);
 	    chgtime = cf_getLong(cf);
-	    if (mod == NULL) continue;	/* Static info. missing. */
-	    for (i = 0; i < (int)mod->n_file; ++i) {
-		if (STREQ(mod->file[i].filename, srcfilename)) break;
+	    if (mod == NULL)
+		continue;	/* Static info. missing. */
+	    for (i = 0; i < (int) mod->n_file; ++i) {
+		if (STREQ(mod->file[i].filename, srcfilename))
+		    break;
 	    }
 	    if (i == mod->n_file || mod->file[i].chgtime != chgtime) {
-		if (options & OPTION_IGNORE_SRC_TIMESTAMP) continue;
+		if (options & OPTION_IGNORE_SRC_TIMESTAMP)
+		    continue;
 		fprintf(stderr,
 			"Test %s.%s invalid due to modification of \"%s\"\n",
 			filename, testName, srcfilename);
@@ -237,8 +207,7 @@ int		*freq;
 	if (tfile != file) {
 	    if (tfile < n_m_index && tfile == m_index[tfile].file) {
 		mod = m_index[tfile].module;
-	    }
-	    else {
+	    } else {
 		for (i = 0; i < n_m_index; ++i) {
 		    if (tfile == m_index[i].file)
 			break;
@@ -251,17 +220,18 @@ int		*freq;
 	    }
 	    file = tfile;
 	}
-	switch (c)
-	{
-        case 'f':
-	    *freq = 1;	/* Complete frequency counts */
+	switch (c) {
+	case 'f':
+	    *freq = 1;		/* Complete frequency counts */
 	    break;
 	case 's':
 	    cf_getString(cf, srcfilename, sizeof srcfilename);
 	    chgtime = cf_getLong(cf);
-	    if (n_m_index == n_module) continue; /* Static info. missing. */
+	    if (n_m_index == n_module)
+		continue;	/* Static info. missing. */
 	    for (mod = t_module; mod < t_module + n_module; ++mod) {
-		if (STREQ(mod->file[0].filename, srcfilename)) break;
+		if (STREQ(mod->file[0].filename, srcfilename))
+		    break;
 	    }
 	    if (mod >= t_module + n_module) {
 		mod = NULL;
@@ -269,8 +239,7 @@ int		*freq;
 		continue;	/* Static info. missing. */
 	    }
 	    if (!(options & OPTION_IGNORE_SRC_TIMESTAMP)
-		&& mod->file[0].chgtime != chgtime)
-	    {
+		&& mod->file[0].chgtime != chgtime) {
 		fprintf(stderr,
 			"Test %s.%s invalid due to modification of \"%s\"\n",
 			filename, testName, srcfilename);
@@ -280,50 +249,59 @@ int		*freq;
 	    m_index[n_m_index++].module = mod;
 	    break;
 	case 'b':
-	    if (!(options & OPTION_BLOCK)) break;
-	    if (mod == NULL) continue;	/* Static info. missing. */
+	    if (!(options & OPTION_BLOCK))
+		break;
+	    if (mod == NULL)
+		continue;	/* Static info. missing. */
 	    funcNo = cf_getLong(cf);
 	    b1 = cf_getLong(cf);
-	    if (funcNo >= (int)mod->n_func) {
+	    if (funcNo >= (int) mod->n_func) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
 	    func = mod->func + funcNo;
-	    if (func->ignore) break;
-	    if (b1 < 0 || b1 >= (int)func->n_blk) {
+	    if (func->ignore)
+		break;
+	    if (b1 < 0 || b1 >= (int) func->n_blk) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
 	    c = cf_getLong(cf);
-	    if (c == 0) c = 1;
+	    if (c == 0)
+		c = 1;
 	    if ((cov[b1 + func->blkCovStart] += c) <= 0)
 		cov[b1 + func->blkCovStart] = MAX_COUNT;
 	    break;
 	case 'c':
-	    if (!(options & OPTION_CUSE)) break;
-	    if (mod == NULL) continue;	/* Static info. missing. */
+	    if (!(options & OPTION_CUSE))
+		break;
+	    if (mod == NULL)
+		continue;	/* Static info. missing. */
 	    funcNo = cf_getLong(cf);
 	    varNo = cf_getLong(cf);
 	    b1 = cf_getLong(cf);
 	    b2 = cf_getLong(cf);
-	    if (funcNo < 0 || funcNo >= (int)mod->n_func) {
+	    if (funcNo < 0 || funcNo >= (int) mod->n_func) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
 	    func = mod->func + funcNo;
-	    if (func->ignore) break;
-	    if (varNo < 0 || varNo >= (int)func->n_var) {
+	    if (func->ignore)
+		break;
+	    if (varNo < 0 || varNo >= (int) func->n_var) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
-	    if (b1 < 0 || b1 >= (int)func->n_blk) {
+	    if (b1 < 0 || b1 >= (int) func->n_blk) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
-	    if (b2 < 0 || b2 >= (int)func->n_blk) {
+	    if (b2 < 0 || b2 >= (int) func->n_blk) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
-	    for (i = func->var[varNo].cstart; i < (int)func->n_cuse; ++i) {
+	    for (i = func->var[varNo].cstart; i < (int) func->n_cuse; ++i) {
 		cuse = func->cuse + i;
-		if (cuse->varno != varNo) break;
+		if (cuse->varno != varNo)
+		    break;
 		if (cuse->blk1 == b1 && cuse->blk2 == b2) {
 		    c = cf_getLong(cf);
-		    if (c == 0) c = 1;
+		    if (c == 0)
+			c = 1;
 		    if ((cov[func->cUseCovStart + i] += c) <= 0)
 			cov[func->cUseCovStart + i] = MAX_COUNT;
 		    break;
@@ -331,36 +309,41 @@ int		*freq;
 	    }
 	    break;
 	case 'p':
-	    if (!(options & OPTION_PUSE)) break;
-	    if (mod == NULL) continue; 	/* Static info. missing. */
+	    if (!(options & OPTION_PUSE))
+		break;
+	    if (mod == NULL)
+		continue;	/* Static info. missing. */
 	    funcNo = cf_getLong(cf);
 	    varNo = cf_getLong(cf);
 	    b1 = cf_getLong(cf);
 	    b2 = cf_getLong(cf);
 	    b3 = cf_getLong(cf);
-	    if (funcNo < 0 || funcNo >= (int)mod->n_func) {
+	    if (funcNo < 0 || funcNo >= (int) mod->n_func) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
 	    func = mod->func + funcNo;
-	    if (func->ignore) break;
-	    if (varNo < 0 || varNo >= (int)func->n_var) {
+	    if (func->ignore)
+		break;
+	    if (varNo < 0 || varNo >= (int) func->n_var) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
-	    if (b1 < 0 || b1 >= (int)func->n_blk) {
+	    if (b1 < 0 || b1 >= (int) func->n_blk) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
-	    if (b2 < 0 || b2 >= (int)func->n_blk) {
+	    if (b2 < 0 || b2 >= (int) func->n_blk) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
-	    if (b3 < 0 || b3 >= (int)func->n_blk) {
+	    if (b3 < 0 || b3 >= (int) func->n_blk) {
 		trace_error(filename, cf_lineNo(cf));
 	    }
-	    for (i = func->var[varNo].pstart; i < (int)func->n_puse; ++i) {
+	    for (i = func->var[varNo].pstart; i < (int) func->n_puse; ++i) {
 		puse = func->puse + i;
-		if (puse->varno != varNo) break;
+		if (puse->varno != varNo)
+		    break;
 		if (puse->blk1 == b1 && puse->blk2 == b2 && puse->blk3 == b3) {
 		    c = cf_getLong(cf);
-		    if (c == 0) c = 1;
+		    if (c == 0)
+			c = 1;
 		    if ((cov[func->pUseCovStart + i] += c) <= 0)
 			cov[func->pUseCovStart + i] = MAX_COUNT;
 		    break;
@@ -379,19 +362,17 @@ int		*freq;
 * skipFlatTest: Read past an uncompressed trace.  Stop reading at EOF or t
 * 	entry.
 */
-static int				/* Return next input character. */
-skipFlatTest(cf, filename)
-struct cfile	*cf;
-char		*filename;
+static int			/* Return next input character. */
+skipFlatTest(struct cfile *cf,
+	     const char *filename)
 {
-    int	c;
+    int c;
 
     while ((c = cf_getFirstChar(cf)) != EOF) {
-	switch (c)
-	{
+	switch (c) {
 	case 't':
 	    return c;
-        case 'f':
+	case 'f':
 	case 's':
 	case 'h':
 	case 'b':
@@ -410,15 +391,14 @@ char		*filename;
 * getIndex:  Read next nTests "I" lines from f and fill in tests[] data.
 */
 static void
-getIndex(cf, filename, tests, nTests)
-struct cfile	*cf;
-char		*filename;
-T_TEST		*tests;
-int		nTests;
+getIndex(struct cfile *cf,
+	 const char *filename,
+	 T_TEST * tests,
+	 int nTests)
 {
-    int		c;
-    int		i;
-    char	buf[20];
+    int c;
+    int i;
+    char buf[20];
 
     for (i = 0; i < nTests; ++i) {
 	c = cf_getFirstChar(cf);
@@ -441,18 +421,17 @@ int		nTests;
 *	modIndex maps a module number to a pointer to module static data.
 */
 static void
-getMIndex(cf, filename, t_module, n_module, modIndex, nModIndex)
-char		*filename;
-struct cfile	*cf;
-T_MODULE	*t_module;
-int		n_module;
-T_MODULE	*modIndex[];
-int		nModIndex;
+getMIndex(struct cfile *cf,
+	  const char *filename,
+	  T_MODULE * t_module,
+	  int n_module,
+	  T_MODULE * modIndex[],
+	  int nModIndex)
 {
-    int		i;
-    T_MODULE	*mod;		/* Module info for file_id: file */
-    int		c;
-    char	srcfilename[FILENAME_SIZE];
+    int i;
+    T_MODULE *mod;		/* Module info for file_id: file */
+    int c;
+    char srcfilename[FILENAME_SIZE];
 
     for (i = 0; i < nModIndex; ++i) {
 	c = cf_getFirstChar(cf);
@@ -461,7 +440,8 @@ int		nModIndex;
 	}
 	cf_getString(cf, srcfilename, sizeof srcfilename);
 	for (mod = t_module; mod < t_module + n_module; ++mod) {
-	    if (STREQ(mod->file[0].filename, srcfilename)) break;
+	    if (STREQ(mod->file[0].filename, srcfilename))
+		break;
 	}
 	if (mod < t_module + n_module) {
 	    modIndex[i] = mod;
@@ -479,29 +459,27 @@ int		nModIndex;
 *	module.
 */
 static void
-checkSrcStamp(cf, filename, tests, nTests, modIndex, nModIndex,
-	      nSource, selectPattern, deselect)
-struct cfile	*cf;
-char		*filename;
-T_TEST		*tests;
-int		nTests;
-T_MODULE	*modIndex[];
-int		nModIndex;
-int		nSource;
-char		*selectPattern;
-int		deselect;
+checkSrcStamp(struct cfile *cf,
+	      const char *filename,
+	      T_TEST * tests,
+	      int nTests,
+	      T_MODULE * modIndex[],
+	      int nModIndex,
+	      int nSource,
+	      const char *selectPattern,
+	      int deselect)
 {
-    int		i;
-    int		j;
-    int		k;
-    T_MODULE	*mod;
-    int		modNumber;
-    char	srcfilename[FILENAME_SIZE];
-    int		c;
-    time_t	chgtime;
-    int		exitFlag;
+    int i;
+    int j;
+    int k;
+    T_MODULE *mod;
+    int modNumber;
+    char srcfilename[FILENAME_SIZE];
+    int c;
+    time_t chgtime;
+    int exitFlag;
 
-    exitFlag = 0;			/* 1 means abort at return */
+    exitFlag = 0;		/* 1 means abort at return */
 
     for (i = 0; i < nSource; ++i) {
 	c = cf_getFirstChar(cf);
@@ -517,20 +495,24 @@ int		deselect;
 	    continue;
 	}
 	cf_getString(cf, srcfilename, sizeof srcfilename);
-	for (k = 0; k < (int)mod->n_file; ++k) {
-	    if (STREQ(mod->file[k].filename, srcfilename)) break;
+	for (k = 0; k < (int) mod->n_file; ++k) {
+	    if (STREQ(mod->file[k].filename, srcfilename))
+		break;
 	}
-	if (k == mod->n_file) continue;
+	if (k == mod->n_file)
+	    continue;
 
-	if (mod->file[k].chgtime == 0) continue;	/* no time stamp info */
+	if (mod->file[k].chgtime == 0)
+	    continue;		/* no time stamp info */
 
 	for (j = 0; j < nTests; ++j) {
 	    chgtime = cf_getLong(cf);
-	    if (chgtime == 0) {	    /* Source file not entered by this test. */
+	    if (chgtime == 0) {	/* Source file not entered by this test. */
 		continue;
 	    }
 	    if (mod->file[k].chgtime != chgtime) {
-		if (!patMatch(selectPattern, tests[j].name, deselect)) continue;
+		if (!patMatch(selectPattern, tests[j].name, deselect))
+		    continue;
 		fprintf(stderr, "%s %s: test is older than \"%s\".\n",
 			filename, tests[j].name, srcfilename);
 		exitFlag = 1;
@@ -538,7 +520,8 @@ int		deselect;
 	}
     }
 
-    if (exitFlag) exit(1);
+    if (exitFlag)
+	exit(1);
 }
 
 /*
@@ -546,14 +529,13 @@ int		deselect;
 *	the given type.
 */
 static void
-getSkip(cf, filename, nSkip, type)
-struct cfile	*cf;
-char		*filename;
-int		nSkip;
-char		type;
+getSkip(struct cfile *cf,
+	const char *filename,
+	int nSkip,
+	int type)
 {
-    int		i;
-    int		c;
+    int i;
+    int c;
 
     for (i = 0; i < nSkip; ++i) {
 	c = cf_getFirstChar(cf);
@@ -567,24 +549,23 @@ char		type;
 * Read the next nBlk B lines.  Update appropriate cov vector in testCov list.
 */
 static void
-getBlkCov(cf, filename, nBlk, modIndex, nModIndex, testCov, nTests)
-struct cfile	*cf;
-char		*filename;
-int		nBlk;		/* number of records to read */
-T_MODULE	*modIndex[];
-int		nModIndex;
-int		**testCov;
-int		nTests;
+getBlkCov(struct cfile *cf,
+	  const char *filename,
+	  int nBlk,		/* number of records to read */
+	  T_MODULE * modIndex[],
+	  int nModIndex,
+	  int **testCov,
+	  int nTests)
 {
-    int		i;
-    int		k;
-    int		modNumber;
-    T_MODULE	*mod;
-    T_FUNC	*func;
-    int		funcNo;		/* function number input field */ 
-    int		b1;
-    int		covIndex;
-    int		c;
+    int i;
+    int k;
+    int modNumber;
+    T_MODULE *mod;
+    T_FUNC *func;
+    int funcNo;			/* function number input field */
+    int b1;
+    int covIndex;
+    int c;
 
     for (i = 0; i < nBlk; ++i) {
 	c = cf_getFirstChar(cf);
@@ -595,24 +576,24 @@ int		nTests;
 	if (modNumber < 0 || modNumber >= nModIndex) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
-    	mod = modIndex[modNumber];
+	mod = modIndex[modNumber];
 	if (mod == NULL) {	/* Static info. missing for this module. */
 	    continue;
 	}
 	if (mod->ignore) {	/* All functions in this module ignored */
 	    continue;
-	}	
+	}
 	funcNo = cf_getLong(cf);
-	if (funcNo < 0 || funcNo >= (int)mod->n_func) {
+	if (funcNo < 0 || funcNo >= (int) mod->n_func) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	func = mod->func + funcNo;
 	if (func->ignore) {	/* Not interested in this function */
 	    continue;
-	}	
+	}
 
 	b1 = cf_getLong(cf);
-	if (b1 < 0 || b1 >= (int)func->n_blk) {
+	if (b1 < 0 || b1 >= (int) func->n_blk) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	covIndex = b1 + func->blkCovStart;
@@ -627,28 +608,27 @@ int		nTests;
 * Read the next nCuse C lines.  Update appropriate cov vector in testCov list.
 */
 static void
-getCuseCov(cf, filename, nCuse, modIndex, nModIndex, testCov, nTests)
-struct cfile	*cf;
-char		*filename;
-int		nCuse;		/* number of records to read */
-T_MODULE	*modIndex[];
-int		nModIndex;
-int		**testCov;
-int		nTests;
+getCuseCov(struct cfile *cf,
+	   const char *filename,
+	   int nCuse,		/* number of records to read */
+	   T_MODULE * modIndex[],
+	   int nModIndex,
+	   int **testCov,
+	   int nTests)
 {
-    int		i;
-    int		j;
-    int		k;
-    int		modNumber;
-    T_MODULE	*mod;
-    T_FUNC	*func;
-    int		funcNo;		/* function number input field */ 
-    int		b1;
-    int		b2;
-    int		varNo;
-    int		covIndex;
-    T_CUSE	*cuse;
-    int		c;
+    int i;
+    int j;
+    int k;
+    int modNumber;
+    T_MODULE *mod;
+    T_FUNC *func;
+    int funcNo;			/* function number input field */
+    int b1;
+    int b2;
+    int varNo;
+    int covIndex;
+    T_CUSE *cuse;
+    int c;
 
     for (i = 0; i < nCuse; ++i) {
 	c = cf_getFirstChar(cf);
@@ -659,76 +639,76 @@ int		nTests;
 	if (modNumber < 0 || modNumber >= nModIndex) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
-    	mod = modIndex[modNumber];
+	mod = modIndex[modNumber];
 	if (mod == NULL) {	/* Static info. missing for this module. */
 	    continue;
 	}
 	if (mod->ignore) {	/* All functions in this module ignored */
 	    continue;
-	}	
+	}
 	funcNo = cf_getLong(cf);
-	if (funcNo < 0 || funcNo >= (int)mod->n_func) {
+	if (funcNo < 0 || funcNo >= (int) mod->n_func) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	func = mod->func + funcNo;
 	if (func->ignore) {	/* Not interested in this function */
 	    continue;
-	}	
+	}
 
 	varNo = cf_getLong(cf);
-	if (varNo < 0 || varNo >= (int)func->n_var) {
+	if (varNo < 0 || varNo >= (int) func->n_var) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	b1 = cf_getLong(cf);
-	if (b1 < 0 || b1 >= (int)func->n_blk) {
+	if (b1 < 0 || b1 >= (int) func->n_blk) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	b2 = cf_getLong(cf);
-	if (b1 < 0 || b1 >= (int)func->n_blk) {
+	if (b1 < 0 || b1 >= (int) func->n_blk) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	covIndex = func->cUseCovStart;
-	for (j = func->var[varNo].cstart; j < (int)func->n_cuse; ++j) {
+	for (j = func->var[varNo].cstart; j < (int) func->n_cuse; ++j) {
 	    cuse = func->cuse + j;
-	    if (cuse->varno != varNo) break;
+	    if (cuse->varno != varNo)
+		break;
 	    if (cuse->blk1 == b1 && cuse->blk2 == b2) {
 		for (k = 0; k < nTests; ++k) {
-		    if ((testCov[k][covIndex+j] += cf_getLong(cf)) < 0)
-			testCov[k][covIndex+j] = MAX_COUNT;
-		} /* k loop */
-		break;	/* Get out of j loop. */
+		    if ((testCov[k][covIndex + j] += cf_getLong(cf)) < 0)
+			testCov[k][covIndex + j] = MAX_COUNT;
+		}		/* k loop */
+		break;		/* Get out of j loop. */
 	    }
-	} /* j loop */
-    } /* i loop */
+	}			/* j loop */
+    }				/* i loop */
 }
 
 /*
 * Read the next nPuse P lines.  Update appropriate cov vector in testCov list.
 */
 static void
-getPuseCov(cf, filename, nPuse, modIndex, nModIndex, testCov, nTests)
-struct cfile	*cf;
-char		*filename;
-int		nPuse;		/* number of records to read */
-T_MODULE	*modIndex[];
-int		nModIndex;
-int		**testCov;
-int		nTests;
+getPuseCov(struct cfile *cf,
+	   const char *filename,
+	   int nPuse,		/* number of records to read */
+	   T_MODULE * modIndex[],
+	   int nModIndex,
+	   int **testCov,
+	   int nTests)
 {
-    int		i;
-    int		j;
-    int		k;
-    int		modNumber;
-    T_MODULE	*mod;
-    T_FUNC	*func;
-    int		funcNo;		/* function number input field */ 
-    int		b1;
-    int		b2;
-    int		b3;
-    int		varNo;
-    int		covIndex;
-    T_PUSE	*puse;
-    int		c;
+    int i;
+    int j;
+    int k;
+    int modNumber;
+    T_MODULE *mod;
+    T_FUNC *func;
+    int funcNo;			/* function number input field */
+    int b1;
+    int b2;
+    int b3;
+    int varNo;
+    int covIndex;
+    T_PUSE *puse;
+    int c;
 
     for (i = 0; i < nPuse; ++i) {
 	c = cf_getFirstChar(cf);
@@ -739,50 +719,51 @@ int		nTests;
 	if (modNumber < 0 || modNumber >= nModIndex) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
-    	mod = modIndex[modNumber];
+	mod = modIndex[modNumber];
 	if (mod == NULL) {	/* Static info. missing for this module. */
 	    continue;
 	}
 	if (mod->ignore) {	/* All functions in this module ignored */
 	    continue;
-	}	
+	}
 	funcNo = cf_getLong(cf);
-	if (funcNo < 0 || funcNo >= (int)mod->n_func) {
+	if (funcNo < 0 || funcNo >= (int) mod->n_func) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	func = mod->func + funcNo;
 	if (func->ignore) {	/* Not interested in this function */
 	    continue;
-	}	
+	}
 
 	varNo = cf_getLong(cf);
-	if (varNo < 0 || varNo >= (int)func->n_var) {
+	if (varNo < 0 || varNo >= (int) func->n_var) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	b1 = cf_getLong(cf);
-	if (b1 < 0 || b1 >= (int)func->n_blk) {
+	if (b1 < 0 || b1 >= (int) func->n_blk) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	b2 = cf_getLong(cf);
-	if (b2 < 0 || b2 >= (int)func->n_blk) {
+	if (b2 < 0 || b2 >= (int) func->n_blk) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	b3 = cf_getLong(cf);
-	if (b3 < 0 || b3 >= (int)func->n_blk) {
+	if (b3 < 0 || b3 >= (int) func->n_blk) {
 	    trace_error(filename, cf_lineNo(cf));
 	}
 	covIndex = func->pUseCovStart;
-	for (j = func->var[varNo].pstart; j < (int)func->n_puse; ++j) {
+	for (j = func->var[varNo].pstart; j < (int) func->n_puse; ++j) {
 	    puse = func->puse + j;
-	    if (puse->varno != varNo) break;
+	    if (puse->varno != varNo)
+		break;
 	    if (puse->blk1 == b1 && puse->blk2 == b2 && puse->blk3 == b3) {
 		for (k = 0; k < nTests; ++k) {
-		    if ((testCov[k][covIndex+j] += cf_getLong(cf)) < 0)
-			testCov[k][covIndex+j] = MAX_COUNT;
-		} /* k loop */
-		break;	/* Get out of j loop. */
+		    if ((testCov[k][covIndex + j] += cf_getLong(cf)) < 0)
+			testCov[k][covIndex + j] = MAX_COUNT;
+		}		/* k loop */
+		break;		/* Get out of j loop. */
 	    }
-	} /* j loop */
+	}			/* j loop */
     }
 }
 
@@ -795,65 +776,63 @@ int		nTests;
 * The caller is responsible for freeing this too.
 */
 static void
-getCompressed(cf, filename, t_module, n_module, nCov, options,
-	      selectPattern, selectListPtr, nSelectPtr, testsPtr, nTestsPtr)
-struct cfile	*cf;
-char		*filename;
-T_MODULE	*t_module;	/* static data */
-int		n_module;
-int		nCov;		/* Total coverage items in static data */
-int		options;
-char		*selectPattern;	/* trace name selection pattern */
-T_TESTLIST	**selectListPtr;   	/* return selectList */
-int		*nSelectPtr;
-T_TEST		**testsPtr;
-int		*nTestsPtr;
+getCompressed(struct cfile *cf,
+	      const char *filename,
+	      T_MODULE * t_module,	/* static data */
+	      int n_module,
+	      int nCov,		/* Total coverage items in static data */
+	      int options,
+	      char *selectPattern,	/* trace name selection pattern */
+	      T_TESTLIST ** selectListPtr,	/* return selectList */
+	      int *nSelectPtr,
+	      T_TEST ** testsPtr,
+	      int *nTestsPtr)
 {
-    int		i;			/* index for nTests */
-    int		j;			/* index for nCov */
-    int		nRecs;			/* Num of input records of given type */
-    int		nTests;			/* number of compressed tests */
-    T_TEST	*tests = NULL;		/* index of compressed tests */
-    int		**covIndex = NULL;	/* coverage of compressed tests */
-    int		nModIndex;		/* num modules used in compressed ... */
-    T_MODULE	**modIndex = NULL;	/* index of modules in compressed ... */
-    int		nSelect;		/* number of tests selected */
-    T_TESTLIST	*selectList;		/* list of tests selected */
-    int		*throwAway;		/* coverage vector for unselected ... */
-    int		*keep;			/* coverage vector for selected ... */
-    int		c;
-    
+    int i;			/* index for nTests */
+    int j;			/* index for nCov */
+    int nRecs;			/* Num of input records of given type */
+    int nTests;			/* number of compressed tests */
+    T_TEST *tests = NULL;	/* index of compressed tests */
+    int **covIndex = NULL;	/* coverage of compressed tests */
+    int nModIndex;		/* num modules used in compressed ... */
+    T_MODULE **modIndex = NULL;	/* index of modules in compressed ... */
+    int nSelect;		/* number of tests selected */
+    T_TESTLIST *selectList;	/* list of tests selected */
+    int *throwAway;		/* coverage vector for unselected ... */
+    int *keep;			/* coverage vector for selected ... */
+    int c;
+
     /*
-    * Read Index.
-    */
+     * Read Index.
+     */
     c = cf_getFirstChar(cf);
     if (c != 'I') {
 	trace_error(filename, cf_lineNo(cf));
     }
     nTests = cf_getLong(cf);
     if (nTests != 0) {
-	tests = (T_TEST *)malloc(nTests * sizeof *tests);
+	tests = (T_TEST *) malloc(nTests * sizeof *tests);
 	CHECK_MALLOC(tests);
 	getIndex(cf, filename, tests, nTests);
     }
 
     /*
-    * Read Modules.
-    */
+     * Read Modules.
+     */
     c = cf_getFirstChar(cf);
     if (c != 'M') {
 	trace_error(filename, cf_lineNo(cf));
     }
     nModIndex = cf_getLong(cf);
     if (nModIndex) {
-	modIndex  = (T_MODULE **)malloc(nModIndex * sizeof *modIndex);
+	modIndex = (T_MODULE **) malloc(nModIndex * sizeof *modIndex);
 	CHECK_MALLOC(modIndex);
 	getMIndex(cf, filename, t_module, n_module, modIndex, nModIndex);
     }
 
     /*
-    * Read or skip source file list.
-    */
+     * Read or skip source file list.
+     */
     c = cf_getFirstChar(cf);
     if (c != 'S') {
 	trace_error(filename, cf_lineNo(cf));
@@ -867,14 +846,14 @@ int		*nTestsPtr;
     }
 
     /*
-    * Allocate an array of pointers to coverage vectors.  If results are
-    * needed by test, allocate a coverage vector for each test.  Otherwise
-    * allocate a single vector and assign it to all selected tests.
-    * If any tests are deselected, assign them a throw away vector.
-    */
+     * Allocate an array of pointers to coverage vectors.  If results are
+     * needed by test, allocate a coverage vector for each test.  Otherwise
+     * allocate a single vector and assign it to all selected tests.
+     * If any tests are deselected, assign them a throw away vector.
+     */
 
     if (selectPattern && nCov != 0) {
-	throwAway = (int *)malloc(nCov * sizeof *throwAway);
+	throwAway = (int *) malloc(nCov * sizeof *throwAway);
 	CHECK_MALLOC(throwAway);
 	for (j = 0; j < nCov; ++j) {	/* keep purify happy */
 	    throwAway[j] = 0;
@@ -884,7 +863,7 @@ int		*nTestsPtr;
     }
 
     if (!(options & OPTION_BY_TEST) && nCov != 0) {
-	keep = (int *)malloc(nCov * sizeof *keep);
+	keep = (int *) malloc(nCov * sizeof *keep);
 	CHECK_MALLOC(keep);
 	for (j = 0; j < nCov; ++j) {
 	    keep[j] = 0;
@@ -892,23 +871,22 @@ int		*nTestsPtr;
     } else {
 	keep = NULL;
     }
-	
+
     if (nTests) {
-	covIndex = (int **)malloc(nTests * sizeof *covIndex);
+	covIndex = (int **) malloc(nTests * sizeof *covIndex);
 	CHECK_MALLOC(covIndex);
     }
     nSelect = 0;
     for (i = 0; i < nTests; ++i) {
 	if ((!(options & OPTION_FREQ) || tests[i].freq) &&
-	    patMatch(selectPattern, tests[i].name, options & OPTION_DESELECT))
-	{
+	    patMatch(selectPattern, tests[i].name, options & OPTION_DESELECT)) {
 	    ++nSelect;
 	    if ((options & OPTION_BY_TEST)) {
 		if (nCov != 0) {
-		    keep = (int *)malloc(nCov * sizeof *keep);
+		    keep = (int *) malloc(nCov * sizeof *keep);
 		    CHECK_MALLOC(keep);
 		    for (j = 0; j < nCov; ++j) {
-		      keep[j] = 0;
+			keep[j] = 0;
 		    }
 		} else {
 		    keep = NULL;
@@ -921,23 +899,22 @@ int		*nTestsPtr;
     }
 
     /*
-    * Read or skip blocks.
-    */
+     * Read or skip blocks.
+     */
     c = cf_getFirstChar(cf);
     if (c != 'B') {
 	trace_error(filename, cf_lineNo(cf));
     }
     nRecs = cf_getLong(cf);
     if ((options & OPTION_BLOCK) && nSelect != 0) {
-	getBlkCov(cf, filename, nRecs, modIndex, nModIndex, covIndex,
-		  nTests);
+	getBlkCov(cf, filename, nRecs, modIndex, nModIndex, covIndex, nTests);
     } else {
 	getSkip(cf, filename, nRecs, 'B');
     }
 
     /*
-    * Read or skip C-uses.
-    */
+     * Read or skip C-uses.
+     */
     c = cf_getFirstChar(cf);
     if (c != 'C') {
 	trace_error(filename, cf_lineNo(cf));
@@ -950,8 +927,8 @@ int		*nTestsPtr;
     }
 
     /*
-    * Read or skip P-uses.
-    */
+     * Read or skip P-uses.
+     */
     c = cf_getFirstChar(cf);
     if (c != 'P') {
 	trace_error(filename, cf_lineNo(cf));
@@ -964,13 +941,13 @@ int		*nTestsPtr;
     }
 
     /*
-    * Allocate structure to return coverage vectors.  Only vectors for
-    * selected tests.  Include the test name.  This structure will need
-    * expansion if uncompressed tests follow and are selected BY_TEST.
-    */
+     * Allocate structure to return coverage vectors.  Only vectors for
+     * selected tests.  Include the test name.  This structure will need
+     * expansion if uncompressed tests follow and are selected BY_TEST.
+     */
     if (options & OPTION_BY_TEST) {
-        if (nSelect) {
-	    selectList = (T_TESTLIST *)malloc(nSelect * sizeof *selectList);
+	if (nSelect) {
+	    selectList = (T_TESTLIST *) malloc(nSelect * sizeof *selectList);
 	    CHECK_MALLOC(selectList);
 	    j = 0;
 	    for (i = 0; i < nTests; ++i) {
@@ -985,7 +962,7 @@ int		*nTestsPtr;
 	    selectList = NULL;
 	}
     } else {
-	selectList = (T_TESTLIST *)malloc(sizeof *selectList);
+	selectList = (T_TESTLIST *) malloc(sizeof *selectList);
 	CHECK_MALLOC(selectList);
 	strcpy(selectList[0].name, "all");
 	selectList[0].cost = 0;
@@ -993,16 +970,19 @@ int		*nTestsPtr;
     }
 
     /*
-    * Free compressed trace test index, module index, covIndex, and throwAway
-    * coverage vector.
-    */
-    if (nModIndex != 0) free(modIndex);
-    if (nTests != 0) free(covIndex);
-    if (selectPattern && nCov != 0) free(throwAway);
+     * Free compressed trace test index, module index, covIndex, and throwAway
+     * coverage vector.
+     */
+    if (nModIndex != 0)
+	free(modIndex);
+    if (nTests != 0)
+	free(covIndex);
+    if (selectPattern && nCov != 0)
+	free(throwAway);
 
     /*
-    * Return coverage vector(s) for selected traces.
-    */
+     * Return coverage vector(s) for selected traces.
+     */
     *selectListPtr = selectList;
     if (options & OPTION_BY_TEST) {
 	*nSelectPtr = nSelect;
@@ -1011,8 +991,8 @@ int		*nTestsPtr;
     }
 
     /*
-    * Return tests list.
-    */
+     * Return tests list.
+     */
     *nTestsPtr = nTests;
     *testsPtr = tests;
 }
@@ -1021,20 +1001,19 @@ int		*nTestsPtr;
 * testNo: Return the next available .n suffix for testName.
 */
 static int
-testNo(tests, nTests, testName)
-T_TEST		*tests;
-int		nTests;
-char		*testName;
+testNo(T_TEST * tests,
+       int nTests,
+       char *testName)
 {
-    int		i;
-    size_t	len;
-    int		max;
-    char	*pName;
-    int		n;
+    int i;
+    size_t len;
+    int max;
+    char *pName;
+    int n;
 
     max = 0;
     len = strlen(testName);
-    
+
     for (i = 0; i < nTests; ++i) {
 	pName = tests[i].name;
 	if (strncmp(pName, testName, len) == 0 && pName[len] == '.') {
@@ -1061,31 +1040,29 @@ char		*testName;
 * tests.  If 0 tests are selected, there is no list for the caller to free.
 */
 void
-trace_data(cf, filename, t_module, n_module, nCov, options, selectPattern,
-	   selectListPtr, nSelectPtr)
-struct cfile	*cf;
-char		*filename;
-T_MODULE	*t_module;	/* static data */
-int		n_module;
-int		nCov;		/* Total coverage items in static data */
-int		options;
-char		*selectPattern;	/* trace name selection pattern */
-T_TESTLIST	**selectListPtr;   	/* return selectList */
-int		*nSelectPtr;
+trace_data(struct cfile *cf,
+	   const char *filename,
+	   T_MODULE * t_module,	/* static data */
+	   int n_module,
+	   int nCov,		/* Total coverage items in static data */
+	   int options,
+	   char *selectPattern,	/* trace name selection pattern */
+	   T_TESTLIST ** selectListPtr,		/* return selectList */
+	   int *nSelectPtr)
 {
-    int		j;			/* index for nCov */
-    int		nSelect;		/* number of tests selected */
-    T_TESTLIST	*selectList;		/* list of tests selected */
-    T_TESTLIST	*newSelectList;		/* reallocation for selectList */
-    int		*uncompressed = NULL;	/* coverage vector for uncompressed ..*/
-    char	testName[TESTNAME_SIZE];	/* uncompressed test name */
-    T_TEST	*tests;
-    int		nTests;
-    int		c;
-    
+    int j;			/* index for nCov */
+    int nSelect;		/* number of tests selected */
+    T_TESTLIST *selectList;	/* list of tests selected */
+    T_TESTLIST *newSelectList;	/* reallocation for selectList */
+    int *uncompressed = NULL;	/* coverage vector for uncompressed .. */
+    char testName[TESTNAME_SIZE];	/* uncompressed test name */
+    T_TEST *tests;
+    int nTests;
+    int c;
+
     /*
-    * Read compressed traces.
-    */
+     * Read compressed traces.
+     */
     c = cf_getFirstChar(cf);
     if (c == 'V') {
 	getCompressed(cf, filename, t_module, n_module, nCov, options,
@@ -1093,14 +1070,14 @@ int		*nSelectPtr;
 	c = cf_getFirstChar(cf);
     } else {
 	if (!(options & OPTION_BY_TEST)) {
-	    selectList = (T_TESTLIST *)malloc(sizeof *selectList);
+	    selectList = (T_TESTLIST *) malloc(sizeof *selectList);
 	    CHECK_MALLOC(selectList);
 	    strcpy(selectList[0].name, "all");
 	    selectList[0].cost = 0;
 	    if (nCov != 0) {
-		selectList[0].cov = (int *)malloc(nCov * sizeof(int *));
+		selectList[0].cov = (int *) malloc(nCov * sizeof(int *));
 		CHECK_MALLOC(selectList[0].cov);
- 		for (j = 0; j < nCov; ++j) {
+		for (j = 0; j < nCov; ++j) {
 		    selectList[0].cov[j] = 0;
 		}
 	    } else {
@@ -1113,10 +1090,10 @@ int		*nSelectPtr;
 	nTests = 0;
 	tests = NULL;
     }
-	
+
     /*
-    * Read uncompressed traces.
-    */
+     * Read uncompressed traces.
+     */
     while (c != EOF) {
 	if (c != 't') {
 	    fprintf(stderr, "%s: invalid trace file; <%c> line %d\n",
@@ -1126,9 +1103,9 @@ int		*nSelectPtr;
 
 	++nTests;
 	if (nTests == 1) {
-	    tests = (T_TEST *)malloc(sizeof *tests);
+	    tests = (T_TEST *) malloc(sizeof *tests);
 	} else {
-	    tests = (T_TEST *)realloc(tests, sizeof *tests * (nTests));
+	    tests = (T_TEST *) realloc(tests, sizeof *tests * (nTests));
 	}
 	CHECK_MALLOC(tests);
 	cf_getString(cf, tests[nTests - 1].timeStamp, TIMESTAMP_SIZE);
@@ -1144,21 +1121,21 @@ int		*nSelectPtr;
 
 	if (patMatch(selectPattern, testName, options & OPTION_DESELECT)) {
 	    if (nCov != 0) {
-		uncompressed = (int *)malloc(nCov * sizeof *uncompressed);
+		uncompressed = (int *) malloc(nCov * sizeof *uncompressed);
 		CHECK_MALLOC(uncompressed);
 		for (j = 0; j < nCov; ++j) {
 		    uncompressed[j] = 0;
 		}
 	    }
 	    c = getFlatTest(cf, filename, t_module, n_module, testName,
-			 uncompressed, options, &tests[nTests - 1].freq);
+			    uncompressed, options, &tests[nTests - 1].freq);
 	    if ((options & OPTION_FREQ) && !tests[nTests - 1].freq) {
 		free(uncompressed);
 		continue;
 	    }
 	    if (options & OPTION_BY_TEST) {
-		newSelectList =	(T_TESTLIST *)malloc((nSelect + 1)
-						     * sizeof *newSelectList);
+		newSelectList = (T_TESTLIST *) malloc((nSelect + 1)
+						      * sizeof *newSelectList);
 		CHECK_MALLOC(newSelectList);
 		if (selectList) {
 		    memcpy(newSelectList, selectList,
@@ -1184,11 +1161,11 @@ int		*nSelectPtr;
     }
 
     if (nTests != 0)
-	free(tests);	/* Used for computing test names & suffixes */
+	free(tests);		/* Used for computing test names & suffixes */
 
     /*
-    * Return coverage vector(s) for selected traces.
-    */
+     * Return coverage vector(s) for selected traces.
+     */
     if (options & OPTION_BY_TEST) {
 	if (nSelect) {
 	    *selectListPtr = selectList;

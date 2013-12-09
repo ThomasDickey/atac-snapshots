@@ -30,10 +30,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "portable.h"
 #include "pack.h"
 
-static char const pack_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/pack.c,v 3.5 1995/12/29 21:24:41 tom Exp $";
+static char const pack_c[] = "$Id: pack.c,v 3.6 2013/12/08 20:25:34 tom Exp $";
 /*
-* $Log: pack.c,v $
+* @Log: pack.c,v @
 * Revision 3.5  1995/12/29 21:24:41  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -106,24 +105,20 @@ static char const pack_c[] =
 #define ADD_BUF_SIZE	16
 #endif
 
-/* forward declarations */
-static char *extend P_((pkPack *pk));
-
 /*
 * extend: Add a pkLink at the end of pk and return pointer to it's lk_buf.
 */
 static byte *
-extend(pk)
-pkPack		*pk;
+extend(pkPack * pk)
 {
-    pkLink	*new;
-    byte	*buf;
-    byte	*end;
-    int		bufsize;
+    pkLink *new;
+    byte *buf;
+    byte *end;
+    int bufsize;
 
     if (pk->pk_first == NULL) {
 	bufsize = INIT_BUF_SIZE;
-	new = (pkLink *)malloc(sizeof *new + bufsize - 1);
+	new = (pkLink *) malloc(sizeof *new + bufsize - 1);
 	pk->pk_first = new;
 	pk->pk_bufFirst = new->lk_buf;	/* Okay before (new == NULL) check! */
     } else {
@@ -131,7 +126,7 @@ pkPack		*pk;
 	for (buf = pk->pk_bufNext; buf < end; ++buf)
 	    *buf++ = '\0';
 	bufsize = ADD_BUF_SIZE;
-	new = (pkLink *)malloc(sizeof *new + bufsize - 1);
+	new = (pkLink *) malloc(sizeof *new + bufsize - 1);
 	pk->pk_last->lk_next = new;
     }
     if (new == NULL) {
@@ -150,11 +145,11 @@ pkPack		*pk;
 * pk_create: Create an empty pkPack.
 */
 pkPack *
-pk_create()
+pk_create(void)
 {
-    pkPack	*new;
+    pkPack *new;
 
-    new = (pkPack *)malloc(sizeof *new);
+    new = (pkPack *) malloc(sizeof *new);
     if (new == NULL) {
 	fprintf(stderr, "can't malloc\n");
 	exit(1);
@@ -176,15 +171,14 @@ pk_create()
 * pk_append: Append a long integer to pk.
 */
 void
-pk_append(pk, n)
-pkPack		*pk;
-unsigned long	n;
+pk_append(pkPack * pk,
+	  unsigned long n)
 {
-    pkLink		*last;
-    byte		*buf;
-    int			count;
-    unsigned long	value;
-    int			size;
+    pkLink *last;
+    byte *buf;
+    int count;
+    unsigned long value;
+    int size;
 
     count = pk->pk_lCount;
     value = pk->pk_lValue;
@@ -199,7 +193,7 @@ unsigned long	n;
 	pk->pk_lCount = 1;
 	return;
     }
-    
+
     last = pk->pk_last;
 
     /*
@@ -214,7 +208,7 @@ unsigned long	n;
     }
 
     if (value == 0) {
-	while (count >= BIT7) {		/* e.g. >= 128 */
+	while (count >= BIT7) {	/* e.g. >= 128 */
 	    *buf++ = BIT7 - 1;
 	    count -= BIT7 - 1;
 	    if (buf >= last->lk_buf + last->lk_bufsize - 4) {
@@ -261,28 +255,27 @@ unsigned long	n;
 * pk_empty: return TRUE if the pkPack is empty.
 */
 boolean
-pk_empty(pk)
-pkPack		*pk;
+pk_empty(pkPack * pk)
 {
     if (pk->pk_lCount == 0)
 	return TRUE;
-    else return FALSE;
+    else
+	return FALSE;
 }
 
 /*
 * pk_take
 */
 unsigned long
-pk_take(pk)
-pkPack		*pk;
+pk_take(pkPack * pk)
 {
-    pkLink	*first;
-    byte	*buf;
-    int		b;
-    int		size;
-    int		count;
-    int		shift;
-    unsigned long	value;
+    pkLink *first;
+    byte *buf;
+    int b;
+    int size;
+    int count;
+    int shift;
+    unsigned long value;
 
     if (pk->pk_fCount != 0) {
 	--pk->pk_fCount;
@@ -294,8 +287,8 @@ pkPack		*pk;
 	if (pk->pk_lCount != 0) {
 	    --pk->pk_lCount;
 	    return pk->pk_lValue;
-	}
-	else return 0;		/* empty. */
+	} else
+	    return 0;		/* empty. */
     }
 
     buf = pk->pk_bufFirst;
@@ -328,8 +321,7 @@ pkPack		*pk;
 	    pk->pk_bufFirst = NULL;
 	    free(first);
 	}
-    }
-    else if (buf >= first->lk_buf + first->lk_bufsize - 4) {
+    } else if (buf >= first->lk_buf + first->lk_bufsize - 4) {
 	pk->pk_first = first->lk_next;
 	pk->pk_bufFirst = first->lk_next->lk_buf;
 	free(first);
@@ -342,11 +334,10 @@ pkPack		*pk;
 * pk_free: Release memory used by pk.
 */
 void
-pk_free(pk)
-pkPack	*pk;
+pk_free(pkPack * pk)
 {
-    pkLink	*link;
-    pkLink	*next;
+    pkLink *link;
+    pkLink *next;
 
     for (link = pk->pk_first; link != NULL; link = next) {
 	next = link->lk_next;
@@ -359,13 +350,12 @@ pkPack	*pk;
 }
 
 #ifdef TEST
-main(argc, argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
-    unsigned long	n;
-    pkPack		*pk;
-    int			i;
+    unsigned long n;
+    pkPack *pk;
+    int i;
 
     pk = pk_create();
 
@@ -381,8 +371,9 @@ char *argv[];
 	pk_free(pk);
 	exit(0);
     }
-	
-    if (isatty(0)) printf("> ");
+
+    if (isatty(0))
+	printf("> ");
     while (scanf("%lu", &n) > 0)
 	pk_append(pk, n);
     while (!pk_empty(pk)) {
@@ -393,5 +384,3 @@ char *argv[];
     pk_free(pk);
 }
 #endif /* TEST */
-
-

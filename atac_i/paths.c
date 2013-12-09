@@ -21,10 +21,9 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char paths_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/paths.c,v 3.11 1997/12/09 00:37:22 tom Exp $";
+static const char paths_c[] = "$Id: paths.c,v 3.12 2013/12/08 18:19:09 tom Exp $";
 /*
-* $Log: paths.c,v $
+* @Log: paths.c,v @
 * Revision 3.11  1997/12/09 00:37:22  tom
 * repair int/SYM* casts with ID_SYM/VAR_ID macros, use SYM* where applicable
 *
@@ -116,102 +115,104 @@ static const char paths_c[] =
 #include "bitvec.h"
 
 /* forward declarations */
-static int feasableBranch P_(( BRANCH *br ));
-static void pathCount P_(( DUG *dug, BLOCK *node, int *counts ));
-static void paths_from P_(( DUG *dug, BLOCK *node, int feasableOnly ));
-static void print_dupath P_(( int use_type, SYM* sym, BLOCK *def_node, BRANCH *branch, BLOCK *prev_node, TNODE * dPos, TNODE * uPos ));
-static void uCount P_(( DUG *dug, BRANCH *branch, BVPTR *list, DU *def, int p_use, int *counts ));
-static void u_traverse P_(( DUG *dug, BRANCH *branch, BVPTR *list, BLOCK *d_node, DU *def, int p_use, BLOCK *prev_node, TNODE * prevPos, int feasableOnly ));
+static int feasableBranch(BRANCH * br);
+static void pathCount(DUG * dug, BLOCK * node, int *counts);
+static void paths_from(DUG * dug, BLOCK * node, int feasableOnly);
+static void print_dupath(int use_type, SYM * sym, BLOCK * def_node, BRANCH *
+			 branch, BLOCK * prev_node, TNODE * dPos, TNODE * uPos);
+static void uCount(DUG * dug, BRANCH * branch, BVPTR * list, DU * def, int
+		   p_use, int *counts);
+static void u_traverse(DUG * dug, BRANCH * branch, BVPTR * list, BLOCK *
+		       d_node, DU * def, int p_use, BLOCK * prev_node, TNODE
+		       * prevPos, int feasableOnly);
 
-static char	*fname;
-static FILE	*outfile;
+static char *fname;
+static FILE *outfile;
 
 void
-paths(dug, f, feasableOnly)
-DUG	*dug;
-FILE	*f;
-int	feasableOnly;
-{ 
-	LIST	*t;
-	BLOCK	*node;
-	int	counts[2];
-	
-	dug_var_table(dug, f);
-
-	fname = dug->fname;
-	outfile = f;
-
-	counts[0] = 0;
-	counts[1] = 0;
-
-	/*
-	* Find DU paths from each node in flow graph.
-	*/
-	if (dug->block_list)
-		for (t = 0; LIST_NEXT(dug->block_list, &t, &node);) {
-		    pathCount(dug, node, counts);
-		    paths_from(dug, node, feasableOnly);
-		}
-	fprintf(outfile, "c %d\n", counts[0]);
-	fprintf(outfile, "p %d\n", counts[1]);
-}
-
-static void
-paths_from(dug, node, feasableOnly)
-DUG	*dug;
-BLOCK	*node;
-int	feasableOnly;
+paths(DUG * dug,
+      FILE *f,
+      int feasableOnly)
 {
-	LIST		*i;
-	LIST		*j;
-	BRANCH		*f;
-	DU		*def;
-	BVPTR		*v_list;
-	CONST_VALUE	value;
+    LIST *t;
+    BLOCK *node;
+    int counts[2];
 
-	/*
-	* For each symbol defined at node
-	* traverse graph down from node to find C-USEs and P-USEs.
-	* U_traverse adds each node to v_list when it is visited. 
-	*/
-	for (i = 0; (def = du_use(dug, node, &i)) != 0;) {
-		if ((def->ref_type & VAR_DEF) == 0) continue;
-		tFindVDef(def->defPos, &value);
-		if (value.type == CONST_VT)
-		    ((TNODE *)def->defPos)->sym.sym->constValue = &value;
-		v_list = BVALLOC(dug->count);
-		if (node->branches)
-			for (j = 0; LIST_NEXT(node->branches, &j, &f);) {
-			    if (feasableOnly && !feasableBranch(f)) continue;
-			    u_traverse(dug, f, v_list, node, def, def->ref_type,
-				       node, def->usePos, feasableOnly);
-			}
-		free(v_list);
-		if (value.type == CONST_VT)
-		    ((TNODE *)def->defPos)->sym.sym->constValue = NULL;
+    dug_var_table(dug, f);
+
+    fname = dug->fname;
+    outfile = f;
+
+    counts[0] = 0;
+    counts[1] = 0;
+
+    /*
+       * Find DU paths from each node in flow graph.
+     */
+    if (dug->block_list)
+	for (t = 0; LIST_NEXT(dug->block_list, &t, &node);) {
+	    pathCount(dug, node, counts);
+	    paths_from(dug, node, feasableOnly);
 	}
+    fprintf(outfile, "c %d\n", counts[0]);
+    fprintf(outfile, "p %d\n", counts[1]);
 }
 
 static void
-u_traverse(dug, branch, list, d_node, def, p_use, prev_node, prevPos,
-	   feasableOnly)
-DUG*	dug;			/* flow graph */
-BRANCH*	branch;			/* branch to possible use node */
-BVPTR*	list;			/* list of nodes visited already */
-BLOCK*	d_node;			/* defining node */
-DU*	def;			/* symbol definition */
-int	p_use;			/* use type of previous node */
-BLOCK*	prev_node;		/* possible use node */
-TNODE*	prevPos;		/* parse position of prev_node; */
-int	feasableOnly;
+paths_from(DUG * dug,
+	   BLOCK * node,
+	   int feasableOnly)
 {
-	LIST*	i;
-	BRANCH*	f;
-	DU*	use;
-	int	use_type;
-	TNODE*	usePos;
+    LIST *i;
+    LIST *j;
+    BRANCH *f;
+    DU *def;
+    BVPTR *v_list;
+    CONST_VALUE value;
 
-if (branch->to->block_id == 0) return;
+    /*
+     * For each symbol defined at node
+     * traverse graph down from node to find C-USEs and P-USEs.
+     * U_traverse adds each node to v_list when it is visited. 
+     */
+    for (i = 0; (def = du_use(dug, node, &i)) != 0;) {
+	if ((def->ref_type & VAR_DEF) == 0)
+	    continue;
+	tFindVDef(def->defPos, &value);
+	if (value.type == CONST_VT)
+	    ((TNODE *) def->defPos)->sym.sym->constValue = &value;
+	v_list = BVALLOC(dug->count);
+	if (node->branches)
+	    for (j = 0; LIST_NEXT(node->branches, &j, &f);) {
+		if (feasableOnly && !feasableBranch(f))
+		    continue;
+		u_traverse(dug, f, v_list, node, def, def->ref_type,
+			   node, def->usePos, feasableOnly);
+	    }
+	free(v_list);
+	if (value.type == CONST_VT)
+	    ((TNODE *) def->defPos)->sym.sym->constValue = NULL;
+    }
+}
+
+static void
+  u_traverse(DUG * dug,		/* flow graph */
+	     BRANCH * branch,	/* branch to possible use node */
+	     BVPTR * list,	/* list of nodes visited already */
+	     BLOCK * d_node,	/* defining node */
+	     DU * def,		/* symbol definition */
+	     int p_use,		/* use type of previous node */
+	     BLOCK * prev_node,	/* possible use node */
+	     TNODE * prevPos,	/* parse position of prev_node; */
+	     int feasableOnly) {
+    LIST *i;
+    BRANCH *f;
+    DU *use;
+    int use_type;
+    TNODE *usePos;
+
+    if (branch->to->block_id == 0)
+	return;
 /*
 * ?unknown? Block 0 is the start block.  But, branch back to block 0 means return.
 * This should be a valid P-USE but the runtime won't catch it so we don't
@@ -220,175 +221,180 @@ if (branch->to->block_id == 0) return;
 * we could just remove the line above this comment to have the "P-USE at
 * return" print.
 */
-	/*
-	* If PUSE in previous node, print PUSE here.
-	*/
-	if (p_use & VAR_PUSE)
-		print_dupath(VAR_PUSE, ID_SYM(def->var_id), d_node, branch,
-			     prev_node, def->defPos, prevPos);
+    /*
+     * If PUSE in previous node, print PUSE here.
+     */
+    if (p_use & VAR_PUSE)
+	print_dupath(VAR_PUSE, ID_SYM(def->var_id), d_node, branch,
+		     prev_node, def->defPos, prevPos);
 
-	/*
-	* Already visited this node ?
-	*/
-	if (BVTEST(list, branch->to->block_id)) return;
-	BVSET(list, branch->to->block_id);
+    /*
+     * Already visited this node ?
+     */
+    if (BVTEST(list, branch->to->block_id))
+	return;
+    BVSET(list, branch->to->block_id);
 
-	use = du_use_type(dug, branch->to, ID_SYM(def->var_id), def->ref_type);
-	if (use) {
-	    use_type = use->ref_type;
-	    usePos = use->usePos;
+    use = du_use_type(dug, branch->to, ID_SYM(def->var_id), def->ref_type);
+    if (use) {
+	use_type = use->ref_type;
+	usePos = use->usePos;
+    } else {
+	use_type = 0;
+	usePos = 0;
+    }
+
+    /*
+     * If C-USE at node, print it.
+     */
+    if (use_type & VAR_CUSE)
+	print_dupath(VAR_CUSE, ID_SYM(def->var_id), d_node, branch,
+		     prev_node, def->defPos, usePos);
+
+    /*
+     * Defining use?
+     */
+    if (use_type & VAR_DEF)
+	return;
+
+    /*
+     * Visit each node reachable from node.
+     */
+    if (branch->to->branches)
+	for (i = 0; LIST_NEXT(branch->to->branches, &i, &f);) {
+	    if (feasableOnly && !feasableBranch(f))
+		continue;
+	    u_traverse(dug, f, list, d_node, def, use_type,
+		       branch->to, usePos, feasableOnly);
 	}
-	else {
-	    use_type = 0;
-	    usePos = 0;
-	}
-
-	/*
-	* If C-USE at node, print it.
-	*/
-	if (use_type & VAR_CUSE)
-		print_dupath(VAR_CUSE, ID_SYM(def->var_id), d_node, branch,
-			     prev_node, def->defPos, usePos);
-	
-	/*
-	* Defining use?
-	*/
-	if (use_type & VAR_DEF) return;
-
-	/*
-	* Visit each node reachable from node.
-	*/
-	if (branch->to->branches)
-		for (i = 0; LIST_NEXT(branch->to->branches, &i, &f);) {
-			if (feasableOnly && !feasableBranch(f)) continue;
-			u_traverse(dug, f, list, d_node, def, use_type,
-				branch->to, usePos, feasableOnly);
-		}
 }
 
 static void
-print_dupath(use_type, sym, def_node, branch, prev_node, dPos, uPos)
-int	use_type;
-SYM*	sym;
-BLOCK*	def_node;
-BRANCH*	branch;
-BLOCK*	prev_node;
-TNODE*	dPos;
-TNODE*	uPos;
+print_dupath(int use_type,
+	     SYM * sym,
+	     BLOCK * def_node,
+	     BRANCH * branch,
+	     BLOCK * prev_node,
+	     TNODE * dPos,
+	     TNODE * uPos)
 {
-	int	use_node_id;
-	TNODE *	defPos;
-	TNODE *	usePos;
+    int use_node_id;
+    TNODE *defPos;
+    TNODE *usePos;
 
-	defPos = tFindDef(dPos);
+    defPos = tFindDef(dPos);
 
-	if (use_type & VAR_CUSE) {
-		fprintf(outfile, "C %d %d %d", VAR_ID(sym),
-			def_node->block_id, branch->to->block_id);
-		usePos = uPos;
-	} else {
-		if (branch->to)
-			use_node_id = branch->to->block_id;
-		else use_node_id = 0;
-		fprintf(outfile, "P %d %d %d %d", VAR_ID(sym),
-			def_node->block_id, prev_node->block_id, use_node_id);
-		usePos = tFindPred(uPos);
-	}
-	node_isrcpos(defPos, 1, outfile);
-	node_isrcpos(defPos, 0, outfile);
-	node_isrcpos(usePos, 1, outfile);
-	node_isrcpos(usePos, 0, outfile);
-	if (use_type & VAR_PUSE) {
-		switch(branch->condType)
-		{
-		case COND_BOOLEAN:
-		    if (branch->value) fprintf(outfile, " TRUE");
-		    else fprintf(outfile, " FALSE");
+    if (use_type & VAR_CUSE) {
+	fprintf(outfile, "C %d %d %d", VAR_ID(sym),
+		def_node->block_id, branch->to->block_id);
+	usePos = uPos;
+    } else {
+	if (branch->to)
+	    use_node_id = branch->to->block_id;
+	else
+	    use_node_id = 0;
+	fprintf(outfile, "P %d %d %d %d", VAR_ID(sym),
+		def_node->block_id, prev_node->block_id, use_node_id);
+	usePos = tFindPred(uPos);
+    }
+    node_isrcpos(defPos, 1, outfile);
+    node_isrcpos(defPos, 0, outfile);
+    node_isrcpos(usePos, 1, outfile);
+    node_isrcpos(usePos, 0, outfile);
+    if (use_type & VAR_PUSE) {
+	switch (branch->condType) {
+	case COND_BOOLEAN:
+	    if (branch->value)
+		fprintf(outfile, " TRUE");
+	    else
+		fprintf(outfile, " FALSE");
+	    break;
+	case COND_CHAR:
+	    if (isprint(branch->value) && branch->value != ' ' &&
+		branch->value != '\'') {
+		fprintf(outfile, " '%c'", (char) (branch->value));
+	    } else
+		switch (branch->value) {
+		case ' ':
+		    fprintf(outfile, " BLANK");
 		    break;
-		case COND_CHAR:
-		    if (isprint(branch->value) && branch->value != ' ' &&
-			branch->value != '\'')
-		    {
-		        fprintf(outfile, " '%c'", (char)(branch->value));
-		    }
-		    else switch(branch->value)
-		    {
-		    case ' ':
-		        fprintf(outfile, " BLANK");
-			break;
-		    case '\b':
-		        fprintf(outfile, " '\\b'");
-			break;
-		    case '\f':
-		        fprintf(outfile, " '\\f'");
-			break;
-		    case '\n':
-		        fprintf(outfile, " '\\n'");
-			break;
-		    case '\r':
-		        fprintf(outfile, " '\\r'");
-			break;
-		    case '\t':
-		        fprintf(outfile, " '\\t'");
-			break;
-		    case '\v':
-		        fprintf(outfile, " '\\v'");
-			break;
-		    case '\\':
-		        fprintf(outfile, " '\\\\'");
-			break;
-		    case '\"':
-		        fprintf(outfile, " '\\\"'");
-			break;
-		    case '\'':
-		        fprintf(outfile, " '\\''");
-			break;
-		    case '\0':
-		        fprintf(outfile, " '\\0'");
-			break;
-		    case -1:
-		        fprintf(outfile, " EOF");
-			break;
-		    default:
-		        fprintf(outfile, " '\\%3.3o'", (unsigned)(branch->value));
-			break;
-		    }
+		case '\b':
+		    fprintf(outfile, " '\\b'");
 		    break;
-		case COND_SWITCH:
-		    {
-			TNODE	*p;
-
-			p = (TNODE *)(branch->node);
-			p = CHILD0(p);
-			if (p->text) {
-			    fprintf(outfile, " %s", p->text);
-			} else {
-			    fprintf(outfile, " %ld", branch->value);
-			}
-		    }
+		case '\f':
+		    fprintf(outfile, " '\\f'");
 		    break;
-		case COND_ENUM:
-		case COND_INT:
-		    if (branch->value) fprintf(outfile, " NonZERO");
-		    else fprintf(outfile, " ZERO");
+		case '\n':
+		    fprintf(outfile, " '\\n'");
 		    break;
-		case COND_PTR:
-		    if (branch->value) fprintf(outfile, " NonNULL");
-		    else fprintf(outfile, " NULL");
+		case '\r':
+		    fprintf(outfile, " '\\r'");
 		    break;
-		case COND_SWITCH_DEFAULT:
-		    fprintf(outfile, " DEFAULT");
+		case '\t':
+		    fprintf(outfile, " '\\t'");
 		    break;
-		case COND_UNCONDITIONAL:
-		    fprintf(outfile, " UNCONDITIONAL");
+		case '\v':
+		    fprintf(outfile, " '\\v'");
 		    break;
-	        default:
-		    internal_error(branch->node, "invalid condType %d",
-				   branch->condType);
+		case '\\':
+		    fprintf(outfile, " '\\\\'");
+		    break;
+		case '\"':
+		    fprintf(outfile, " '\\\"'");
+		    break;
+		case '\'':
+		    fprintf(outfile, " '\\''");
+		    break;
+		case '\0':
+		    fprintf(outfile, " '\\0'");
+		    break;
+		case -1:
+		    fprintf(outfile, " EOF");
+		    break;
+		default:
+		    fprintf(outfile, " '\\%3.3o'", (unsigned) (branch->value));
 		    break;
 		}
+	    break;
+	case COND_SWITCH:
+	    {
+		TNODE *p;
+
+		p = (TNODE *) (branch->node);
+		p = CHILD0(p);
+		if (p->text) {
+		    fprintf(outfile, " %s", p->text);
+		} else {
+		    fprintf(outfile, " %ld", branch->value);
+		}
+	    }
+	    break;
+	case COND_ENUM:
+	case COND_INT:
+	    if (branch->value)
+		fprintf(outfile, " NonZERO");
+	    else
+		fprintf(outfile, " ZERO");
+	    break;
+	case COND_PTR:
+	    if (branch->value)
+		fprintf(outfile, " NonNULL");
+	    else
+		fprintf(outfile, " NULL");
+	    break;
+	case COND_SWITCH_DEFAULT:
+	    fprintf(outfile, " DEFAULT");
+	    break;
+	case COND_UNCONDITIONAL:
+	    fprintf(outfile, " UNCONDITIONAL");
+	    break;
+	default:
+	    internal_error(branch->node, "invalid condType %d",
+			   branch->condType);
+	    break;
 	}
-	putc('\n',  outfile);
+    }
+    putc('\n', outfile);
 }
 
 /*
@@ -396,14 +402,12 @@ TNODE*	uPos;
 *	must be taken; 2 if we don't know.
 */
 static int
-feasableBranch(br)
-BRANCH *br;
+feasableBranch(BRANCH * br)
 {
-    CONST_VALUE	value;
-    void	*p;
+    CONST_VALUE value;
+    void *p;
 
-    switch (br->condType)
-    {
+    switch (br->condType) {
     case COND_UNCONDITIONAL:
 	return 1;
     case COND_BOOLEAN:
@@ -412,19 +416,25 @@ BRANCH *br;
     case COND_PTR:
     case COND_ENUM:
 	evalConstExpr(br->node, &value);
-	if (value.type != CONST_VT) return 2;	/* Don't know. */
-	if (br->value == 0) {			/* FALSE branch */
-	    if (value.fraction == 0) return 1;	/* satisfied. */
-	} else {				/* TRUE branch */
-	    if (value.fraction != 0) return 1;	/* satisfied. */
+	if (value.type != CONST_VT)
+	    return 2;		/* Don't know. */
+	if (br->value == 0) {	/* FALSE branch */
+	    if (value.fraction == 0)
+		return 1;	/* satisfied. */
+	} else {		/* TRUE branch */
+	    if (value.fraction != 0)
+		return 1;	/* satisfied. */
 	}
-	return 0;				/* not satified */
+	return 0;		/* not satified */
     case COND_SWITCH:
-	p = (void *)tFindSwitch(br->node);
-	if (p == NULL) return 2;		/* ? Can't find switch */
+	p = (void *) tFindSwitch(br->node);
+	if (p == NULL)
+	    return 2;		/* ? Can't find switch */
 	evalConstExpr(p, &value);
-	if (value.type != CONST_VT) return 2;	/* Don't know. */
-	if (br->value == value.fraction) return 1;	/* Match. */
+	if (value.type != CONST_VT)
+	    return 2;		/* Don't know. */
+	if (br->value == value.fraction)
+	    return 1;		/* Match. */
 	return 0;
     case COND_SWITCH_DEFAULT:
 	return 2;
@@ -433,89 +443,92 @@ BRANCH *br;
 }
 
 static void
-pathCount(dug, node, counts)
-DUG	*dug;
-BLOCK	*node;
-int	*counts;
+pathCount(DUG * dug,
+	  BLOCK * node,
+	  int *counts)
 {
-	LIST	*i;
-	LIST	*j;
-	BRANCH	*f;
-	DU	*def;
-	BVPTR	*v_list;
+    LIST *i;
+    LIST *j;
+    BRANCH *f;
+    DU *def;
+    BVPTR *v_list;
 
-	/*
-	* For each symbol defined at node
-	* traverse graph down from node to find C-USEs and P-USEs.
-	* uCount adds each node to v_list when it is visited. 
-	*/
-	for (i = 0; (def = du_use(dug, node, &i)) != 0;) {
-		if ((def->ref_type & VAR_DEF) == 0) continue;
-		v_list = BVALLOC(dug->count);
-		if (node->branches)
-		    for (j = 0; LIST_NEXT(node->branches, &j, &f);)
-		        uCount(dug, f, v_list, def, def->ref_type, counts);
-		free(v_list);
-	}
+    /*
+     * For each symbol defined at node
+     * traverse graph down from node to find C-USEs and P-USEs.
+     * uCount adds each node to v_list when it is visited. 
+     */
+    for (i = 0; (def = du_use(dug, node, &i)) != 0;) {
+	if ((def->ref_type & VAR_DEF) == 0)
+	    continue;
+	v_list = BVALLOC(dug->count);
+	if (node->branches)
+	    for (j = 0; LIST_NEXT(node->branches, &j, &f);)
+		uCount(dug, f, v_list, def, def->ref_type, counts);
+	free(v_list);
+    }
 }
 
 static void
-uCount(dug, branch, list, def, p_use, counts)
-DUG	*dug;			/* flow graph */
-BRANCH	*branch;		/* branch to possible use node */
-BVPTR	*list;			/* list of nodes visited already */
-DU	*def;			/* symbol definition */
-int	p_use;			/* use type of previous node */
-int	*counts;		/* counts of C-uses & P-uses */
+uCount(DUG * dug,		/* flow graph */
+       BRANCH * branch,		/* branch to possible use node */
+       BVPTR * list,		/* list of nodes visited already */
+       DU * def,		/* symbol definition */
+       int p_use,		/* use type of previous node */
+       int *counts)		/* counts of C-uses & P-uses */
 {
-	LIST*	i;
-	BRANCH*	f;
-	DU*	use;
-	int	use_type;
+    LIST *i;
+    BRANCH *f;
+    DU *use;
+    int use_type;
 
-	if (branch->to->block_id == 0) return;
-	/*
-	 * ?unknown?  Block 0 is the start block.  But, branch back to block 0
-	 * means return.  This should be a valid P-USE but the runtime won't
-	 * catch it so we don't report it.  Since block 0 always has exactly
-	 * one branch, to block 1, and block 1 is on the visited list, and
-	 * there are never any Uses at block 0, we could just remove the line
-	 * above this comment to have the "P-USE at return" print.
-	 */
+    if (branch->to->block_id == 0)
+	return;
+    /*
+     * ?unknown?  Block 0 is the start block.  But, branch back to block 0
+     * means return.  This should be a valid P-USE but the runtime won't
+     * catch it so we don't report it.  Since block 0 always has exactly
+     * one branch, to block 1, and block 1 is on the visited list, and
+     * there are never any Uses at block 0, we could just remove the line
+     * above this comment to have the "P-USE at return" print.
+     */
 
-	/*
-	 * If PUSE in previous node, print PUSE here.
-	 */
-	if (p_use & VAR_PUSE) ++counts[1];
+    /*
+     * If PUSE in previous node, print PUSE here.
+     */
+    if (p_use & VAR_PUSE)
+	++counts[1];
 
-	/*
-	* Already visited this node ?
-	*/
-	if (BVTEST(list, branch->to->block_id)) return;
-	BVSET(list, branch->to->block_id);
+    /*
+     * Already visited this node ?
+     */
+    if (BVTEST(list, branch->to->block_id))
+	return;
+    BVSET(list, branch->to->block_id);
 
-	use = du_use_type(dug, branch->to, ID_SYM(def->var_id), def->ref_type);
-	if (use) {
-	    use_type = use->ref_type;
-	}
-	else {
-	    use_type = 0;
-	}
+    use = du_use_type(dug, branch->to, ID_SYM(def->var_id), def->ref_type);
+    if (use) {
+	use_type = use->ref_type;
+    } else {
+	use_type = 0;
+    }
 
-	/*
-	* If C-USE at node, print it.
-	*/
-	if (use_type & VAR_CUSE) ++counts[0];
-	
-	/*
-	* Defining use?
-	*/
-	if (use_type & VAR_DEF) return;
+    /*
+     * If C-USE at node, print it.
+     */
+    if (use_type & VAR_CUSE)
+	++counts[0];
 
-	/*
-	* Visit each node reachable from node.
-	*/
-	if (branch->to->branches)
-	    for (i = 0; LIST_NEXT(branch->to->branches, &i, &f);)
-	        uCount(dug, f, list, def, use_type, counts);
+    /*
+     * Defining use?
+     */
+    if (use_type & VAR_DEF)
+	return;
+
+    /*
+     * Visit each node reachable from node.
+     */
+    if (branch->to->branches)
+	for (i = 0; LIST_NEXT(branch->to->branches, &i, &f);)
+	    uCount(dug, f, list, def, use_type, counts);
 }

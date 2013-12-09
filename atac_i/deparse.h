@@ -13,8 +13,8 @@
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
 /*
-* $Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.h,v 3.5 1995/12/13 01:20:14 tom Exp $
-* $Log: deparse.h,v $
+* $Id: deparse.h,v 3.7 2013/12/08 23:46:10 tom Exp $
+* @Log: deparse.h,v @
 * Revision 3.5  1995/12/13 01:20:14  tom
 * handle CLASSTYPE_INLINE
 *
@@ -60,6 +60,9 @@
 * 
 *-----------------------------------------------end of log
 */
+#ifndef deparse_H
+#define deparse_H
+
 	{GEN_MODULE,	0,	"@L\n@@"},
 	{GEN_MODULE_ITEM,	DCL_ITEM,	"@N\n"},
 	{GEN_MODULE_ITEM,	FUNCTION_ITEM,	"@N\n"},
@@ -289,4 +292,6 @@
 	{GEN_QUAL,	QUAL_CONST,	"const"},
 	{GEN_QUAL,	QUAL_VOLATILE,	"volatile"},
 	{GEN_STRINGS,	0,	"@L@+\n@@@-"},
-	{GENUS_COUNT,	0,	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.h,v 3.5 1995/12/13 01:20:14 tom Exp $"},
+	{GENUS_COUNT,	0,	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/deparse.h,v 3.7 2013/12/08 23:46:10 tom Exp $"},
+
+#endif /* deparse_H */

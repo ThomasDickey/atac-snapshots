@@ -27,10 +27,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "ramfile.h"
 #include "man.h"
 
-static char const prev_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/prev.c,v 3.5 2005/08/14 13:48:09 tom Exp $";
+static char const prev_c[] = "$Id: prev.c,v 3.7 2013/12/09 00:57:08 tom Exp $";
 /*
-* $Log: prev.c,v $
+* @Log: prev.c,v @
 * Revision 3.5  2005/08/14 13:48:09  tom
 * gcc warnings
 *
@@ -80,226 +79,192 @@ static char const prev_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static void skipCompressed
-	P_((struct cfile *cf, char *tracefile, tablestype *tables));
-static void getCompressed
-	P_((struct cfile *cf, char *tracefile, tablestype *tables));
-static void getPCompressed
-	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
-static void getCCompressed
-	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
-static void getBCompressed
-	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
-static void getSCompressed
-	P_((struct cfile *cf, char *tracefile, int iTestCount, RAMFILE *rf));
-static void getMCompressed
-	P_((struct cfile *cf, char *tracefile, RAMFILE *rf));
-static void getICompressed
-	P_((struct cfile *cf, char *tracefile, membertype *mems));
-static void prev_block
-	P_((int iBlock, int iTestCount, coveragetype *pCov, functype *func));
-static void prev_puse
-	P_((int iDef, int iUse, int iTo, int iTestCount, coveragetype *pCov,
-	vartype *var));
-static void prev_cuse
-	P_((int iDef, int iUse, int iTestCount, coveragetype *pCov, vartype
-	*var));
-static struct pkPack *load_stampVector
-	P_((struct cfile *cf, int iCount));
-static struct pkPack *load_coverage
-	P_((struct cfile *cf, int iCount));
+static struct pkPack *load_coverage(struct cfile *cf, int iCount);
 
 void
-prev_source(pName,rf)
-char *pName;
-RAMFILE	*rf;
+prev_source(const char *pName,
+	    RAMFILE * rf)
 {
-	int i;
+    int i;
 
-	i = rf->iFileCount;
-	check_file(rf, i);
+    i = rf->iFileCount;
+    check_file(rf, i);
 
-	if (NULL == (rf->files[i].pName = (char *)malloc(strlen(pName)+1))) {
-		memoryError("malloc file name");
-	}
-	strcpy(rf->files[i].pName,pName);
+    if (NULL == (rf->files[i].pName = (char *) malloc(strlen(pName) + 1))) {
+	memoryError("malloc file name");
+    }
+    strcpy(rf->files[i].pName, pName);
 }
 
 void
-prev_header(pPath,iStampCount,stampVector,hdr)
-char *pPath;
-int iStampCount;
-stampstype *stampVector;
-headertype *hdr;
+prev_header(char *pPath,
+	    int iStampCount,
+	    stampstype * stampVector,
+	    headertype * hdr)
 {
-	int i;
+    int i;
 
-	i = hdr->iHeaderCount;
-	check_header(hdr, i);
+    i = hdr->iHeaderCount;
+    check_header(hdr, i);
 
-	if (NULL == (hdr->headers[i].pPath = (char *)malloc(strlen(pPath)+1))) {
-		memoryError("malloc header name");
-	}
+    if (NULL == (hdr->headers[i].pPath = (char *) malloc(strlen(pPath) + 1))) {
+	memoryError("malloc header name");
+    }
 
-	strcpy(hdr->headers[i].pPath,pPath);
-	hdr->headers[i].iStampCount = iStampCount;
-	hdr->headers[i].stampVector = stampVector;
-	hdr->headers[i].lStampNext = 0;
+    strcpy(hdr->headers[i].pPath, pPath);
+    hdr->headers[i].iStampCount = iStampCount;
+    hdr->headers[i].stampVector = stampVector;
+    hdr->headers[i].lStampNext = 0;
 }
 
 static coveragetype *
-load_coverage(cf,iCount)
-struct cfile	*cf;
-int		iCount;
+load_coverage(struct cfile *cf,
+	      int iCount)
 {
-        coveragetype *pCov;
-	int	i;
+    coveragetype *pCov;
+    int i;
 
-	pCov = (coveragetype *)pk_create();
+    pCov = (coveragetype *) pk_create();
 
-	for (i = 0; i < iCount; ++i) {
-	    /* cf_getLong() returns 0 if no more */
-	    pk_append((pkPack *)pCov, (unsigned long)cf_getLong(cf));
-	}
+    for (i = 0; i < iCount; ++i) {
+	/* cf_getLong() returns 0 if no more */
+	pk_append((pkPack *) pCov, (unsigned long) cf_getLong(cf));
+    }
 
-	return pCov;
+    return pCov;
 }
 
 static stampstype *
-load_stampVector(cf,iCount)
-struct cfile	*cf;
-int		iCount;
+load_stampVector(struct cfile *cf,
+		 int iCount)
 {
-        stampstype  *pStamp;
-	int	i;
+    stampstype *pStamp;
+    int i;
 
-	pStamp = (stampstype *)pk_create();
+    pStamp = (stampstype *) pk_create();
 
-	for (i = 0; i < iCount; ++i) {
-	    /* cf_getLong() returns 0 if no more */
-	    pk_append((pkPack *)pStamp, (unsigned long)cf_getLong(cf));
-	}
+    for (i = 0; i < iCount; ++i) {
+	/* cf_getLong() returns 0 if no more */
+	pk_append((pkPack *) pStamp, (unsigned long) cf_getLong(cf));
+    }
 
-	return pStamp;
+    return pStamp;
 }
 
 static void
-prev_cuse(iDef,iUse,iTestCount,pCov,var)
-int iDef,iUse;
-int iTestCount;
-coveragetype *pCov;
-vartype	*var;
+prev_cuse(int iDef,
+	  int iUse,
+	  int iTestCount,
+	  coveragetype * pCov,
+	  vartype * var)
 {
-	int iCurrent;
-	cusetype *cuses;
+    int iCurrent;
+    cusetype *cuses;
 
-	iCurrent = var->iCuseCount;
-	check_cuse(var, iCurrent);
-	cuses = var->cuses;
+    iCurrent = var->iCuseCount;
+    check_cuse(var, iCurrent);
+    cuses = var->cuses;
 
-	cuses[iCurrent].iDefine = iDef;
-	cuses[iCurrent].iUse    = iUse;
-	cuses[iCurrent].iTestCount = iTestCount;
-	cuses[iCurrent].coverage = pCov;
-	cuses[iCurrent].iCovNext = 0;
+    cuses[iCurrent].iDefine = iDef;
+    cuses[iCurrent].iUse = iUse;
+    cuses[iCurrent].iTestCount = iTestCount;
+    cuses[iCurrent].coverage = pCov;
+    cuses[iCurrent].iCovNext = 0;
 }
 
 static void
-prev_puse(iDef,iUse,iTo,iTestCount,pCov,var)
-int iDef,iUse,iTo;
-int iTestCount;
-coveragetype *pCov;
-vartype	*var;
+prev_puse(int iDef,
+	  int iUse,
+	  int iTo,
+	  int iTestCount,
+	  coveragetype * pCov,
+	  vartype * var)
 {
-	int iCurrent;
-	pusetype *puses;
+    int iCurrent;
+    pusetype *puses;
 
-	iCurrent = var->iPuseCount;
-	check_puse(var, iCurrent);
-	puses = var->puses;
+    iCurrent = var->iPuseCount;
+    check_puse(var, iCurrent);
+    puses = var->puses;
 
-	puses[iCurrent].iDefine = iDef;
-	puses[iCurrent].iUse    = iUse;
-	puses[iCurrent].iTo     = iTo;
-	puses[iCurrent].iTestCount = iTestCount;
-	puses[iCurrent].coverage = pCov;
-	puses[iCurrent].iCovNext = 0;
+    puses[iCurrent].iDefine = iDef;
+    puses[iCurrent].iUse = iUse;
+    puses[iCurrent].iTo = iTo;
+    puses[iCurrent].iTestCount = iTestCount;
+    puses[iCurrent].coverage = pCov;
+    puses[iCurrent].iCovNext = 0;
 }
 
 int
-prev_member(pDate,pVersion,iFamily,pName,iCost,iFreqFlag,iCorrupted, mems)
-char *pDate;
-char *pVersion;
-int iFamily;
-char *pName;
-int iCost;
-int iFreqFlag;
-int iCorrupted;
-membertype *mems;
+prev_member(const char *pDate,
+	    const char *pVersion,
+	    int iFamily,
+	    const char *pName,
+	    int iCost,
+	    int iFreqFlag,
+	    int iCorrupted,
+	    membertype * mems)
 {
-	int i;
+    int i;
 
-	i = mems->iMemberCount;
-	check_member(mems, i);
+    i = mems->iMemberCount;
+    check_member(mems, i);
 
-	if (NULL==(mems->members[i].pDate = (char *)malloc(strlen(pDate)+1)))
-		memoryError("malloc member");
+    if (NULL == (mems->members[i].pDate = (char *) malloc(strlen(pDate) + 1)))
+	memoryError("malloc member");
 
-	if (NULL==(mems->members[i].pVersion = (char *)malloc(
-	    strlen(pVersion)+1)))
-	{
-	    memoryError("malloc member");
-	}
+    if (NULL == (mems->members[i].pVersion = (char *) malloc(
+								strlen(pVersion)
+								+ 1))) {
+	memoryError("malloc member");
+    }
 
-	if (NULL== (mems->members[i].pName = (char *)malloc(strlen(pName)+1)))
-		memoryError("malloc member");
+    if (NULL == (mems->members[i].pName = (char *) malloc(strlen(pName) + 1)))
+	memoryError("malloc member");
 
-	strcpy(mems->members[i].pDate,pDate);
-	strcpy(mems->members[i].pVersion,pVersion);
-	strcpy(mems->members[i].pName,pName);
-	mems->members[i].iFamily = iFamily;	
-	mems->members[i].iCost = iCost;	
-	mems->members[i].iFreqFlag = iFreqFlag;	
-	mems->members[i].iCorrupted = iCorrupted;	
-	mems->members[i].iDelete = 0;	
+    strcpy(mems->members[i].pDate, pDate);
+    strcpy(mems->members[i].pVersion, pVersion);
+    strcpy(mems->members[i].pName, pName);
+    mems->members[i].iFamily = iFamily;
+    mems->members[i].iCost = iCost;
+    mems->members[i].iFreqFlag = iFreqFlag;
+    mems->members[i].iCorrupted = iCorrupted;
+    mems->members[i].iDelete = 0;
 
-	return i;
+    return i;
 }
 
 static void
-prev_block(iBlock, iTestCount, pCov, func)
-int iBlock;
-int iTestCount;
-coveragetype *pCov;
-functype	*func;
+prev_block(int iBlock,
+	   int iTestCount,
+	   coveragetype * pCov,
+	   functype * func)
 {
-        blocktype *b;
+    blocktype *b;
 
-	check_block(func, iBlock);
+    check_block(func, iBlock);
 
-	b = &func->blocks[iBlock];
-	b->coverage = pCov;
-	b->iTestCount = iTestCount;
-	b->iCovNext = 0;
+    b = &func->blocks[iBlock];
+    b->coverage = pCov;
+    b->iTestCount = iTestCount;
+    b->iCovNext = 0;
 }
 
 static void
-getICompressed(cf, tracefile, mems)
-struct cfile	*cf;
-char		*tracefile;
-membertype	*mems;
+getICompressed(struct cfile *cf,
+	       char *tracefile,
+	       membertype * mems)
 {
-    int		c;
-    int		i;
-    int		n;
-    char	acDate[50];
-    char	acVersion[50];
-    char	acName[BUFFER_SIZE];
-    char	acFreq[20];
-    int		iFreqFlag;
-    int		iCorrupted;
-    int		iCost;
+    int c;
+    int i;
+    int n;
+    char acDate[50];
+    char acVersion[50];
+    char acName[BUFFER_SIZE];
+    char acFreq[20];
+    int iFreqFlag;
+    int iCorrupted;
+    int iCost;
 
     c = cf_getFirstChar(cf);
 
@@ -315,39 +280,39 @@ membertype	*mems;
 	    exit(1);
 	}
 	cf_getString(cf, acDate, sizeof acDate);
-	cf_getString(cf,acName, sizeof acName);
-	cf_getString(cf,acVersion, sizeof acVersion);
+	cf_getString(cf, acName, sizeof acName);
+	cf_getString(cf, acVersion, sizeof acVersion);
 	iCost = cf_getLong(cf);
 	if (n < 0) {
 	    traceError(tracefile, cf_lineNo(cf), 0);
 	    exit(1);
 	}
-	cf_getString(cf,acFreq, sizeof acFreq);
-	if (strcmp(acFreq,"frequency") == 0) {
+	cf_getString(cf, acFreq, sizeof acFreq);
+	if (strcmp(acFreq, "frequency") == 0) {
 	    iFreqFlag = 1;
 	} else {
 	    iFreqFlag = 0;
 	}
-	cf_getString(cf,acFreq, sizeof acFreq);
-	if (strcmp(acFreq,"corrupted") == 0) {
+	cf_getString(cf, acFreq, sizeof acFreq);
+	if (strcmp(acFreq, "corrupted") == 0) {
 	    iCorrupted = 1;
 	} else {
 	    iCorrupted = 0;
 	}
-	prev_member(acDate,acVersion,0,acName,iCost,iFreqFlag,iCorrupted, mems);
+	prev_member(acDate, acVersion, 0, acName, iCost, iFreqFlag,
+		    iCorrupted, mems);
     }
 }
 
 static void
-getMCompressed(cf, tracefile, rf)
-struct cfile	*cf;
-char		*tracefile;
-RAMFILE		*rf;
+getMCompressed(struct cfile *cf,
+	       char *tracefile,
+	       RAMFILE * rf)
 {
-    int		c;
-    int		i;
-    int		n;
-    char	acName[BUFFER_SIZE];
+    int c;
+    int i;
+    int n;
+    char acName[BUFFER_SIZE];
 
     c = cf_getFirstChar(cf);
 
@@ -362,24 +327,23 @@ RAMFILE		*rf;
 	    traceError(tracefile, cf_lineNo(cf), 0);
 	    exit(1);
 	}
-	cf_getString(cf,acName, sizeof acName);
+	cf_getString(cf, acName, sizeof acName);
 	prev_source(acName, rf);
     }
 }
 
 static void
-getSCompressed(cf, tracefile, iTestCount, rf)
-struct cfile	*cf;
-char		*tracefile;
-int		iTestCount;
-RAMFILE		*rf;
+getSCompressed(struct cfile *cf,
+	       char *tracefile,
+	       int iTestCount,
+	       RAMFILE * rf)
 {
-    int		c;
-    int		i;
-    int		n;
-    char	acName[BUFFER_SIZE];
-    stampstype	*pStampVector;
-    int		iModule;
+    int c;
+    int i;
+    int n;
+    char acName[BUFFER_SIZE];
+    stampstype *pStampVector;
+    int iModule;
 
     c = cf_getFirstChar(cf);
 
@@ -399,27 +363,26 @@ RAMFILE		*rf;
 	    traceError(tracefile, cf_lineNo(cf), 0);
 	    exit(1);
 	}
-	cf_getString(cf,acName, sizeof acName);
+	cf_getString(cf, acName, sizeof acName);
 	pStampVector = load_stampVector(cf, iTestCount);
 	prev_header(acName, iTestCount, pStampVector, &rf->files[iModule].hdr);
     }
 }
 
 static void
-getBCompressed(cf, tracefile, iTestCount, rf)
-struct cfile	*cf;
-char		*tracefile;
-int		iTestCount;
-RAMFILE		*rf;
+getBCompressed(struct cfile *cf,
+	       char *tracefile,
+	       int iTestCount,
+	       RAMFILE * rf)
 {
-    int			c;
-    int			i;
-    int			n;
-    int			iModule;
-    int			iFunc;
-    int			iBlk;
-    coveragetype	*pCov;
-    
+    int c;
+    int i;
+    int n;
+    int iModule;
+    int iFunc;
+    int iBlk;
+    coveragetype *pCov;
+
     c = cf_getFirstChar(cf);
 
     if (c != 'B') {
@@ -447,22 +410,21 @@ RAMFILE		*rf;
 }
 
 static void
-getCCompressed(cf, tracefile, iTestCount, rf)
-struct cfile	*cf;
-char		*tracefile;
-int		iTestCount;
-RAMFILE		*rf;
+getCCompressed(struct cfile *cf,
+	       char *tracefile,
+	       int iTestCount,
+	       RAMFILE * rf)
 {
-    int			c;
-    int			i;
-    int			n;
-    int			iModule;
-    int			iFunc;
-    int			iVar;
-    int			iDefine;
-    int			iUse;
-    coveragetype	*pCov;
-    
+    int c;
+    int i;
+    int n;
+    int iModule;
+    int iFunc;
+    int iVar;
+    int iDefine;
+    int iUse;
+    coveragetype *pCov;
+
     c = cf_getFirstChar(cf);
 
     if (c != 'C') {
@@ -494,28 +456,27 @@ RAMFILE		*rf;
 }
 
 static void
-getPCompressed(cf, tracefile, iTestCount, rf)
-struct cfile	*cf;
-char		*tracefile;
-int		iTestCount;
-RAMFILE		*rf;
+getPCompressed(struct cfile *cf,
+	       char *tracefile,
+	       int iTestCount,
+	       RAMFILE * rf)
 {
-    int			c;
-    int			i;
-    int			n;
-    int			iModule;
-    int			iFunc;
-    int			iVar;
-    int			iDefine;
-    int			iUse;
-    int			iTo;
-    coveragetype	*pCov;
-    
+    int c;
+    int i;
+    int n;
+    int iModule;
+    int iFunc;
+    int iVar;
+    int iDefine;
+    int iUse;
+    int iTo;
+    coveragetype *pCov;
+
     c = cf_getFirstChar(cf);
 
     if (c != 'P') {
-	    traceError(tracefile, cf_lineNo(cf), 0);
-	    exit(1);
+	traceError(tracefile, cf_lineNo(cf), 0);
+	exit(1);
     }
     n = cf_getLong(cf);
     for (i = 0; i < n; ++i) {
@@ -543,12 +504,11 @@ RAMFILE		*rf;
 }
 
 static void
-getCompressed(cf, tracefile, tables)
-struct cfile	*cf;
-char		*tracefile;
-tablestype	*tables;
+getCompressed(struct cfile *cf,
+	      char *tracefile,
+	      tablestype * tables)
 {
-    int		iTestCount;
+    int iTestCount;
 
     getICompressed(cf, tracefile, &tables->mems);
     iTestCount = tables->mems.iMemberCount;
@@ -560,10 +520,9 @@ tablestype	*tables;
 }
 
 static void
-skipCompressed(cf, tracefile, tables)
-struct cfile	*cf;
-char		*tracefile;
-tablestype	*tables;
+skipCompressed(struct cfile *cf,
+	       char *tracefile,
+	       tablestype * tables)
 {
     int i, j, n;
 
@@ -579,24 +538,24 @@ tablestype	*tables;
 }
 
 void
-load_prev(tracefile, cf, tables, indexOnly)
-char		*tracefile;
-struct cfile	*cf;
-tablestype	*tables;
-int		indexOnly;
+load_prev(char *tracefile,
+	  struct cfile *cf,
+	  tablestype * tables,
+	  int indexOnly)
 {
-	int c;
-	char acBuffer[50];
+    int c;
+    char acBuffer[50];
 
+    c = cf_getFirstChar(cf);
+    if (c == 'V') {
+	cf_getString(cf, acBuffer, sizeof acBuffer);
+	/* ignore VERSION */
+	if (indexOnly)
+	    skipCompressed(cf, tracefile, tables);
+	else
+	    getCompressed(cf, tracefile, tables);
 	c = cf_getFirstChar(cf);
-	if (c == 'V') {
-	    cf_getString(cf,acBuffer, sizeof acBuffer);
-	    /* ignore VERSION */
-	    if (indexOnly) 
-		skipCompressed(cf, tracefile, tables);
-	    else getCompressed(cf, tracefile, tables);
-	    c = cf_getFirstChar(cf);
-	}
-	
-	process_pipe(cf, tracefile, tables, c, indexOnly);
+    }
+
+    process_pipe(cf, tracefile, tables, c, indexOnly);
 }

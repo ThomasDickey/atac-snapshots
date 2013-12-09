@@ -13,17 +13,18 @@
 *WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 ****************************************************************/
 %{
+
 #ifdef MVS
- #pragma csect (CODE, "pgram$")
+#pragma csect (CODE, "pgram$")
 #include <mvapts.h>
 MODULEID(%M%,%J%/%D%/%T%)
 #include <string.h>
 #endif /* MVS */
 
-static char Pgram_y[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.13 1997/12/11 23:34:34 tom Exp $";
+static char Pgram_y[] =
+"$Header: /users/source/archives/atac.vcs/atac_i/RCS/Pgram.y,v 3.15 2013/12/08 23:19:59 tom Exp $";
 /*
-* $Log: Pgram.y,v $
+* @Log: Pgram.y,v @
 * Revision 3.13  1997/12/11 23:34:34  tom
 * remove unused/misleading symbol ENDFILE.
 *
@@ -115,12 +116,16 @@ static char Pgram_y[] =
 #include "tree.h"
 
 /* forward declarations */
-extern int yyparse P_(( void ));
-static void insertTypeNames P_(( TNODE *node ));
+extern int yyparse(void);
+static void insertTypeNames(TNODE * node);
 
 static TNODE *tree_root;
 
-static SRCPOS nosrcpos[2] = {{-1,0,0}, {-1,0,0}};
+static SRCPOS nosrcpos[2] =
+{
+    {-1, 0, 0},
+    {-1, 0, 0}};
+
 %}
 
 %union {
@@ -1882,47 +1887,46 @@ equop:			EQUAL
 			}
 		;
 %%
+
 #define CHECK_MALLOC(p) ((p)?1:internal_error(NULL, "Out of memory\n"))
 
 int
-parse(srcfile, tree, uprefix)
-FILE	*srcfile;
-TNODE	**tree;
-char	**uprefix;
+parse(FILE *srcfile,
+      TNODE ** tree,
+      char **uprefix)
 {
-	int	status;
+    int status;
 
-	scan_init(srcfile);
+    scan_init(srcfile);
 
-	status = yyparse();
+    status = yyparse();
 
-	scan_end(uprefix);
+    scan_end(uprefix);
 
-	*tree = tree_root;
+    *tree = tree_root;
 
-	return status;
+    return status;
 }
 
 static void
-insertTypeNames(node)
-TNODE	*node;
+insertTypeNames(TNODE * node)
 {
-	TNODE	*p;
-	TNODE	*item;
+    TNODE *p;
+    TNODE *item;
 
-	if (node->genus != GEN_DATA_SPECS) {
-		internal_error(node->srcpos, "Unexpected genus: %d",
-			node->genus);
-	}
+    if (node->genus != GEN_DATA_SPECS) {
+	internal_error(node->srcpos, "Unexpected genus: %d",
+		       node->genus);
+    }
 
-	for (p = CHILD0(node); p != NULL; p = TNEXT(p)) {
-		item = CHILD0(p);
-		while (item->genus == GEN_DATA_ITEM) {
-			if (item->species == FUNC_STARS_SPEC)
-				item = CHILD1(item);
-			else item = CHILD0(item);
-		}
-		scan_setType(item->text);
+    for (p = CHILD0(node); p != NULL; p = TNEXT(p)) {
+	item = CHILD0(p);
+	while (item->genus == GEN_DATA_ITEM) {
+	    if (item->species == FUNC_STARS_SPEC)
+		item = CHILD1(item);
+	    else
+		item = CHILD0(item);
 	}
+	scan_setType(item->text);
+    }
 }
-

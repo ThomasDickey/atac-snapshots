@@ -36,10 +36,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 
 #define DEBUG 0
 
-static char const scan_c[] =
-"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.c,v 3.17 2008/12/17 01:07:56 tom Exp $";
+static char const scan_c[] = "$Id: scan.c,v 3.19 2013/12/09 00:17:53 tom Exp $";
 /*
-* $Log: scan.c,v $
+* @Log: scan.c,v @
 * Revision 3.17  2008/12/17 01:07:56  tom
 * convert to ANSI, indent'd
 *
@@ -205,7 +204,7 @@ typedef struct {
 */
 /* *INDENT-OFF* */
 static struct {
-	char	*name;
+	const char	*name;
 	int	type;
 } keyword[] = {
 	{ "long", LONG },
@@ -277,18 +276,18 @@ initCharTable(void)
     int i;
 
     /*
-       * Default: BADCHAR.
+     * Default: BADCHAR.
      */
     for (i = 0; i <= MAXCHAR; ++i)
 	charTable[i] = BADCHAR;
 
     /*
-       * EOF or '\377'
+     * EOF or '\377'
      */
     charTable[CHAR(EOF)] = ENDOFFILE;
 
     /*
-       * Whitespace.
+     * Whitespace.
      */
     charTable[' '] = WHITESPACE;
     charTable['\t'] = WHITESPACE;
@@ -302,14 +301,14 @@ initCharTable(void)
 #endif /* not __STDC__ */
 
     /*
-       * Potential whitespace.  (Not including comments.)
+     * Potential whitespace.  (Not including comments.)
      */
     charTable['\n'] = STARTWS;
     charTable['\\'] = STARTWS;
     charTable['@'] = STARTWS;
 
     /*
-       * Alphabetic.
+     * Alphabetic.
      */
     charTable['_'] = LETTER;
     charTable['$'] = LETTER;	/* Some compilers permit this; why not? */
@@ -319,22 +318,22 @@ initCharTable(void)
     for (i = 'A'; i <= 'Z'; ++i)
 	charTable[i] = LETTER;
     /*
-       * Numeric.
+     * Numeric.
      */
     for (i = '0'; i <= '9'; ++i)
 	charTable[i] = DIGIT;
 
     /*
-       * Quote Marks.
+     * Quote Marks.
      */
     charTable['\''] = SINGLEQUOTE;
     charTable['"'] = DOUBLEQUOTE;
 
     /*
-       * Potential decimal point.
-       * OR Could be sign in floating number.
-       * OR Possible first character of "other" multiple character token.
-       * OR Always single character token.
+     * Potential decimal point.
+     * OR Could be sign in floating number.
+     * OR Possible first character of "other" multiple character token.
+     * OR Always single character token.
      */
     charTable['('] = TOK_LPAREN;
     charTable[')'] = TOK_RPAREN;
@@ -482,12 +481,12 @@ expandedMacro(void)
     case '>':
 	if (--macro_nesting == 0) {
 	    /*
-	       * Now that we are outside the macro, where are we in the input?
-	       * Cpp provides line directives (or extra lines) to make sure that
-	       * src.line and src.file reflect the original source file input
-	       * position.  Src.col must be reset to reflect the column in the
-	       * original source file rather than the column in the replacement
-	       * text.
+	     * Now that we are outside the macro, where are we in the input?
+	     * Cpp provides line directives (or extra lines) to make sure that
+	     * src.line and src.file reflect the original source file input
+	     * position.  Src.col must be reset to reflect the column in the
+	     * original source file rather than the column in the replacement
+	     * text.
 	     */
 	    src.col = m_end.col + 1;
 	}

@@ -15,23 +15,10 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 #ifndef portable_H
 #define portable_H
 
-#if __STDC__ || defined(CC_HAS_PROTOS)
-#define P_(p) p
-extern	int main(int, char **);
-#ifndef CC_HAS_PROTOS
-#define CC_HAS_PROTOS 1
-#define USE_PROTOTYPES 1
-#endif
-#else	/* assume K&R */
-#define P_(p) ()
-#define const
-#endif
-
-static const char portable_h[] =
-	"$Header: /users/source/archives/atac.vcs/RCS/portable.h,v 3.19 2005/08/14 13:53:57 tom Exp $";
+static const char portable_h[] = "$Id: portable.h,v 3.22 2013/12/09 01:31:56 tom Exp $";
 /*
 * Copyright @ 1992 Bell Communications Research, Inc. All Rights Reserved.
-*$Log: portable.h,v $
+*@Log: portable.h,v @
 *Revision 3.19  2005/08/14 13:53:57  tom
 *include string.h and ctype.h
 *turn on prototypes in cccp
@@ -245,7 +232,7 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 /*
 * linux
 */
-#if linux
+#ifdef linux
 #define portable_h_LINUX 1		/* for debugging */
 #define SET_unix 1
 #define FORK_SUPPORT 1
@@ -356,7 +343,8 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define BSD 1
 #endif /* BSD */
 #endif /* L_ctermid */
-#if BSD || SYSTYPE_BSD || __SYSTYPE_BSD || __bsd4_2 || bsd43 || bsd4_2
+
+/* TODO: replace this mess with autoconf checks... */
 #define portable_h_BSD 1		/* for debugging */
 #define SET_unix 1
 #define FORK_SUPPORT 1
@@ -365,23 +353,7 @@ typedef char		byte;		/* 8 bit unsigned type		*/
 #define GETRLIMIT_SUPPORT 1
 #define TMP_MAXPATHLEN	1024
 #define TMP_MAXNAMLEN	255
-#else /* end other BSD */
 
-/*
-* Other
-*/
-#define portable_h_Other 1		/* for debugging */
-#define FORK_SUPPORT 1
-#define _EXIT_SUPPORT 1
-#define index strchr
-#define rindex strrchr
-#define TMP_MAXPATHLEN	1024	/* ? */
-#define TMP_MAXNAMLEN	255	/* ? */
-#ifndef __STDC__
-#define void int
-#endif /* __STDC__ */
-
-#endif /* not other BSD */
 #endif /* not MVS */
 #endif /* not VMS */
 #endif /* not PYRAMID */

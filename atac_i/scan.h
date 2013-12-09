@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef scan_H
 #define scan_H
-static const char scan_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/scan.h,v 3.3 1997/05/10 20:40:39 tom Exp $";
+static const char scan_h[] = "$Id: scan.h,v 3.4 2013/12/08 22:04:16 tom Exp $";
 /*
-* $Log: scan.h,v $
+* @Log: scan.h,v @
 * Revision 3.3  1997/05/10 20:40:39  tom
 * add prototypes for scan.c
 *
@@ -45,15 +44,15 @@ static const char scan_h[] =
 *-----------------------------------------------end of log
 */
 typedef struct tokenvalue {
-	char	*text;
-	SRCPOS	srcpos[2];
+    char *text;
+    SRCPOS srcpos[2];
 } TOKENVALUE;
 
 /* scan.c */
-void scan_setType P_((char *name));
-void scan_pushScope P_((void));
-int scan_popScope P_((void));
-void scan_init P_((FILE *srcfile));
-void scan_end P_((char **uprefix));
+void scan_setType(char *name);
+void scan_pushScope(void);
+int scan_popScope(void);
+void scan_init(FILE *srcfile);
+void scan_end(char **uprefix);
 
 #endif /* scan_H */

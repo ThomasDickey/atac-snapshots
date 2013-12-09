@@ -38,16 +38,15 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#endif	/* MVS */
-#endif  /* vms */
+#endif /* MVS */
+#endif /* vms */
 
 #include "portable.h"
 #include "atacysis.h"
 
-static char const columns_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/columns.c,v 3.7 1995/12/29 21:25:35 tom Exp $";
+static char const columns_c[] = "$Id: columns.c,v 3.9 2013/12/09 01:06:29 tom Exp $";
 /*
-* $Log: columns.c,v $
+* @Log: columns.c,v @
 * Revision 3.7  1995/12/29 21:25:35  tom
 * adjust headers, prototyped for autoconfig
 * correct gcc warnings (shadowed variables: columns, lines)
@@ -93,26 +92,25 @@ lumns.c
 */
 
 /* forward declarations */
-static void formatf P_((char **fp0, char **fplast, int twidth, int Cflg));
-static void ttystuff P_((int *twidth, int *Cflg));
+static void formatf(char **fp0, char **fplast, int twidth, int Cflg);
+static void ttystuff(int *twidth, int *Cflg);
 
 #define LINE_POOL_SIZE	50
 
-static int		nLines = 0;
-static char		**lines;
+static int nLines = 0;
+static char **lines;
 
 void
-columns(p)
-char *p;
+columns(char *p)
 {
-    static int	nLinePool = 0;
+    static int nLinePool = 0;
 
     if (nLines + 1 >= nLinePool) {
 	nLinePool += LINE_POOL_SIZE;
 	if (nLines == 0) {
-	    lines = (char **)malloc(nLinePool * sizeof *lines);
+	    lines = (char **) malloc(nLinePool * sizeof *lines);
 	} else {
-	    lines = (char **)realloc(lines, nLinePool * sizeof *lines);
+	    lines = (char **) realloc(lines, nLinePool * sizeof *lines);
 	}
 	if (lines == NULL) {
 	    fprintf(stderr, "columns: out of memory\n");
@@ -123,12 +121,13 @@ char *p;
 }
 
 void
-columnsEnd()
+columnsEnd(void)
 {
-    int		twidth;
-    int		Cflg;
+    int twidth;
+    int Cflg;
 
-    if (nLines == 0) return;
+    if (nLines == 0)
+	return;
 
     ttystuff(&twidth, &Cflg);
 
@@ -138,18 +137,17 @@ columnsEnd()
 }
 
 static void
-ttystuff(twidth, Cflg)
-int *twidth;
-int *Cflg;
+ttystuff(int *twidth,
+	 int *Cflg)
 {
     *twidth = 80;
     *Cflg = 1;
 #ifdef TIOCGWINSZ
-{
-    struct	winsize win;
-    if (ioctl(1, TIOCGWINSZ, &win) != -1)
-	*twidth = (win.ws_col == 0 ? 80 : win.ws_col);
-}
+    {
+	struct winsize win;
+	if (ioctl(1, TIOCGWINSZ, &win) != -1)
+	    *twidth = (win.ws_col == 0 ? 80 : win.ws_col);
+    }
 #endif /* TIOCGWINSZ */
 #ifndef MVS
     if (!isatty(1))
@@ -158,47 +156,47 @@ int *Cflg;
 }
 
 static void
-formatf(fp0, fplast, twidth, Cflg)
-	char **fp0, **fplast;
-	int twidth;
-	int Cflg;
+formatf(char **fp0,
+	char **fplast,
+	int twidth,
+	int Cflg)
 {
-	register char **fp;
-	register int i, j, w;
-	int width = 0, nentry = fplast - fp0;
-	int cols, rows;
-	char *cp;
+    register char **fp;
+    register int i, j, w;
+    int width = 0, nentry = fplast - fp0;
+    int cols, rows;
+    char *cp;
 
-	if (fp0 == fplast)
-		return;
-	if (Cflg == 0)
-		cols = 1;
-	else {
-		for (fp = fp0; fp < fplast; fp++) {
-			int len = strlen(*fp);
-				if (len > width)
-				width = len;
-		}
-		width += 2;
-		cols = twidth / width;
-		if (cols == 0)
-			cols = 1;
+    if (fp0 == fplast)
+	return;
+    if (Cflg == 0)
+	cols = 1;
+    else {
+	for (fp = fp0; fp < fplast; fp++) {
+	    int len = (int) strlen(*fp);
+	    if (len > width)
+		width = len;
 	}
-	rows = (nentry + cols - 1) / cols;
-	for (i = 0; i < rows; i++) {
-		for (j = 0; j < cols; j++) {
-			fp = fp0 + j * rows + i;
-			cp = *fp;
-			fputs(cp, stdout);
-			if (fp + rows >= fplast) {
-				putchar('\n');
-				break;
-			}
-			w = strlen(cp);
-			while (w < width) {
-			    w++;
-			    putchar(' ');
-			}
-		}
+	width += 2;
+	cols = twidth / width;
+	if (cols == 0)
+	    cols = 1;
+    }
+    rows = (nentry + cols - 1) / cols;
+    for (i = 0; i < rows; i++) {
+	for (j = 0; j < cols; j++) {
+	    fp = fp0 + j * rows + i;
+	    cp = *fp;
+	    fputs(cp, stdout);
+	    if (fp + rows >= fplast) {
+		putchar('\n');
+		break;
+	    }
+	    w = (int) strlen(cp);
+	    while (w < width) {
+		w++;
+		putchar(' ');
+	    }
 	}
+    }
 }

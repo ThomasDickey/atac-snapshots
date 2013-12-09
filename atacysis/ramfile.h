@@ -14,10 +14,9 @@
 ****************************************************************/
 #ifndef ramfile_H
 #define ramfile_H
-static char const ramfile_h[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/ramfile.h,v 3.5 1995/12/27 20:55:44 tom Exp $";
+static char const ramfile_h[] = "$Id: ramfile.h,v 3.7 2013/12/09 00:57:02 tom Exp $";
 /*
-* $Log: ramfile.h,v $
+* @Log: ramfile.h,v @
 * Revision 3.5  1995/12/27 20:55:44  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -86,15 +85,7 @@ static char const ramfile_h[] =
 ***	frequency
 **/
 
-#ifdef vms
-#include <types.h>
-#else /* not vms */
-#ifdef MVS
-#include <time.h>		/* for time_t */
-#else /* not MVS */
-#include <sys/types.h>		/* for time_t */
-#endif /* not MVS */
-#endif /* not vms */
+#include "atacysis.h"
 
 typedef struct pkPack coveragetype;
 typedef struct pkPack stampstype;
@@ -103,32 +94,32 @@ typedef struct pkPack stampstype;
 ***	cusetype
 **/
 typedef struct {
-	coveragetype *coverage;
-	int iCovNext;		/* coverage for test number iTestCount */
-	int iTestCount;
-	int iDefine;
-	int iUse;
+    coveragetype *coverage;
+    int iCovNext;		/* coverage for test number iTestCount */
+    int iTestCount;
+    int iDefine;
+    int iUse;
 } cusetype;
 
 /**
 *** pusetype
 **/
 typedef struct {
-	coveragetype *coverage;
-	int iCovNext;		/* coverage for test number iTestCount */
-	int iTestCount;
-	int iDefine;
-	int iUse;
-	int iTo;
+    coveragetype *coverage;
+    int iCovNext;		/* coverage for test number iTestCount */
+    int iTestCount;
+    int iDefine;
+    int iUse;
+    int iTo;
 } pusetype;
 
 /**
 ***	blocktype
 **/
 typedef struct {
-	coveragetype *coverage;
-	int iCovNext;		/* coverage for test number iTestCount */
-	int iTestCount;
+    coveragetype *coverage;
+    int iCovNext;		/* coverage for test number iTestCount */
+    int iTestCount;
 } blocktype;
 
 /**
@@ -138,13 +129,13 @@ typedef struct {
 ***
 **/
 typedef struct {
-	cusetype *cuses;
-	int iCuseCount;
-	int iCusePool;
+    cusetype *cuses;
+    int iCuseCount;
+    int iCusePool;
 
-	pusetype *puses;
-	int iPuseCount;
-	int iPusePool;
+    pusetype *puses;
+    int iPuseCount;
+    int iPusePool;
 
 } vartype;
 
@@ -155,13 +146,13 @@ typedef struct {
 ***	global c and puses, and local c and p uses.
 **/
 typedef struct {
-	blocktype *blocks;
-	int iBlockCount;
-	int iBlockPool;
+    blocktype *blocks;
+    int iBlockCount;
+    int iBlockPool;
 
-	vartype *vars;
-	int iVarCount;
-	int iVarPool;
+    vartype *vars;
+    int iVarCount;
+    int iVarPool;
 } functype;
 
 /**
@@ -169,16 +160,16 @@ typedef struct {
 **/
 
 typedef struct {
-	char *pPath;
-	stampstype *stampVector;
-	time_t lStampNext;		/* stamp for test number iTestCount */
-	int iStampCount;
+    char *pPath;
+    stampstype *stampVector;
+    time_t lStampNext;		/* stamp for test number iTestCount */
+    int iStampCount;
 } headerstype;
 
 typedef struct {
-	headerstype *headers;
-	int iHeaderCount;
-	int iHeaderPool;
+    headerstype *headers;
+    int iHeaderCount;
+    int iHeaderPool;
 } headertype;
 
 /**
@@ -189,20 +180,20 @@ typedef struct {
 **/
 
 typedef struct {
-	functype *funcs;
-	int iFuncCount;
-	int iFuncPool;
-	char *pName;
-	headertype	hdr;
+    functype *funcs;
+    int iFuncCount;
+    int iFuncPool;
+    char *pName;
+    headertype hdr;
 } filetype;
 
 /**
 ***	RAMFILE - consists of files.
 **/
 typedef struct {
-	filetype *files;
-	int iFilePool;
-	int iFileCount;
+    filetype *files;
+    int iFilePool;
+    int iFileCount;
 } RAMFILE;
 
 /**
@@ -210,13 +201,13 @@ typedef struct {
 **/
 
 typedef struct {
-	char *family;
+    char *family;
 } familiestype;
 
 typedef struct {
-	familiestype *families;
-	int iFamilyCount;
-	int iFamilyPool;
+    familiestype *families;
+    int iFamilyCount;
+    int iFamilyPool;
 } familytype;
 
 /**
@@ -224,64 +215,70 @@ typedef struct {
 **/
 
 typedef struct {
-	char *pDate;
-	int iFamily;
-	char *pName;
-	char *pVersion;
-        int iCost;
-	int iFreqFlag;
-	int iCorrupted;
-	int iDelete;
+    char *pDate;
+    int iFamily;
+    char *pName;
+    char *pVersion;
+    int iCost;
+    int iFreqFlag;
+    int iCorrupted;
+    int iDelete;
 } memberstype;
 
 typedef struct {
-	memberstype *members;
-	int iMemberCount;
-	int iMemberPool;
+    memberstype *members;
+    int iMemberCount;
+    int iMemberPool;
 } membertype;
 
 typedef struct {
-    RAMFILE	rf;
-    familytype	fams;
-    membertype	mems;
+    RAMFILE rf;
+    familytype fams;
+    membertype mems;
 } tablestype;
 
 /* interface of 'dump.c' */
-void dump P_((struct cfile *cf, tablestype *tables));
+void dump(struct cfile *cf, tablestype * tables);
 
 /* interface of 'init.c' */
-extern void init P_((tablestype *tables));
+extern void init(tablestype * tables);
 
 /* interface of 'mem.c' */
 
-extern void check_block P_((functype *func, int iBlock));
-extern void check_cuse P_((vartype *var, int iCuse));
-extern void check_family P_((familytype *fam, int iFamily));
-extern void check_file P_((RAMFILE *rf, int iFile));
-extern void check_func P_((filetype *file, int iFunc));
-extern void check_header P_((headertype *hdr, int iHeader));
-extern void check_member P_((membertype *mem, int iMember));
-extern void check_puse P_((vartype *var, int iPuse));
-extern void check_var P_((functype *func, int iVar));
+extern void check_block(functype * func, int iBlock);
+extern void check_cuse(vartype * var, int iCuse);
+extern void check_family(familytype * fam, int iFamily);
+extern void check_file(RAMFILE * rf, int iFile);
+extern void check_func(filetype * file, int iFunc);
+extern void check_header(headertype * hdr, int iHeader);
+extern void check_member(membertype * mem, int iMember);
+extern void check_puse(vartype * var, int iPuse);
+extern void check_var(functype * func, int iVar);
 
 /* interface of 'prev.c' */
-extern void load_prev
-	P_((char *tracefile, struct cfile *cf, tablestype *tables, int
-	indexOnly));
-extern int prev_member
-	P_((char *pDate, char *pVersion, int iFamily, char *pName, int iCost,
-	int iFreqFlag, int iCorrupted, membertype *mems));
-extern void prev_header
-	P_((char *pPath, int iStampCount, stampstype *stampVector, headertype
-	*hdr));
-extern void prev_source
-	P_((char *pName, RAMFILE *rf));
+extern void load_prev(char *tracefile,
+		      struct cfile *cf,
+		      tablestype * tables,
+		      int indexOnly);
+extern int prev_member(const char *pDate,
+		       const char *pVersion,
+		       int iFamily,
+		       const char *pName,
+		       int iCost,
+		       int iFreqFlag,
+		       int iCorrupted,
+		       membertype * mems);
+extern void prev_header(char *pPath, int iStampCount,
+			stampstype * stampVector,
+			headertype * hdr);
+extern void prev_source(const char *pName, RAMFILE * rf);
 
 /* interface of 'pro.c' */
-extern void process_pipe
-	P_((struct cfile *cf, char *tracefile, tablestype *tables, int initC,
-	int indexOnly));
-extern int testNo
-	P_((membertype *mems, char *testName));
+extern void process_pipe(struct cfile *cf,
+			 char *tracefile,
+			 tablestype * tables,
+			 int initC,
+			 int indexOnly);
+extern int testNo(membertype * mems, const char *testName);
 
 #endif /* ramfile_H */

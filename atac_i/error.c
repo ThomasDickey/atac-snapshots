@@ -21,10 +21,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include <config.h>
 #endif
 
-static const char error_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/error.c,v 3.10 2005/08/14 13:45:49 tom Exp $";
+static const char error_c[] = "$Id: error.c,v 3.14 2013/12/09 01:38:46 tom Exp $";
 /*
-* $Log: error.c,v $
+* @Log: error.c,v @
 * Revision 3.10  2005/08/14 13:45:49  tom
 * gcc warnings
 *
@@ -76,22 +75,8 @@ static const char error_c[] =
 */
 #include "portable.h"
 
-#if defined(HAVE_VARARGS_H) && !CC_HAS_PROTOS
-#include <varargs.h>
-#else
-#ifdef HAVE_STDARG_H
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#endif
-
-/* Some systems have a fake <stdarg.h> which really is <varargs.h> */
-#if __STDC__
 #define VaStart(ap,arg) va_start(ap,arg)
-#else
-#define VaStart(ap,arg) va_start(ap)
-#endif
 
 #include "error.h"
 #include "tnode.h"
@@ -101,97 +86,92 @@ static const char error_c[] =
 
 static int warn_flag = 1;
 
-static void any_error P_((SRCPOS *srcpos, char *label));
-
 void
-supress_warnings()
+supress_warnings(void)
 {
-	warn_flag = 0;
+    warn_flag = 0;
 }
 
 static void
-any_error (srcpos, label)
-	SRCPOS *srcpos;
-	char *label;
+any_error(SRCPOS * srcpos,
+	  const char *label)
 {
-	if (srcpos) {
-		print_srcpos(srcpos, stderr);
-		fputs(", ", stderr);
-	}
-	fprintf(stderr, "ATAC %s", label);
+    if (srcpos) {
+	print_srcpos(srcpos, stderr);
+	fputs(", ", stderr);
+    }
+    fprintf(stderr, "ATAC %s", label);
 }
 
-#if CC_HAS_PROTOS
-#define MY_FUNC(func) func(SRCPOS *srcpos, char *msg, ...)
-#else
-#define MY_FUNC(func) func(srcpos, msg, va_alist) SRCPOS *srcpos; char *msg; va_dcl
-#endif
+#define MY_FUNC(func) func(SRCPOS *srcpos, const char *msg, ...)
 
 int
 MY_FUNC(internal_error)
 {
-	any_error(srcpos, "internal error");
-	if (msg) {
-		va_list ap;
-		VaStart(ap, msg);
-		fputs(": ", stderr);
-		vfprintf(stderr, msg, ap);
-		va_end(ap);
-	}
-	fputs("\n", stderr);
+    any_error(srcpos, "internal error");
+    if (msg) {
+	va_list ap;
+	VaStart(ap, msg);
+	fputs(": ", stderr);
+	vfprintf(stderr, msg, ap);
+	va_end(ap);
+    }
+    fputs("\n", stderr);
 
-	exit(INTERNAL_ERROR);
-	/*NOTREACHED*/
+    exit(INTERNAL_ERROR);
+    /*NOTREACHED */
 }
 
 void
 MY_FUNC(semantic_error)
 {
-	if (warn_flag == 0) return;
-
-	any_error(srcpos, "semantic error");
-	if (msg) {
-		va_list ap;
-		VaStart(ap, msg);
-		fputs(": ", stderr);
-		vfprintf(stderr, msg, ap);
-		va_end(ap);
-	}
-	fputs("\n", stderr);
-
+    if (warn_flag == 0)
 	return;
+
+    any_error(srcpos, "semantic error");
+    if (msg) {
+	va_list ap;
+	VaStart(ap, msg);
+	fputs(": ", stderr);
+	vfprintf(stderr, msg, ap);
+	va_end(ap);
+    }
+    fputs("\n", stderr);
+
+    return;
 }
 
 void
 MY_FUNC(lexical_error)
 {
-	if (warn_flag == 0) return;
-
-	any_error(srcpos, "lexical error");
-	if (msg) {
-		va_list ap;
-		VaStart(ap, msg);
-		fputs(": ", stderr);
-		vfprintf(stderr, msg, ap);
-		va_end(ap);
-	}
-	fputs("\n", stderr);
-
+    if (warn_flag == 0)
 	return;
+
+    any_error(srcpos, "lexical error");
+    if (msg) {
+	va_list ap;
+	VaStart(ap, msg);
+	fputs(": ", stderr);
+	vfprintf(stderr, msg, ap);
+	va_end(ap);
+    }
+    fputs("\n", stderr);
+
+    return;
 }
 
 void
 MY_FUNC(parse_error)
 {
-	any_error(srcpos, "parse error");
-	if (msg) {
-		va_list ap;
-		VaStart(ap, msg);
-		fputs(": ", stderr);
-		vfprintf(stderr, msg, ap);
-		va_end(ap);
-	}
-	fputs("\n", stderr);
+    any_error(srcpos, "parse error");
+    if (msg) {
+	va_list ap;
+	VaStart(ap, msg);
+	fputs(": ", stderr);
+	vfprintf(stderr, msg, ap);
+	va_end(ap);
+    }
+    fputs("\n", stderr);
 
-	exit(PARSE_ERROR);
+    exit(PARSE_ERROR);
 }

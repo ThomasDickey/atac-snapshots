@@ -28,10 +28,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "ramfile.h"
 #include "man.h"
 
-static char const init_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/init.c,v 3.4 1996/11/13 01:31:25 tom Exp $";
+static char const init_c[] = "$Id: init.c,v 3.5 2013/12/08 20:49:14 tom Exp $";
 /*
-* $Log: init.c,v $
+* @Log: init.c,v @
 * Revision 3.4  1996/11/13 01:31:25  tom
 * include <config.h> to declare 'const'
 *
@@ -60,16 +59,15 @@ static char const init_c[] =
 */
 
 void
-init(tables)
-tablestype *tables;
+init(tablestype * tables)
 {
-        tables->rf.files = NULL;
-	tables->rf.iFilePool = 0;
-	tables->rf.iFileCount = 0;
-        tables->fams.families = NULL;
-	tables->fams.iFamilyPool = 0;
-	tables->fams.iFamilyCount = 0;
-        tables->mems.members = NULL;
-	tables->mems.iMemberPool = 0;
-	tables->mems.iMemberCount = 0;
+    tables->rf.files = NULL;
+    tables->rf.iFilePool = 0;
+    tables->rf.iFileCount = 0;
+    tables->fams.families = NULL;
+    tables->fams.iFamilyPool = 0;
+    tables->fams.iFamilyCount = 0;
+    tables->mems.members = NULL;
+    tables->mems.iMemberPool = 0;
+    tables->mems.iMemberCount = 0;
 }

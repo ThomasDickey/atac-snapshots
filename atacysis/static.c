@@ -29,10 +29,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 
 #include "atacysis.h"
 
-static char const static_c[] =
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/static.c,v 3.14 2005/08/14 13:46:46 tom Exp $";
+static char const static_c[] = "$Id: static.c,v 3.16 2013/12/09 01:09:36 tom Exp $";
 /*
-* $Log: static.c,v $
+* @Log: static.c,v @
 * Revision 3.14  2005/08/14 13:46:46  tom
 * gcc warnings
 *
@@ -104,24 +103,7 @@ static char const static_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static void module P_((char *filename, T_MODULE *t_module, char *funcSelect));
-static void fix_puse P_((T_VAR *var, int n_var, T_PUSE *puse, int n_puse, T_PUSE **new_puse, unsigned short *n_new_puse));
-static void fix_cuse P_((T_VAR *var, int n_var, T_CUSE *cuse, int n_cuse, T_CUSE **new_cuse, unsigned short *n_new_cuse));
-static int puse_cmp P_((T_PUSE *a, T_PUSE *b));
-static int cuse_cmp P_((T_CUSE *a, T_CUSE *b));
-static char *t_copy P_((char *from, int size, int number));
-static char *stralloc P_((char *str));
-static char *extend P_((char *p, size_t size));
-static void getBinDotAtac P_((char *filename, T_MODULE *t_module, char *funcSelect));
-static void bufSize_error P_((char *filename, int bufSize));
-static void input_error P_((char *filename, int recno, char *s, char *arg1, char *arg2));
-
-#if CC_HAS_PROTOS
 #define QSORT_CMP (int (*)(const void *, const void *))
-#else
-#define QSORT_CMP /* nothing */
-#endif
 
 #define FIELD_ERROR(filename, recno, msg, field, ignored) \
 	input_error(filename, recno, msg, (char *)field, (char *)ignored)
@@ -133,26 +115,24 @@ static void input_error P_((char *filename, int recno, char *s, char *arg1, char
 #define DECIS_VAR	"=decis="
 
 static void
-input_error(filename, recno, s, arg1, arg2)
-char	*filename;
-int	recno;
-char	*s;
-char	*arg1;
-char	*arg2;
+input_error(const char *filename,
+	    int recno,
+	    const char *s,
+	    const char *arg1,
+	    const char *arg2)
 {
-	fprintf(stderr, "%s: corrupted .atac format record %d\n",
-		filename, recno);
+    fprintf(stderr, "%s: corrupted .atac format record %d\n",
+	    filename, recno);
 #ifdef DEBUG
-	fprintf(stderr, s, arg1, arg2);
+    fprintf(stderr, s, arg1, arg2);
 #endif
-	exit(1);
+    exit(1);
 }
 
 static void
-bufSize_error(filename, bufSize)
-char	*filename;
-int	bufSize;
-{ 
+bufSize_error(const char *filename,
+	      int bufSize)
+{
     fprintf(stderr, "%s: corrupted .atac format\n", filename);
     exit(1);
 }
@@ -170,27 +150,26 @@ int	bufSize;
 *	free it.
 */
 static void
-getBinDotAtac(filename, t_module, funcSelect)
-char		*filename;
-T_MODULE	*t_module;
-char		*funcSelect;
+getBinDotAtac(const char *filename,
+	      T_MODULE * t_module,
+	      const char *funcSelect)
 {
-    FILE	*fp;
+    FILE *fp;
 #ifndef MVS
-    struct stat	sbuf;
-#else    
-    char	*bufp;
-    int		readSize;
+    struct stat sbuf;
+#else
+    char *bufp;
+    int readSize;
 #endif /* MVS */
-    char	*buf;
-    int		bufSize;
-    T_HEADER	*header;
-    T_FILE	*file;
-    T_FUNC	*func;
-    T_VAR	*var;
-    int		offset;
-    int		i;
-    int		j;
+    char *buf;
+    int bufSize;
+    T_HEADER *header;
+    T_FILE *file;
+    T_FUNC *func;
+    T_VAR *var;
+    int offset;
+    int i;
+    int j;
 
     /*
      * Allocate a buffer and read the whole file into it.
@@ -205,16 +184,16 @@ char		*funcSelect;
 	perror(filename);
 	exit(1);
     }
-    buf = (char *)malloc((size_t)sbuf.st_size);
+    buf = (char *) malloc((size_t) sbuf.st_size);
     CHECK_MALLOC(buf);
-    bufSize = fread(buf, 1, (size_t)sbuf.st_size, fp);
+    bufSize = (int) fread(buf, 1, (size_t) sbuf.st_size, fp);
     if (bufSize == 0) {
 	perror(filename);
 	exit(1);
     }
 #else /* MVS */
 #define READSIZE 1024
-    buf = (char *)malloc(READSIZE);
+    buf = (char *) malloc(READSIZE);
     CHECK_MALLOC(buf);
     bufp = buf;
     bufSize = 0;
@@ -223,25 +202,25 @@ char		*funcSelect;
 	if (readSize == 0)
 	    break;
 	bufSize += readSize;
-	buf = (char *)realloc(buf, bufSize + READSIZE);
+	buf = (char *) realloc(buf, bufSize + READSIZE);
 	CHECK_MALLOC(buf);
 	bufp = buf + bufSize;
     }
-    buf = (char *)realloc(buf, bufSize);
+    buf = (char *) realloc(buf, bufSize);
 #endif /* MVS */
     if (fclose(fp) < 0) {
 	perror(filename);
 	exit(1);
     }
-    
+
     /*
      * Check that the required header is present and that the file is not
      * too small to be valid.
      */
-    if (bufSize < sizeof *header) 
+    if (bufSize < sizeof *header)
 	bufSize_error(filename, bufSize);
     buf[bufSize - 1] = '\0';	/* Make sure last string is null terminated. */
-    header = (T_HEADER *)buf;
+    header = (T_HEADER *) buf;
     if (strcmp(header->heading, DOT_ATAC_HEADING) != 0) {
 	fprintf(stderr, "%s: not in .atac format\n", filename);
 	exit(1);
@@ -254,61 +233,61 @@ char		*funcSelect;
     /*
      * FILE: check sizes and change offsets to pointers.
      */
-    file = (T_FILE *)(buf + header->fileOffset);
-    for (i = 0; i < (int)header->nFiles; ++i) {
-	if (bufSize <= (unsigned int)file[i].filename)
+    file = (T_FILE *) (buf + header->fileOffset);
+    for (i = 0; i < (int) header->nFiles; ++i) {
+	if (bufSize <= (unsigned int) file[i].filename)
 	    bufSize_error(filename, bufSize);
-	file[i].filename = buf + (unsigned int)file[i].filename;
+	file[i].filename = buf + (unsigned int) file[i].filename;
     }
 
     /*
      * FUNC: check sizes and change offsets to pointers.
      */
-    func = (T_FUNC *)(buf + header->funcOffset);
-    for (i = 0; i < (int)header->nFuncs; ++i) {
+    func = (T_FUNC *) (buf + header->funcOffset);
+    for (i = 0; i < (int) header->nFuncs; ++i) {
 	/*
 	 * FNAME: check sizes and change offsets to pointers.
 	 * Mark unselected funcs to ignore.
 	 */
-	if (bufSize <= (unsigned int)func[i].fname)
+	if (bufSize <= (unsigned int) func[i].fname)
 	    bufSize_error(filename, bufSize);
-	func[i].fname = buf + (unsigned int)func[i].fname;
+	func[i].fname = buf + (unsigned int) func[i].fname;
 	if (funcSelect && !patMatch(funcSelect, func[i].fname, 0))
-	    func[i].ignore = 1;		/* 0 in input. */
+	    func[i].ignore = 1;	/* 0 in input. */
 	/*
 	 * BLK: check sizes and change offsets to pointers.
 	 */
-	offset = (unsigned int)func[i].blk + func[i].n_blk * sizeof(T_BLK);
+	offset = (unsigned int) func[i].blk + func[i].n_blk * sizeof(T_BLK);
 	if (bufSize < offset)
 	    bufSize_error(filename, bufSize);
-	func[i].blk = (T_BLK *)(buf + (unsigned int)func[i].blk);
+	func[i].blk = (T_BLK *) (buf + (unsigned int) func[i].blk);
 	/*
 	 * VAR: check sizes and change offsets to pointers.
 	 */
-	offset = (unsigned int)func[i].var + func[i].n_var * sizeof(T_VAR);
+	offset = (unsigned int) func[i].var + func[i].n_var * sizeof(T_VAR);
 	if (bufSize < offset)
 	    bufSize_error(filename, bufSize);
-	func[i].var = (T_VAR *)(buf + (unsigned int)func[i].var);
+	func[i].var = (T_VAR *) (buf + (unsigned int) func[i].var);
 	var = func[i].var;
-	for (j = 0; j < (int)func[i].n_var; ++j) {
-	    if (bufSize <= (unsigned int)var[j].vname)
+	for (j = 0; j < (int) func[i].n_var; ++j) {
+	    if (bufSize <= (unsigned int) var[j].vname)
 		bufSize_error(filename, bufSize);
-	    var[j].vname = buf + (unsigned int)var[j].vname;
+	    var[j].vname = buf + (unsigned int) var[j].vname;
 	}
 	/*
 	 * CUSE: check sizes and change offsets to pointers.
 	 */
-	offset = (unsigned int)func[i].cuse + func[i].n_cuse * sizeof(T_CUSE);
+	offset = (unsigned int) func[i].cuse + func[i].n_cuse * sizeof(T_CUSE);
 	if (bufSize < offset)
 	    bufSize_error(filename, bufSize);
-	func[i].cuse = (T_CUSE *)(buf + (unsigned int)func[i].cuse);
+	func[i].cuse = (T_CUSE *) (buf + (unsigned int) func[i].cuse);
 	/*
 	 * PUSE: check sizes and change offsets to pointers.
 	 */
-	offset = (unsigned int)func[i].puse + func[i].n_puse * sizeof(T_PUSE);
+	offset = (unsigned int) func[i].puse + func[i].n_puse * sizeof(T_PUSE);
 	if (bufSize < offset)
 	    bufSize_error(filename, bufSize);
-	func[i].puse = (T_PUSE *)(buf + (unsigned int)func[i].puse);
+	func[i].puse = (T_PUSE *) (buf + (unsigned int) func[i].puse);
     }
 
     /*
@@ -320,7 +299,7 @@ char		*funcSelect;
     t_module->file = file;
     t_module->n_func = header->nFuncs;
     t_module->func = func;
-    t_module->ignore = 0;		/* Fixed up by caller. */
+    t_module->ignore = 0;	/* Fixed up by caller. */
 
     return;
 }
@@ -333,19 +312,18 @@ char		*funcSelect;
 #define T_FILE_ALLOC	25
 
 static char *
-extend(p, size)
-char	*p;
-size_t	size;
+extend(char *p,
+       size_t size)
 {
     register char *newP;
 
     if (p) {
 #ifdef DEBUG
-	fprintf(stderr, "extend: %d\n", (int)size);
+	fprintf(stderr, "extend: %d\n", (int) size);
 #endif /* DEBUG */
-	newP = (char *)realloc(p, size);
-    }
-    else newP = (char *)malloc(size);
+	newP = (char *) realloc(p, size);
+    } else
+	newP = (char *) malloc(size);
 
     CHECK_MALLOC(newP);
 
@@ -353,178 +331,175 @@ size_t	size;
 }
 
 static char *
-stralloc(str)
-char *str;
+stralloc(char *str)
 {
-	char *s;
+    char *s;
 
-	s = (char *)malloc(strlen(str) + 1);
-	CHECK_MALLOC(s);
-	strcpy(s, str);
+    s = (char *) malloc(strlen(str) + 1);
+    CHECK_MALLOC(s);
+    strcpy(s, str);
 
-	return s;
+    return s;
 }
 
 static char *
-t_copy(from, size, number)
-char *from;
-int size;
-int number;
+t_copy(char *from,
+       int size,
+       int number)
 {
-	char	*buf;
-	size_t	len;
+    char *buf;
+    size_t len;
 
-	len = size * number;
-	buf = (char *)malloc(len);
-	CHECK_MALLOC(buf);
-	memcpy(buf, from, len);
+    len = size * number;
+    buf = (char *) malloc(len);
+    CHECK_MALLOC(buf);
+    memcpy(buf, from, len);
 
-	return buf;
+    return buf;
 }
 
 static int
-cuse_cmp(a, b)
-T_CUSE	*a;
-T_CUSE	*b;
+cuse_cmp(T_CUSE * a,
+	 T_CUSE * b)
 {
-	if (a->varno != b->varno)
-		return a->varno - b->varno;
-	if (a->blk1 != b->blk1)
-		return a->blk1 - b->blk1;
-	else return a->blk2 - b->blk2;
+    if (a->varno != b->varno)
+	return a->varno - b->varno;
+    if (a->blk1 != b->blk1)
+	return a->blk1 - b->blk1;
+    else
+	return a->blk2 - b->blk2;
 }
 
 static int
-puse_cmp(a, b)
-T_PUSE	*a;
-T_PUSE	*b;
+puse_cmp(T_PUSE * a,
+	 T_PUSE * b)
 {
-	if (a->varno != b->varno)
-		return a->varno - b->varno;
-	if (a->blk1 != b->blk1)
-		return a->blk1 - b->blk1;
-	if (a->blk2 != b->blk2)
-		return a->blk2 - b->blk2;
-	else return a->blk3 - b->blk3;
+    if (a->varno != b->varno)
+	return a->varno - b->varno;
+    if (a->blk1 != b->blk1)
+	return a->blk1 - b->blk1;
+    if (a->blk2 != b->blk2)
+	return a->blk2 - b->blk2;
+    else
+	return a->blk3 - b->blk3;
 }
-		
+
 static void
-fix_cuse(var, n_var, cuse, n_cuse, new_cuse, n_new_cuse)
-T_VAR		*var;
-int		n_var;
-T_CUSE		*cuse;
-int		n_cuse;
-T_CUSE		**new_cuse;
-unsigned short	*n_new_cuse;
+fix_cuse(T_VAR * var,
+	 int n_var,
+	 T_CUSE * cuse,
+	 int n_cuse,
+	 T_CUSE ** new_cuse,
+	 unsigned short *n_new_cuse)
 {
-	int	i;
-	int	j;
-	int	v;
+    int i;
+    int j;
+    int v;
 
-	/*
-	* Sort and drop duplicates.
-	*/
-	qsort(cuse, (size_t)n_cuse, sizeof(T_CUSE), QSORT_CMP cuse_cmp);
-	j = 1;
-	for (i = 1; i < n_cuse; ++i)
-		if (cuse_cmp(cuse+i-1, cuse+i))
-			cuse[j++] = cuse[i];
+    /*
+     * Sort and drop duplicates.
+     */
+    qsort(cuse, (size_t) n_cuse, sizeof(T_CUSE), QSORT_CMP cuse_cmp);
+    j = 1;
+    for (i = 1; i < n_cuse; ++i)
+	if (cuse_cmp(cuse + i - 1, cuse + i))
+	    cuse[j++] = cuse[i];
 
-	/*
-	* Build index in var.cstart
-	*/
-	v = -1;
-	for (i = 0; i < j; ++i) {
-		while (cuse[i].varno != v) {
-			++v;
-			var[v].cstart = i;
-		}
+    /*
+     * Build index in var.cstart
+     */
+    v = -1;
+    for (i = 0; i < j; ++i) {
+	while (cuse[i].varno != v) {
+	    ++v;
+	    var[v].cstart = i;
 	}
-	while (++v < n_var) var[v].cstart = j;
+    }
+    while (++v < n_var)
+	var[v].cstart = j;
 
-	/*
-	* Copy to exact fit storage.
-	*/
-	*new_cuse = (T_CUSE *)t_copy((char *)cuse, sizeof(T_CUSE), j);
-	*n_new_cuse = j;
+    /*
+     * Copy to exact fit storage.
+     */
+    *new_cuse = (T_CUSE *) t_copy((char *) cuse, sizeof(T_CUSE), j);
+    *n_new_cuse = j;
 }
-		
+
 static void
-fix_puse(var, n_var, puse, n_puse, new_puse, n_new_puse)
-T_VAR		*var;
-int		n_var;
-T_PUSE		*puse;
-int		n_puse;
-T_PUSE		**new_puse;
-unsigned short	*n_new_puse;
+fix_puse(T_VAR * var,
+	 int n_var,
+	 T_PUSE * puse,
+	 int n_puse,
+	 T_PUSE ** new_puse,
+	 unsigned short *n_new_puse)
 {
-	int	i;
-	int	j;
-	int	v;
+    int i;
+    int j;
+    int v;
 
-	/*
-	* Sort and drop duplicates.
-	*/
-	qsort(puse, (size_t)n_puse, sizeof(T_PUSE), QSORT_CMP puse_cmp);
-	j = 1;
-	for (i = 1; i < n_puse; ++i)
-		if (puse_cmp(puse+i-1, puse+i))
-			puse[j++] = puse[i];
+    /*
+     * Sort and drop duplicates.
+     */
+    qsort(puse, (size_t) n_puse, sizeof(T_PUSE), QSORT_CMP puse_cmp);
+    j = 1;
+    for (i = 1; i < n_puse; ++i)
+	if (puse_cmp(puse + i - 1, puse + i))
+	    puse[j++] = puse[i];
 
-	/*
-	* Build index in var.pstart
-	*/
-	v = -1;
-	for (i = 0; i < j; ++i) {
-		while (puse[i].varno != v) {
-			++v;
-			var[v].pstart = i;
-		}
+    /*
+     * Build index in var.pstart
+     */
+    v = -1;
+    for (i = 0; i < j; ++i) {
+	while (puse[i].varno != v) {
+	    ++v;
+	    var[v].pstart = i;
 	}
-	while (++v < n_var) var[v].pstart = j;
+    }
+    while (++v < n_var)
+	var[v].pstart = j;
 
-	/*
-	* Copy to exact fit storage.
-	*/
-	*new_puse = (T_PUSE *)t_copy((char *)puse, sizeof(T_PUSE), j);
-	*n_new_puse = j;
+    /*
+     * Copy to exact fit storage.
+     */
+    *new_puse = (T_PUSE *) t_copy((char *) puse, sizeof(T_PUSE), j);
+    *n_new_puse = j;
 }
-		
+
 /*
 * module:  Read in static data from .atac file "filename" and fill in
 *	t_module info.  If funcSelect is not NULL, consider only functions
 *	match by this pattern.
 */
 static void
-module(filename, t_module, funcSelect)
-char		*filename;
-T_MODULE	*t_module;
-char		*funcSelect;
+module(char *filename,
+       T_MODULE * t_module,
+       char *funcSelect)
 {
-    static T_CUSE	*t_cuse = NULL;
-    static int		t_cuse_size = 0;
-    static T_PUSE	*t_puse = NULL;
-    static int		t_puse_size = 0;
-    static T_VAR	*t_var = NULL;
-    static int		t_var_size = 0;
-    static T_BLK	*t_blk = NULL;
-    static int		t_blk_size = 0;
-    static T_FUNC	*t_func = NULL;
-    static int		t_func_size = 0;
-    static T_FILE	*t_file = NULL;
-    static int		t_file_size = 0;
-    int			n_cuse;
-    int			n_puse;
-    int			n_var;
-    int			n_blk;
-    int			n_func;
-    int			n_file;
-    struct cfile	*cf;
-    int			ifield[MAXFIELDS];
-    int			i;
-    int			func_ignore = 0;
-    int			c;
-    path_t		stringBuf;
+    static T_CUSE *t_cuse = NULL;
+    static int t_cuse_size = 0;
+    static T_PUSE *t_puse = NULL;
+    static int t_puse_size = 0;
+    static T_VAR *t_var = NULL;
+    static int t_var_size = 0;
+    static T_BLK *t_blk = NULL;
+    static int t_blk_size = 0;
+    static T_FUNC *t_func = NULL;
+    static int t_func_size = 0;
+    static T_FILE *t_file = NULL;
+    static int t_file_size = 0;
+    int n_cuse;
+    int n_puse;
+    int n_var;
+    int n_blk;
+    int n_func;
+    int n_file;
+    struct cfile *cf;
+    int ifield[MAXFIELDS];
+    int i;
+    int func_ignore = 0;
+    int c;
+    path_t stringBuf;
 
     /*
      * It is not known initially how many functions are in the module
@@ -577,7 +552,7 @@ char		*funcSelect;
 	return;
     }
 
-    cf = (struct cfile *)cf_openIn(filename);
+    cf = (struct cfile *) cf_openIn(filename);
     if (cf == NULL) {
 	perror(filename);
 	exit(1);
@@ -592,7 +567,7 @@ char		*funcSelect;
 	return;
     }
     cf_close(cf);
-    cf = (struct cfile *)cf_openIn(filename);
+    cf = (struct cfile *) cf_openIn(filename);
     if (cf == NULL) {
 	perror(filename);
 	exit(1);
@@ -605,18 +580,18 @@ char		*funcSelect;
     n_file = 0;
     n_func = 0;
     while ((c = cf_getFirstChar(cf)) != EOF) {
-	switch (c)
-	{
+	switch (c) {
 	case 'v':		/* ignore version for now. */
 	    break;
 	case 'S':
 	    if (t_file_size <= n_file) {
-		t_file = (T_FILE *)extend((char *)t_file,
-					  (n_file + T_FILE_ALLOC) *
-					  sizeof(T_FILE));
+		t_file = (T_FILE *) extend((char *) t_file,
+					   (n_file + T_FILE_ALLOC) *
+					   sizeof(T_FILE));
 #ifdef DEBUG
-		fprintf(stderr, "t_file %s %d %d %d %d\n", filename, cf_lineNo(cf), n_file, T_FILE_ALLOC, sizeof(T_FILE));
-#endif				/* DEBUG */
+		fprintf(stderr, "t_file %s %d %d %d %d\n", filename,
+			cf_lineNo(cf), n_file, T_FILE_ALLOC, sizeof(T_FILE));
+#endif /* DEBUG */
 		t_file_size += T_FILE_ALLOC;
 	    }
 	    cf_getString(cf, stringBuf, sizeof stringBuf);
@@ -625,10 +600,12 @@ char		*funcSelect;
 	    ++n_file;
 	    break;
 	case 'F':
-	    if (n_file == 0) input_error(filename, cf_lineNo(cf), 
-		 "func input before file\n", 0, 0);
+	    if (n_file == 0)
+		input_error(filename, cf_lineNo(cf),
+			    "func input before file\n", 0, 0);
 	    cf_getString(cf, stringBuf, sizeof stringBuf);
-	    for (i = 0; i < 6; ++i) ifield[i] = cf_getLong(cf);
+	    for (i = 0; i < 6; ++i)
+		ifield[i] = cf_getLong(cf);
 	    if (ifield[0] >= n_file)
 		input_error(filename, cf_lineNo(cf),
 			    "invalid fileno: %s\n", stringBuf, 0);
@@ -636,17 +613,17 @@ char		*funcSelect;
 		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "invalid fileno: %d\n", ifield[3], 0);
 	    if (n_puse) {
-		if ((int)t_func[n_func - 1].formalN_puse < n_puse)
+		if ((int) t_func[n_func - 1].formalN_puse < n_puse)
 		    t_func[n_func - 1].formalN_puse = n_puse;
-		fix_puse(t_var, n_var, t_puse, n_puse, 
+		fix_puse(t_var, n_var, t_puse, n_puse,
 			 &t_func[n_func - 1].puse,
 			 &t_func[n_func - 1].n_puse);
 		n_puse = 0;
 	    }
 	    if (n_cuse) {
-		if ((int)t_func[n_func - 1].formalN_cuse < n_cuse)
+		if ((int) t_func[n_func - 1].formalN_cuse < n_cuse)
 		    t_func[n_func - 1].formalN_cuse = n_cuse;
-		fix_cuse(t_var, n_var, t_cuse, n_cuse, 
+		fix_cuse(t_var, n_var, t_cuse, n_cuse,
 			 &t_func[n_func - 1].cuse,
 			 &t_func[n_func - 1].n_cuse);
 		n_cuse = 0;
@@ -654,22 +631,23 @@ char		*funcSelect;
 	    if (n_var) {
 		t_func[n_func - 1].n_var = n_var;
 		t_func[n_func - 1].var = (T_VAR *)
-		    t_copy((char *)t_var, sizeof(T_VAR), n_var);
+		    t_copy((char *) t_var, sizeof(T_VAR), n_var);
 		n_var = 0;
 	    }
 	    if (n_blk) {
 		t_func[n_func - 1].n_blk = n_blk;
 		t_func[n_func - 1].blk = (T_BLK *)
-		    t_copy((char *)t_blk, sizeof(T_BLK), n_blk);
+		    t_copy((char *) t_blk, sizeof(T_BLK), n_blk);
 		n_blk = 0;
 	    }
 	    if (t_func_size <= n_func) {
-		t_func = (T_FUNC *)extend((char *)t_func,
-					  (n_func + T_FUNC_ALLOC) *
-					  sizeof(T_FUNC));
+		t_func = (T_FUNC *) extend((char *) t_func,
+					   (n_func + T_FUNC_ALLOC) *
+					   sizeof(T_FUNC));
 #ifdef DEBUG
-		fprintf(stderr, "t_func %s %d %d %d %d\n", filename, cf_lineNo(cf), n_func, T_FUNC_ALLOC, sizeof(T_FUNC));
-#endif				/* DEBUG */
+		fprintf(stderr, "t_func %s %d %d %d %d\n", filename,
+			cf_lineNo(cf), n_func, T_FUNC_ALLOC, sizeof(T_FUNC));
+#endif /* DEBUG */
 		t_func_size += T_FUNC_ALLOC;
 	    }
 	    t_func[n_func].fname = stralloc(stringBuf);
@@ -697,9 +675,11 @@ char		*funcSelect;
 	case 'B':
 	    if (func_ignore)	/* don't care about this func */
 		break;
-	    if (n_func == 0) input_error(filename, cf_lineNo(cf), 
-			 "blk input before func\n", 0, 0);
-	    for (i = 0; i < 6; ++i) ifield[i] = cf_getLong(cf);
+	    if (n_func == 0)
+		input_error(filename, cf_lineNo(cf),
+			    "blk input before func\n", 0, 0);
+	    for (i = 0; i < 6; ++i)
+		ifield[i] = cf_getLong(cf);
 	    if (ifield[0] >= n_file)
 		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "invalid fileno: %d\n", ifield[0], 0);
@@ -707,12 +687,13 @@ char		*funcSelect;
 		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "invalid fileno: %d\n", ifield[3], 0);
 	    if (t_blk_size <= n_blk) {
-		t_blk = (T_BLK *)extend((char *)t_blk,
-					(n_blk + T_BLK_ALLOC) *
-					sizeof(T_BLK));
+		t_blk = (T_BLK *) extend((char *) t_blk,
+					 (n_blk + T_BLK_ALLOC) *
+					 sizeof(T_BLK));
 #ifdef DEBUG
-		fprintf(stderr, "t_blk %s %d %d %d %d\n", filename, cf_lineNo(cf), n_blk, T_BLK_ALLOC, sizeof(T_BLK));
-#endif				/* DEBUG */
+		fprintf(stderr, "t_blk %s %d %d %d %d\n", filename,
+			cf_lineNo(cf), n_blk, T_BLK_ALLOC, sizeof(T_BLK));
+#endif /* DEBUG */
 		t_blk_size += T_BLK_ALLOC;
 	    }
 	    t_blk[n_blk].pos.start.file = ifield[0];
@@ -726,35 +707,39 @@ char		*funcSelect;
 	case 'V':
 	    if (func_ignore)	/* don't care about this func */
 		break;
-	    if (n_func == 0) input_error(filename, cf_lineNo(cf), 
-		 "var input before func\n", 0, 0);
+	    if (n_func == 0)
+		input_error(filename, cf_lineNo(cf),
+			    "var input before func\n", 0, 0);
 	    if (t_var_size <= n_var) {
-		t_var = (T_VAR *)extend((char *)t_var,
-					(n_var + T_VAR_ALLOC) *
-					sizeof(T_VAR));
+		t_var = (T_VAR *) extend((char *) t_var,
+					 (n_var + T_VAR_ALLOC) *
+					 sizeof(T_VAR));
 #ifdef DEBUG
-		fprintf(stderr, "t_var %s %d %d %d %d\n", filename, cf_lineNo(cf), n_var, T_VAR_ALLOC, sizeof(T_VAR));
-#endif				/* DEBUG */
+		fprintf(stderr, "t_var %s %d %d %d %d\n", filename,
+			cf_lineNo(cf), n_var, T_VAR_ALLOC, sizeof(T_VAR));
+#endif /* DEBUG */
 		t_var_size += T_VAR_ALLOC;
 	    }
 	    cf_getString(cf, stringBuf, sizeof stringBuf);
 	    t_var[n_var].vname = stralloc(stringBuf);
 	    if (strcmp(stringBuf, DECIS_VAR) == 0)
-		t_func[n_func-1].decis_var = n_var;
+		t_func[n_func - 1].decis_var = n_var;
 	    ++n_var;
 	    break;
 	case 'c':
 	    if (func_ignore)	/* don't care about this func */
 		break;
-	    if (n_func == 0) input_error(filename, cf_lineNo(cf), 
-		 "cuse count before func\n", 0, 0);
+	    if (n_func == 0)
+		input_error(filename, cf_lineNo(cf),
+			    "cuse count before func\n", 0, 0);
 	    t_func[n_func - 1].formalN_cuse = cf_getLong(cf);
 	    break;
 	case 'C':
 	    if (func_ignore)	/* don't care about this func */
 		break;
-	    if (n_func == 0) input_error(filename, cf_lineNo(cf), 
-		 "Cuse input before func\n", 0, 0);
+	    if (n_func == 0)
+		input_error(filename, cf_lineNo(cf),
+			    "Cuse input before func\n", 0, 0);
 	    for (i = 0; i < 3; ++i)
 		ifield[i] = cf_getLong(cf);
 	    if (ifield[0] >= n_var)
@@ -767,12 +752,13 @@ char		*funcSelect;
 		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "C blkno: %s\n", ifield[2], 0);
 	    if (t_cuse_size <= n_cuse) {
-		t_cuse = (T_CUSE *)extend((char *)t_cuse,
-					  (n_cuse + T_CUSE_ALLOC) *
-					  sizeof(T_CUSE));
+		t_cuse = (T_CUSE *) extend((char *) t_cuse,
+					   (n_cuse + T_CUSE_ALLOC) *
+					   sizeof(T_CUSE));
 #ifdef DEBUG
-		fprintf(stderr, "t_cuse %s %d %d %d %d\n", filename, cf_lineNo(cf), n_cuse, T_CUSE_ALLOC, sizeof(T_CUSE));
-#endif				/* DEBUG */
+		fprintf(stderr, "t_cuse %s %d %d %d %d\n", filename,
+			cf_lineNo(cf), n_cuse, T_CUSE_ALLOC, sizeof(T_CUSE));
+#endif /* DEBUG */
 		t_cuse_size += T_CUSE_ALLOC;
 	    }
 	    t_cuse[n_cuse].varno = ifield[0];
@@ -800,15 +786,17 @@ char		*funcSelect;
 	case 'p':
 	    if (func_ignore)	/* don't care about this func */
 		break;
-	    if (n_func == 0) input_error(filename, cf_lineNo(cf), 
-		 "puse count before func\n", 0, 0);
+	    if (n_func == 0)
+		input_error(filename, cf_lineNo(cf),
+			    "puse count before func\n", 0, 0);
 	    t_func[n_func - 1].formalN_puse = cf_getLong(cf);
 	    break;
 	case 'P':
 	    if (func_ignore)	/* don't care about this func */
 		break;
-	    if (n_func == 0) input_error(filename, cf_lineNo(cf), 
-		 "Puse input before func\n", 0, 0);
+	    if (n_func == 0)
+		input_error(filename, cf_lineNo(cf),
+			    "Puse input before func\n", 0, 0);
 	    for (i = 0; i < 4; ++i)
 		ifield[i] = cf_getLong(cf);
 	    if (ifield[0] >= n_var)
@@ -824,12 +812,13 @@ char		*funcSelect;
 		FIELD_ERROR(filename, cf_lineNo(cf),
 			    "P blkno: %s\n", ifield[3], 0);
 	    if (t_puse_size <= n_puse) {
-		t_puse = (T_PUSE *)extend((char *)t_puse,
-					  (n_puse + T_PUSE_ALLOC) *
-					  sizeof(T_PUSE));
+		t_puse = (T_PUSE *) extend((char *) t_puse,
+					   (n_puse + T_PUSE_ALLOC) *
+					   sizeof(T_PUSE));
 #ifdef DEBUG
-		fprintf(stderr, "t_puse %s %d %d %d %d\n", filename, cf_lineNo(cf), n_puse, T_PUSE_ALLOC, sizeof(T_PUSE));
-#endif				/* DEBUG */
+		fprintf(stderr, "t_puse %s %d %d %d %d\n", filename,
+			cf_lineNo(cf), n_puse, T_PUSE_ALLOC, sizeof(T_PUSE));
+#endif /* DEBUG */
 		t_puse_size += T_PUSE_ALLOC;
 	    }
 	    t_puse[n_puse].varno = ifield[0];
@@ -866,30 +855,30 @@ char		*funcSelect;
 			c, 0);
 	}
     }
-	
+
     if (n_puse) {
-	if ((int)t_func[n_func - 1].formalN_puse < n_puse)
+	if ((int) t_func[n_func - 1].formalN_puse < n_puse)
 	    t_func[n_func - 1].formalN_puse = n_puse;
-	fix_puse(t_var, n_var, t_puse, n_puse, 
+	fix_puse(t_var, n_var, t_puse, n_puse,
 		 &t_func[n_func - 1].puse,
 		 &t_func[n_func - 1].n_puse);
     }
     if (n_cuse) {
-	if ((int)t_func[n_func - 1].formalN_cuse < n_cuse)
+	if ((int) t_func[n_func - 1].formalN_cuse < n_cuse)
 	    t_func[n_func - 1].formalN_cuse = n_cuse;
-	fix_cuse(t_var, n_var, t_cuse, n_cuse, 
+	fix_cuse(t_var, n_var, t_cuse, n_cuse,
 		 &t_func[n_func - 1].cuse,
 		 &t_func[n_func - 1].n_cuse);
     }
     if (n_var) {
 	t_func[n_func - 1].n_var = n_var;
 	t_func[n_func - 1].var = (T_VAR *)
-	    t_copy((char *)t_var, sizeof(T_VAR), n_var);
+	    t_copy((char *) t_var, sizeof(T_VAR), n_var);
     }
     if (n_blk) {
 	t_func[n_func - 1].n_blk = n_blk;
 	t_func[n_func - 1].blk = (T_BLK *)
-	    t_copy((char *)t_blk, sizeof(T_BLK), n_blk);
+	    t_copy((char *) t_blk, sizeof(T_BLK), n_blk);
     }
 
     t_module->header = NULL;	/* used for binary .atac files */
@@ -898,87 +887,87 @@ char		*funcSelect;
     t_module->n_func = n_func;
     if (n_func) {
 	t_module->func = (T_FUNC *)
-	    t_copy((char *)t_func, sizeof(T_FUNC), n_func);
+	    t_copy((char *) t_func, sizeof(T_FUNC), n_func);
     }
     t_module->n_file = n_file;
     if (n_file) {
 	t_module->file = (T_FILE *)
-	    t_copy((char *)t_file, sizeof(T_FILE), n_file);
-    } else input_error(filename, cf_lineNo(cf), "Empty file\n", 0, 0);
+	    t_copy((char *) t_file, sizeof(T_FILE), n_file);
+    } else
+	input_error(filename, cf_lineNo(cf), "Empty file\n", 0, 0);
 
     /* now sort puse, cuse and setup d_start, p_start, c_start */
-	
+
     cf_close(cf);
     return;
 }
 
 T_MODULE *
-static_data(nfiles, files, funcSelect, options, covCount)
-int	nfiles;
-char	*files[];
-char	*funcSelect;
-int	options;
-int	*covCount;
+static_data(int nfiles,
+	    char *files[],
+	    char *funcSelect,
+	    int options,
+	    int *covCount)
 {
-	int		i;
-	int		j;
-	T_MODULE	*t_module;
-	int		covStart;
-	int		modCovStart;
+    int i;
+    int j;
+    T_MODULE *t_module;
+    int covStart;
+    int modCovStart;
 
-	/*
-	* Allocate module structure for each static file.
-	*/
-	t_module = (T_MODULE *)malloc(nfiles * sizeof(T_MODULE));
-	CHECK_MALLOC(t_module);
+    /*
+     * Allocate module structure for each static file.
+     */
+    t_module = (T_MODULE *) malloc(nfiles * sizeof(T_MODULE));
+    CHECK_MALLOC(t_module);
 
-	/*
-	* Read static files.
-	*/
-	for (i = 0; i < nfiles; ++i)
-		module(files[i], t_module + i, funcSelect);
+    /*
+     * Read static files.
+     */
+    for (i = 0; i < nfiles; ++i)
+	module(files[i], t_module + i, funcSelect);
 
-	module(NULL, NULL, NULL);	/* free temp storage */
+    module(NULL, NULL, NULL);	/* free temp storage */
 
-	/*
-	*  Assign covStart numbers.
-	*/
-	covStart = 0;
-	for (i = 0; i < nfiles; ++i) {
-	    modCovStart = covStart;
-	    for (j = 0; j < (int)t_module[i].n_func; ++j) {
-		if (t_module[i].func[j].ignore) continue;
-		t_module[i].func[j].blkCovStart = covStart;
-		if (options & OPTION_BLOCK) {
-		    covStart += t_module[i].func[j].n_blk;
-		}
-		t_module[i].func[j].cUseCovStart = covStart;
-		if (options & OPTION_CUSE) {
-		    covStart += t_module[i].func[j].n_cuse;
-		}
-		t_module[i].func[j].pUseCovStart = covStart;
-		if (options & OPTION_PUSE) {
-		    covStart += t_module[i].func[j].n_puse;
-		}
+    /*
+     *  Assign covStart numbers.
+     */
+    covStart = 0;
+    for (i = 0; i < nfiles; ++i) {
+	modCovStart = covStart;
+	for (j = 0; j < (int) t_module[i].n_func; ++j) {
+	    if (t_module[i].func[j].ignore)
+		continue;
+	    t_module[i].func[j].blkCovStart = covStart;
+	    if (options & OPTION_BLOCK) {
+		covStart += t_module[i].func[j].n_blk;
 	    }
-	    if (covStart == modCovStart) {
-		t_module[i].ignore = 1;
-	    } else {
-		t_module[i].ignore = 0;
+	    t_module[i].func[j].cUseCovStart = covStart;
+	    if (options & OPTION_CUSE) {
+		covStart += t_module[i].func[j].n_cuse;
+	    }
+	    t_module[i].func[j].pUseCovStart = covStart;
+	    if (options & OPTION_PUSE) {
+		covStart += t_module[i].func[j].n_puse;
 	    }
 	}
+	if (covStart == modCovStart) {
+	    t_module[i].ignore = 1;
+	} else {
+	    t_module[i].ignore = 0;
+	}
+    }
 
-	*covCount = covStart;
+    *covCount = covStart;
 
-	return t_module;
+    return t_module;
 }
 
 void
-freeStatic(mod, n_mod)
-T_MODULE	*mod;
-int		n_mod;
+freeStatic(T_MODULE * mod,
+	   int n_mod)
 {
-    int	i;
+    int i;
     int j;
     int k;
 
@@ -987,15 +976,15 @@ int		n_mod;
 	    free(mod[i].header);
 	    continue;
 	} else {
-	    for (j = 0; j < (int)mod[i].n_file; ++j)
+	    for (j = 0; j < (int) mod[i].n_file; ++j)
 		free(mod[i].file[j].filename);
 	    if (mod[i].n_file != 0)
 		free(mod[i].file);
-	    for (j = 0; j < (int)mod[i].n_func; ++j) {
+	    for (j = 0; j < (int) mod[i].n_func; ++j) {
 		free(mod[i].func[j].fname);
 		if (mod[i].func[j].n_blk != 0)
 		    free(mod[i].func[j].blk);
-		for (k = 0; k < (int)mod[i].func[j].n_var; ++k)
+		for (k = 0; k < (int) mod[i].func[j].n_var; ++k)
 		    free(mod[i].func[j].var[k].vname);
 		if (mod[i].func[j].n_var != 0)
 		    free(mod[i].func[j].var);

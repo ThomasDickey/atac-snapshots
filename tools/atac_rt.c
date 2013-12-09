@@ -21,10 +21,10 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char atac_rt_c[] = "$Header: /users/source/archives/atac.vcs/tools/RCS/atac_rt.c,v 3.18 2008/12/17 01:24:59 tom Exp $";
+static const char atac_rt_c[] = "$Id: atac_rt.c,v 3.19 2013/12/08 21:26:51 tom Exp $";
 
 /*
-* $Log: atac_rt.c,v $
+* @Log: atac_rt.c,v @
 * Revision 3.18  2008/12/17 01:24:59  tom
 * convert to ANSI, indent'd
 *

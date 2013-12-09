@@ -30,10 +30,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "man.h"
 #include "version.h"
 
-static char const dump_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/dump.c,v 3.8 1996/11/13 01:31:56 tom Exp $";
+static char const dump_c[] = "$Id: dump.c,v 3.9 2013/12/08 20:51:56 tom Exp $";
 /*
-* $Log: dump.c,v $
+* @Log: dump.c,v @
 * Revision 3.8  1996/11/13 01:31:56  tom
 * include <config.h> to declare 'const'
 *
@@ -80,103 +79,78 @@ static char const dump_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static void dump_blocks
-	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
-	*members));
-static void dump_members
-	P_((struct cfile *cf, membertype *mems));
-static void dump_cuses
-	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
-	*members));
-static void dump_puses
-	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
-	*members));
-static void dump_headers
-	P_((struct cfile *cf, RAMFILE *rf, int iTestCases, memberstype
-	*members));
-static void dump_sources
-	P_((struct cfile *cf, RAMFILE *rf));
-static void dump_version
-	P_((struct cfile *cf));
-static void dump_coverage
-	P_((struct cfile *cf, coveragetype *pCov, int iCovNext, int iCount, int
-	iTestCases, memberstype *members));
-static void dump_stamps
-	P_((struct cfile *cf, stampstype *pStamps, time_t lStampNext, int
-	iCount, int iTestCases, memberstype *members));
-
 static void
-dump_stamps(cf, pStamps, lStampNext, iCount, iTestCases, members)
-struct cfile	*cf;
-stampstype	*pStamps;
-time_t		lStampNext;
-int		iCount;
-int		iTestCases;
-memberstype	*members;
+dump_stamps(struct cfile *cf,
+	    stampstype * pStamps,
+	    time_t lStampNext,
+	    int iCount,
+	    int iTestCases,
+	    memberstype * members)
 {
-	int i;
-	int	iTestCount;
-	time_t	n;
+    int i;
+    int iTestCount;
+    time_t n;
 
-	iTestCount = iCount;
-	if (iTestCases < iTestCount) {
-	    iTestCount = iTestCases;
-	}
-	for (i = 0; i < iTestCount; ++i) {
-	    n = (time_t)pk_take((pkPack *)pStamps);
-	    if (members[i].iDelete) continue;
-	    cf_putLong(cf, n);
-	}
-	if (i < iTestCases) {
-	    if (members[i].iDelete == 0)
-		cf_putLong(cf, lStampNext);
-	    ++i;
-	}
-	for (; i < iTestCases; ++i) {
-	    if (members[i].iDelete) continue;
-	    cf_putLong(cf, 0);
-	}
-	cf_putNewline(cf);
+    iTestCount = iCount;
+    if (iTestCases < iTestCount) {
+	iTestCount = iTestCases;
+    }
+    for (i = 0; i < iTestCount; ++i) {
+	n = (time_t) pk_take((pkPack *) pStamps);
+	if (members[i].iDelete)
+	    continue;
+	cf_putLong(cf, n);
+    }
+    if (i < iTestCases) {
+	if (members[i].iDelete == 0)
+	    cf_putLong(cf, lStampNext);
+	++i;
+    }
+    for (; i < iTestCases; ++i) {
+	if (members[i].iDelete)
+	    continue;
+	cf_putLong(cf, 0);
+    }
+    cf_putNewline(cf);
 }
 
 static void
-dump_coverage(cf, pCov, iCovNext, iCount, iTestCases, members)
-struct cfile	*cf;
-coveragetype	*pCov;
-int		iCovNext;
-int		iCount;
-int		iTestCases;
-memberstype	*members;
+dump_coverage(struct cfile *cf,
+	      coveragetype * pCov,
+	      int iCovNext,
+	      int iCount,
+	      int iTestCases,
+	      memberstype * members)
 {
-	int i;
-	int	n;
-	int	iTestCount;
+    int i;
+    int n;
+    int iTestCount;
 
-	iTestCount = iCount;
-	if (iTestCases < iTestCount) {
-	    iTestCount = iTestCases;
-	}
-	for (i = 0; i < iTestCount; ++i) {
-	    n = pk_take((pkPack *)pCov);
-	    if (members[i].iDelete) continue;
-	    cf_putLong(cf, n);
-	}
-	if (i < iTestCases) {
-	    if (members[i].iDelete == 0)
-		cf_putLong(cf, iCovNext);
-	    ++i;
-	}
-	for (; i < iTestCases; ++i) {
-	    if (members[i].iDelete) continue;
-	    cf_putLong(cf, 0);
-	}
-	cf_putNewline(cf);
+    iTestCount = iCount;
+    if (iTestCases < iTestCount) {
+	iTestCount = iTestCases;
+    }
+    for (i = 0; i < iTestCount; ++i) {
+	n = pk_take((pkPack *) pCov);
+	if (members[i].iDelete)
+	    continue;
+	cf_putLong(cf, n);
+    }
+    if (i < iTestCases) {
+	if (members[i].iDelete == 0)
+	    cf_putLong(cf, iCovNext);
+	++i;
+    }
+    for (; i < iTestCases; ++i) {
+	if (members[i].iDelete)
+	    continue;
+	cf_putLong(cf, 0);
+    }
+    cf_putNewline(cf);
 }
 
 static void
-dump_version(cf)
-struct cfile	*cf;
+dump_version(struct cfile *cf)
 {
     cf_putFirstChar(cf, 'V');
     cf_putString(cf, VERSION);
@@ -184,260 +158,254 @@ struct cfile	*cf;
 }
 
 static void
-dump_sources(cf, rf)
-struct cfile	*cf;
-RAMFILE		*rf;
+dump_sources(struct cfile *cf,
+	     RAMFILE * rf)
 {
-	int i;
+    int i;
 
+    cf_putFirstChar(cf, 'M');
+    cf_putLong(cf, rf->iFileCount);
+    cf_putNewline(cf);
+    for (i = 0; i < rf->iFileCount; ++i) {
 	cf_putFirstChar(cf, 'M');
-	cf_putLong(cf, rf->iFileCount);
+	cf_putString(cf, rf->files[i].pName);
 	cf_putNewline(cf);
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    cf_putFirstChar(cf, 'M');
-	    cf_putString(cf, rf->files[i].pName);
-	    cf_putNewline(cf);
-	}
+    }
 }
 
 static void
-dump_headers(cf, rf, iTestCases, members)
-struct cfile	*cf;
-RAMFILE	 	*rf;
-int		iTestCases;
-memberstype	*members;
+dump_headers(struct cfile *cf,
+	     RAMFILE * rf,
+	     int iTestCases,
+	     memberstype * members)
 {
-	int i;
-	int j;
-	int n;
+    int i;
+    int j;
+    int n;
 
-	n = 0;
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    n += rf->files[i].hdr.iHeaderCount;
-	}
-	cf_putFirstChar(cf, 'S');
-	cf_putLong(cf, n);
-	cf_putNewline(cf);
+    n = 0;
+    for (i = 0; i < rf->iFileCount; ++i) {
+	n += rf->files[i].hdr.iHeaderCount;
+    }
+    cf_putFirstChar(cf, 'S');
+    cf_putLong(cf, n);
+    cf_putNewline(cf);
 
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    for (j = 0; j < rf->files[i].hdr.iHeaderCount; ++j) {
-		cf_putFirstChar(cf, 'S');
-		cf_putLong(cf, i);
-		cf_putString(cf, rf->files[i].hdr.headers[j].pPath);
-		dump_stamps(cf, rf->files[i].hdr.headers[j].stampVector,
-			    rf->files[i].hdr.headers[j].lStampNext,
-			    rf->files[i].hdr.headers[j].iStampCount,
-			    iTestCases, members);
-		if (rf->files[i].hdr.headers[j].stampVector != NULL) {
-		    /* clean up */
-		    pk_free((pkPack *)(rf->files[i].hdr.headers[j].stampVector));
-		    rf->files[i].hdr.headers[j].stampVector = NULL;
-		}
+    for (i = 0; i < rf->iFileCount; ++i) {
+	for (j = 0; j < rf->files[i].hdr.iHeaderCount; ++j) {
+	    cf_putFirstChar(cf, 'S');
+	    cf_putLong(cf, i);
+	    cf_putString(cf, rf->files[i].hdr.headers[j].pPath);
+	    dump_stamps(cf, rf->files[i].hdr.headers[j].stampVector,
+			rf->files[i].hdr.headers[j].lStampNext,
+			rf->files[i].hdr.headers[j].iStampCount,
+			iTestCases, members);
+	    if (rf->files[i].hdr.headers[j].stampVector != NULL) {
+		/* clean up */
+		pk_free((pkPack *) (rf->files[i].hdr.headers[j].stampVector));
+		rf->files[i].hdr.headers[j].stampVector = NULL;
 	    }
 	}
+    }
 }
 
 static void
-dump_puses(cf, rf, iTestCases, members)
-struct cfile	*cf;
-RAMFILE		*rf;
-int		iTestCases;
-memberstype	*members;
+dump_puses(struct cfile *cf,
+	   RAMFILE * rf,
+	   int iTestCases,
+	   memberstype * members)
 {
-	int	i;
-	int	j;
-	int	k;
-	int	m;
-	int	n;
-	vartype *var;
+    int i;
+    int j;
+    int k;
+    int m;
+    int n;
+    vartype *var;
 
-	n = 0;
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    for (j = 0; j < rf->files[i].iFuncCount; ++j) {
-		for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
-		    n += rf->files[i].funcs[j].vars[k].iPuseCount;
-		}
+    n = 0;
+    for (i = 0; i < rf->iFileCount; ++i) {
+	for (j = 0; j < rf->files[i].iFuncCount; ++j) {
+	    for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
+		n += rf->files[i].funcs[j].vars[k].iPuseCount;
 	    }
 	}
-	cf_putFirstChar(cf, 'P');
-	cf_putLong(cf, n);
-	cf_putNewline(cf);
+    }
+    cf_putFirstChar(cf, 'P');
+    cf_putLong(cf, n);
+    cf_putNewline(cf);
 
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    for (j = 0; j < rf->files[i].iFuncCount; ++j) {
-		for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
-		    var = &rf->files[i].funcs[j].vars[k];
-		    for (m = 0; m < var->iPuseCount; ++m) {
-			cf_putFirstChar(cf, 'P');
-			cf_putLong(cf, i);
-			cf_putLong(cf, j);
-			cf_putLong(cf, k);
-			cf_putLong(cf, var->puses[m].iDefine);
-			cf_putLong(cf, var->puses[m].iUse);
-			cf_putLong(cf, var->puses[m].iTo);
-			dump_coverage(cf, var->puses[m].coverage,
-				      var->puses[m].iCovNext,
-				      var->puses[m].iTestCount, iTestCases,
-				      members);
-			if (var->puses[m].coverage != NULL) {
-			    /* clean up */
-			    pk_free((pkPack *)(var->puses[m].coverage));
-			    var->puses[m].coverage = NULL;
-			}
-		    }
-		}
-	    }
-	}
-}
-
-static void
-dump_cuses(cf, rf, iTestCases, members)
-struct cfile	*cf;
-RAMFILE		*rf;
-int		iTestCases;
-memberstype	*members;
-{
-	int	i;
-	int	j;
-	int	k;
-	int	m;
-	int	n;
-	vartype *var;
-
-	n = 0;
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    for (j = 0; j < rf->files[i].iFuncCount; ++j) {
-		for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
-		    n += rf->files[i].funcs[j].vars[k].iCuseCount;
-		}
-	    }
-	}
-	cf_putFirstChar(cf, 'C');
-	cf_putLong(cf, n);
-	cf_putNewline(cf);
-
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    for (j = 0; j < rf->files[i].iFuncCount; ++j) {
-		for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
-		    var = &rf->files[i].funcs[j].vars[k];
-		    for (m = 0; m < var->iCuseCount; ++m) {
-			cf_putFirstChar(cf, 'C');
-			cf_putLong(cf, i);
-			cf_putLong(cf, j);
-			cf_putLong(cf, k);
-			cf_putLong(cf, var->cuses[m].iDefine);
-			cf_putLong(cf, var->cuses[m].iUse);
-			dump_coverage(cf, var->cuses[m].coverage,
-				      var->cuses[m].iCovNext,
-				      var->cuses[m].iTestCount, iTestCases,
-				      members);
-			if (var->cuses[m].coverage != NULL) {
-			    /* clean up */
-			    pk_free((pkPack *)(var->cuses[m].coverage));
-			    var->cuses[m].coverage = NULL;
-			}
-		    }
-		}
-	    }
-	}
-}
-
-static void
-dump_members(cf, mems)
-struct cfile	*cf;
-membertype	*mems;
-{
-	int i;
-	int n;
-
-	n = 0;
-	for (i = 0; i < mems->iMemberCount; ++i) {
-	    if (mems->members[i].iDelete == 0) {
-		++n;
-	    }
-	}
-
-	cf_putFirstChar(cf, 'I');
-	cf_putLong(cf, n);
-	cf_putNewline(cf);
-	for (i = 0; i < mems->iMemberCount; ++i) {
-	    if (mems->members[i].iDelete) continue;
-	    cf_putFirstChar(cf, 'I');
-	    cf_putString(cf, mems->members[i].pDate);
-	    cf_putString(cf, mems->members[i].pName);
-	    cf_putString(cf, mems->members[i].pVersion);
-	    cf_putLong(cf, mems->members[i].iCost);
-	    if (mems->members[i].iFreqFlag) {
-		cf_putString(cf, "frequency");
-	    } else {
-		cf_putString(cf, "nofrequency");
-	    }
-	    if (mems->members[i].iCorrupted) {
-		cf_putString(cf, "corrupted");
-	    } else {
-		cf_putString(cf, "okay");
-	    }
-	    cf_putNewline(cf);
-	}
-}
-
-static void
-dump_blocks(cf, rf, iTestCases, members)
-struct cfile	*cf;
-RAMFILE		*rf;
-int		iTestCases;
-memberstype	*members;
-{
-	int	i;
-	int	j;
-	int	k;
-	int	n;
-
-	n = 0;
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    for (j = 0; j < rf->files[i].iFuncCount; ++j) {
-		n += rf->files[i].funcs[j].iBlockCount;
-	    }
-	}
-	cf_putFirstChar(cf, 'B');
-	cf_putLong(cf, n);
-	cf_putNewline(cf);
-
-	for (i = 0; i < rf->iFileCount; ++i) {
-	    for (j = 0; j < rf->files[i].iFuncCount; ++j) {
-		for (k = 0; k < rf->files[i].funcs[j].iBlockCount; ++k) {
-		    cf_putFirstChar(cf, 'B');
+    for (i = 0; i < rf->iFileCount; ++i) {
+	for (j = 0; j < rf->files[i].iFuncCount; ++j) {
+	    for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
+		var = &rf->files[i].funcs[j].vars[k];
+		for (m = 0; m < var->iPuseCount; ++m) {
+		    cf_putFirstChar(cf, 'P');
 		    cf_putLong(cf, i);
 		    cf_putLong(cf, j);
 		    cf_putLong(cf, k);
-		    dump_coverage(cf, rf->files[i].funcs[j].blocks[k].coverage,
-				  rf->files[i].funcs[j].blocks[k].iCovNext,
-				  rf->files[i].funcs[j].blocks[k].iTestCount,
-				  iTestCases, members);
-		    if (rf->files[i].funcs[j].blocks[k].coverage != NULL) {
-			/* clean up*/
-			pk_free((pkPack *)(rf->files[i].funcs[j].blocks[k].coverage));
-			rf->files[i].funcs[j].blocks[k].coverage = NULL;
+		    cf_putLong(cf, var->puses[m].iDefine);
+		    cf_putLong(cf, var->puses[m].iUse);
+		    cf_putLong(cf, var->puses[m].iTo);
+		    dump_coverage(cf, var->puses[m].coverage,
+				  var->puses[m].iCovNext,
+				  var->puses[m].iTestCount, iTestCases,
+				  members);
+		    if (var->puses[m].coverage != NULL) {
+			/* clean up */
+			pk_free((pkPack *) (var->puses[m].coverage));
+			var->puses[m].coverage = NULL;
 		    }
 		}
 	    }
 	}
+    }
+}
+
+static void
+dump_cuses(struct cfile *cf,
+	   RAMFILE * rf,
+	   int iTestCases,
+	   memberstype * members)
+{
+    int i;
+    int j;
+    int k;
+    int m;
+    int n;
+    vartype *var;
+
+    n = 0;
+    for (i = 0; i < rf->iFileCount; ++i) {
+	for (j = 0; j < rf->files[i].iFuncCount; ++j) {
+	    for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
+		n += rf->files[i].funcs[j].vars[k].iCuseCount;
+	    }
+	}
+    }
+    cf_putFirstChar(cf, 'C');
+    cf_putLong(cf, n);
+    cf_putNewline(cf);
+
+    for (i = 0; i < rf->iFileCount; ++i) {
+	for (j = 0; j < rf->files[i].iFuncCount; ++j) {
+	    for (k = 0; k < rf->files[i].funcs[j].iVarCount; ++k) {
+		var = &rf->files[i].funcs[j].vars[k];
+		for (m = 0; m < var->iCuseCount; ++m) {
+		    cf_putFirstChar(cf, 'C');
+		    cf_putLong(cf, i);
+		    cf_putLong(cf, j);
+		    cf_putLong(cf, k);
+		    cf_putLong(cf, var->cuses[m].iDefine);
+		    cf_putLong(cf, var->cuses[m].iUse);
+		    dump_coverage(cf, var->cuses[m].coverage,
+				  var->cuses[m].iCovNext,
+				  var->cuses[m].iTestCount, iTestCases,
+				  members);
+		    if (var->cuses[m].coverage != NULL) {
+			/* clean up */
+			pk_free((pkPack *) (var->cuses[m].coverage));
+			var->cuses[m].coverage = NULL;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+static void
+dump_members(struct cfile *cf,
+	     membertype * mems)
+{
+    int i;
+    int n;
+
+    n = 0;
+    for (i = 0; i < mems->iMemberCount; ++i) {
+	if (mems->members[i].iDelete == 0) {
+	    ++n;
+	}
+    }
+
+    cf_putFirstChar(cf, 'I');
+    cf_putLong(cf, n);
+    cf_putNewline(cf);
+    for (i = 0; i < mems->iMemberCount; ++i) {
+	if (mems->members[i].iDelete)
+	    continue;
+	cf_putFirstChar(cf, 'I');
+	cf_putString(cf, mems->members[i].pDate);
+	cf_putString(cf, mems->members[i].pName);
+	cf_putString(cf, mems->members[i].pVersion);
+	cf_putLong(cf, mems->members[i].iCost);
+	if (mems->members[i].iFreqFlag) {
+	    cf_putString(cf, "frequency");
+	} else {
+	    cf_putString(cf, "nofrequency");
+	}
+	if (mems->members[i].iCorrupted) {
+	    cf_putString(cf, "corrupted");
+	} else {
+	    cf_putString(cf, "okay");
+	}
+	cf_putNewline(cf);
+    }
+}
+
+static void
+dump_blocks(struct cfile *cf,
+	    RAMFILE * rf,
+	    int iTestCases,
+	    memberstype * members)
+{
+    int i;
+    int j;
+    int k;
+    int n;
+
+    n = 0;
+    for (i = 0; i < rf->iFileCount; ++i) {
+	for (j = 0; j < rf->files[i].iFuncCount; ++j) {
+	    n += rf->files[i].funcs[j].iBlockCount;
+	}
+    }
+    cf_putFirstChar(cf, 'B');
+    cf_putLong(cf, n);
+    cf_putNewline(cf);
+
+    for (i = 0; i < rf->iFileCount; ++i) {
+	for (j = 0; j < rf->files[i].iFuncCount; ++j) {
+	    for (k = 0; k < rf->files[i].funcs[j].iBlockCount; ++k) {
+		cf_putFirstChar(cf, 'B');
+		cf_putLong(cf, i);
+		cf_putLong(cf, j);
+		cf_putLong(cf, k);
+		dump_coverage(cf, rf->files[i].funcs[j].blocks[k].coverage,
+			      rf->files[i].funcs[j].blocks[k].iCovNext,
+			      rf->files[i].funcs[j].blocks[k].iTestCount,
+			      iTestCases, members);
+		if (rf->files[i].funcs[j].blocks[k].coverage != NULL) {
+		    /* clean up */
+		    pk_free((pkPack *) (rf->files[i].funcs[j].blocks[k].coverage));
+		    rf->files[i].funcs[j].blocks[k].coverage = NULL;
+		}
+	    }
+	}
+    }
 }
 
 void
-dump(cf, tables)
-struct cfile	*cf;
-tablestype	*tables;
+dump(struct cfile *cf,
+     tablestype * tables)
 {
-	dump_version(cf);
-	dump_members(cf, &tables->mems);
-	dump_sources(cf, &tables->rf);
-	dump_headers(cf, &tables->rf, tables->mems.iMemberCount,
-		     tables->mems.members);
-	dump_blocks(cf, &tables->rf, tables->mems.iMemberCount,
-		     tables->mems.members);
-	dump_cuses(cf, &tables->rf,  tables->mems.iMemberCount,
-		     tables->mems.members);
-	dump_puses(cf, &tables->rf,  tables->mems.iMemberCount,
-		     tables->mems.members);
+    dump_version(cf);
+    dump_members(cf, &tables->mems);
+    dump_sources(cf, &tables->rf);
+    dump_headers(cf, &tables->rf, tables->mems.iMemberCount,
+		 tables->mems.members);
+    dump_blocks(cf, &tables->rf, tables->mems.iMemberCount,
+		tables->mems.members);
+    dump_cuses(cf, &tables->rf, tables->mems.iMemberCount,
+	       tables->mems.members);
+    dump_puses(cf, &tables->rf, tables->mems.iMemberCount,
+	       tables->mems.members);
 }

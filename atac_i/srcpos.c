@@ -21,10 +21,9 @@
 MODULEID(%M%,%J%/%D%/%T%)
 #endif /* MVS */
 
-static const char srcpos_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atac_i/RCS/srcpos.c,v 3.9 2005/08/14 13:43:57 tom Exp $";
+static const char srcpos_c[] = "$Id: srcpos.c,v 3.10 2013/12/08 18:40:17 tom Exp $";
 /*
-* $Log: srcpos.c,v $
+* @Log: srcpos.c,v @
 * Revision 3.9  2005/08/14 13:43:57  tom
 * gcc warnings
 *
@@ -88,43 +87,42 @@ static int n_filenames = 0;
 static int fname_buf_size = 0;
 
 void
-print_srcpos(srcpos, f)
-SRCPOS	*srcpos;
-FILE	*f;
+print_srcpos(SRCPOS * srcpos,
+	     FILE *f)
 {
-	char *fname;
+    char *fname;
 
-	if (srcpos == NULL) {
-		fputs("?", f);
-		return;
-	}
+    if (srcpos == NULL) {
+	fputs("?", f);
+	return;
+    }
 
-	if (srcpos->file < 0) {
-		fname = "\"\"";
-	} else if (srcpos->file >= n_filenames) {
-		fname = "\"?\"";
-	} else {
-		fname = filenames[srcpos->file];
-	}
+    if (srcpos->file < 0) {
+	fname = "\"\"";
+    } else if (srcpos->file >= n_filenames) {
+	fname = "\"?\"";
+    } else {
+	fname = filenames[srcpos->file];
+    }
 
-	fprintf(f, "%s, line %d, col %d", fname, srcpos->line, srcpos->col);
+    fprintf(f, "%s, line %d, col %d", fname, srcpos->line, srcpos->col);
 }
 
 void
 node_srcpos(node, left, f)
-TNODE	*node;
-int	left;
-FILE	*f;
+     TNODE *node;
+     int left;
+     FILE *f;
 {
-	if (node == NULL) {
-		fprintf(f, "?");
-		return;
-	}
+    if (node == NULL) {
+	fprintf(f, "?");
+	return;
+    }
 
-	if (left)
-		print_srcpos(&node->srcpos[LEFT_SRCPOS], f);
-	else
-		print_srcpos(&node->srcpos[RIGHT_SRCPOS], f);
+    if (left)
+	print_srcpos(&node->srcpos[LEFT_SRCPOS], f);
+    else
+	print_srcpos(&node->srcpos[RIGHT_SRCPOS], f);
 }
 
 /*
@@ -132,85 +130,84 @@ FILE	*f;
 *	NOTE: filename is not copied.
 */
 int
-store_filename(s)
-char *s;
+store_filename(char *s)
 {
-	int	i;
-	char	*p;
+    int i;
+    char *p;
 
-	/*
-	* If already in table return location.
-	*/
-	for (i=0; i < n_filenames; ++i)
-		if (strcmp(s, filenames[i]) == 0)
-			return i;
+    /*
+     * If already in table return location.
+     */
+    for (i = 0; i < n_filenames; ++i)
+	if (strcmp(s, filenames[i]) == 0)
+	    return i;
 
-	/*
-	* Inlarge table if necessary.
-	*/
-	if (fname_buf_size <= n_filenames) {
-		fname_buf_size += FNAME_BUF_SIZE;
-		if (filenames) {
-			filenames = (char **)realloc(filenames,
-				sizeof *filenames * fname_buf_size);
-			stamps = (int *)realloc(stamps,
-				sizeof *stamps * fname_buf_size);
-		} else {
-			filenames = (char  **)
-				malloc(sizeof *filenames * fname_buf_size);
-			stamps = (int  *)
-				malloc(sizeof *stamps * fname_buf_size);
-		}
-		CHECK_MALLOC(filenames);
-		CHECK_MALLOC(stamps);
+    /*
+     * Inlarge table if necessary.
+     */
+    if (fname_buf_size <= n_filenames) {
+	fname_buf_size += FNAME_BUF_SIZE;
+	if (filenames) {
+	    filenames = (char **) realloc(filenames,
+					  sizeof *filenames * fname_buf_size);
+	    stamps = (int *) realloc(stamps,
+				     sizeof *stamps * fname_buf_size);
+	} else {
+	    filenames = (char **)
+		malloc(sizeof *filenames * fname_buf_size);
+	    stamps = (int *)
+		malloc(sizeof *stamps * fname_buf_size);
 	}
+	CHECK_MALLOC(filenames);
+	CHECK_MALLOC(stamps);
+    }
 
-	filenames[n_filenames] = s;
-	if (*s == '"' && *(p = s + strlen(s) - 1) == '"') {
-		/*
-		* Kludge to temporarily get rid of enclosing quotes.
-		*/
-		*p = '\0';
-		stamps[n_filenames] = filestamp(s+1);
-		*p = '"';
-	} else stamps[n_filenames] = filestamp(s);
+    filenames[n_filenames] = s;
+    if (*s == '"' && *(p = s + strlen(s) - 1) == '"') {
+	/*
+	 * Kludge to temporarily get rid of enclosing quotes.
+	 */
+	*p = '\0';
+	stamps[n_filenames] = filestamp(s + 1);
+	*p = '"';
+    } else
+	stamps[n_filenames] = filestamp(s);
 
-	return n_filenames++;
+    return n_filenames++;
 }
 
 char *
-srcfname(findex)
-int	findex;
+srcfname(int findex)
 {
-	if (findex < 0 || findex >= n_filenames) return NULL;
-	return filenames[findex];
+    if (findex < 0 || findex >= n_filenames)
+	return NULL;
+    return filenames[findex];
 }
 
 int
-srcfstamp(findex)
-int	findex;
+srcfstamp(int findex)
 {
-	if (findex < 0 || findex >= n_filenames) return 0;
-	return stamps[findex];
+    if (findex < 0 || findex >= n_filenames)
+	return 0;
+    return stamps[findex];
 }
 
 void
-node_isrcpos(node, left, f)	/* MVS */
-TNODE	*node;
-int	left;
-FILE	*f;
+node_isrcpos(TNODE * node,
+	     int left,
+	     FILE *f)
 {
-	SRCPOS	*srcpos;
+    SRCPOS *srcpos;
 
-	if (node == NULL) {
-		fprintf(f, " 0 0 0");
-		return;
-	}
+    if (node == NULL) {
+	fprintf(f, " 0 0 0");
+	return;
+    }
 
-	if (left)
-		srcpos = &node->srcpos[LEFT_SRCPOS];
-	else
-		srcpos = &node->srcpos[RIGHT_SRCPOS];
+    if (left)
+	srcpos = &node->srcpos[LEFT_SRCPOS];
+    else
+	srcpos = &node->srcpos[RIGHT_SRCPOS];
 
-	fprintf(f, " %d %d %d", srcpos->file, srcpos->line, srcpos->col);
+    fprintf(f, " %d %d %d", srcpos->file, srcpos->line, srcpos->col);
 }

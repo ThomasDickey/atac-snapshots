@@ -23,10 +23,9 @@ MODULEID(%M%,%J%/%D%/%T%)
 #include "atacysis.h"
 #include "disp.h"
 
-static char const fdisp_c[] = 
-	"$Header: /users/source/archives/atac.vcs/atacysis/RCS/fdisp.c,v 3.5 1995/12/27 20:24:53 tom Exp $";
+static char const fdisp_c[] = "$Id: fdisp.c,v 3.7 2013/12/09 01:04:23 tom Exp $";
 /*
-* $Log: fdisp.c,v $
+* @Log: fdisp.c,v @
 * Revision 3.5  1995/12/27 20:24:53  tom
 * adjust headers, prototyped for autoconfig
 *
@@ -57,50 +56,47 @@ static char const fdisp_c[] =
 *-----------------------------------------------end of log
 */
 
-/* forward declarations */
-static void print_header P_((char *srcfile, int cov, int tot, int displayMode));
-
 #define MAX_HEADER		(MAX_SRCFILE_NAME + 50)
 
 static void
-print_header(srcfile, cov, tot, displayMode)
-char	*srcfile;
-int	cov;
-int	tot;
-int	displayMode;
+print_header(char *srcfile,
+	     int cov,
+	     int tot,
+	     int displayMode)
 {
-	char	buf[MAX_HEADER];
-	char    *not;
+    char buf[MAX_HEADER];
+    const char *not;
 
-	if (displayMode & DISPLAY_COV) {
-	    not = "";
-	} else {
-	    not = "not ";
-	}
-	sprintf(buf, "%s %d of %d functions %scovered",	srcfile, cov, tot, not);
-	disp_title(buf, 0, 0);
+    if (displayMode & DISPLAY_COV) {
+	not = "";
+    } else {
+	not = "not ";
+    }
+    sprintf(buf, "%s %d of %d functions %scovered", srcfile, cov, tot, not);
+    disp_title(buf, 0, 0);
 }
 
 void
-fdisp(modules, n_mod, covVector, displayMode)
-T_MODULE	*modules;
-int		n_mod;
-int		*covVector;
-int		displayMode;
+fdisp(T_MODULE * modules,
+      int n_mod,
+      int *covVector,
+      int displayMode)
 {
-    T_FUNC	*func;
-    T_MODULE	*mod;
-    int         tot;
-    int         nDisp;
-    int		totNDisp;
+    T_FUNC *func;
+    T_MODULE *mod;
+    int tot;
+    int nDisp;
+    int totNDisp;
 
     totNDisp = 0;
     for (mod = modules; mod < modules + n_mod; ++mod) {
-	if (mod->ignore) continue;
+	if (mod->ignore)
+	    continue;
 	tot = 0;
 	nDisp = 0;
 	for (func = mod->func; func < mod->func + mod->n_func; ++func) {
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    ++tot;
 	    if (covVector[func->blkCovStart] == 0) {
 		++nDisp;
@@ -113,7 +109,8 @@ int		displayMode;
 	    totNDisp += nDisp;
 	}
 	for (func = mod->func; func < mod->func + mod->n_func; ++func) {
-	    if (func->ignore) continue;
+	    if (func->ignore)
+		continue;
 	    if (covVector[func->blkCovStart] == 0) {
 		disp_str(func->fname, DISP_NEWLINE);
 	    }
